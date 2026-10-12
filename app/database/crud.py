@@ -120,6 +120,23 @@ def add_transactions(user_id: int, df: pd.DataFrame, source: str = "csv",
         conn.close()
 
 
+def next_occurrence(user_id: int, date, description: str, amount: float,
+                    db_path: str | Path | None = None) -> int:
+    """Occurrence number for a new manual entry: 1 + how many identical rows the user already has.
+
+    Lets a user add the same coffee twice on one day without it being treated as a duplicate.
+    """
+    conn = get_connection(db_path)
+    try:
+        count = conn.execute(
+            "SELECT COUNT(*) FROM transactions WHERE user_id = ? AND date = ? AND description = ? AND amount = ?",
+            (user_id, f"{pd.Timestamp(date):%Y-%m-%d}", description, round(float(amount), 2)),
+        ).fetchone()[0]
+        return count + 1
+    finally:
+        conn.close()
+
+
 def get_transactions(user_id: int, start=None, end=None,
                      db_path: str | Path | None = None) -> pd.DataFrame:
     """Return one user's transactions, newest first, optionally between start and end (inclusive)."""
