@@ -1,0 +1,23 @@
+"""Page parts shared by every Streamlit page: user sidebar and disclaimer footer."""
+
+import streamlit as st
+
+from app.auth.session import current_username, is_logged_in, logout_user
+
+DISCLAIMER = "For educational purposes, not financial advice."
+
+
+def show_sidebar() -> None:
+    """Show who is logged in and a Logout button (only when someone is logged in)."""
+    if not is_logged_in():
+        return
+    with st.sidebar:
+        st.markdown(f"Logged in as **{current_username()}**")
+        if st.button("Logout", use_container_width=True):
+            logout_user()
+            st.rerun()
+
+
+def show_footer() -> None:
+    st.divider()
+    st.caption(DISCLAIMER)

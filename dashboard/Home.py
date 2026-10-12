@@ -11,10 +11,9 @@ if str(ROOT) not in sys.path:
 import streamlit as st  # noqa: E402
 
 from app.auth.auth_service import LOGIN_FAILED, AuthError, login, register  # noqa: E402
-from app.auth.session import current_username, is_logged_in, login_user, logout_user  # noqa: E402
+from app.auth.session import current_username, is_logged_in, login_user  # noqa: E402
+from app.components.layout import show_footer, show_sidebar  # noqa: E402
 from app.database.db import init_db  # noqa: E402
-
-DISCLAIMER = "For educational purposes, not financial advice."
 
 st.set_page_config(page_title="FinCast", page_icon="💶", layout="centered")
 
@@ -62,14 +61,6 @@ def show_register_form() -> None:
         st.rerun()
 
 
-def show_sidebar() -> None:
-    with st.sidebar:
-        st.markdown(f"Logged in as **{current_username()}**")
-        if st.button("Logout", use_container_width=True):
-            logout_user()
-            st.rerun()
-
-
 st.title("💶 FinCast")
 st.caption("Predict your next month's income, spending and balance.")
 
@@ -87,5 +78,4 @@ else:
     with register_tab:
         show_register_form()
 
-st.divider()
-st.caption(DISCLAIMER)
+show_footer()
