@@ -1,0 +1,36 @@
+# FinCast - central settings file
+# Every path is relative to the project root. Loaded by load_config() in src/utils/helpers.py.
+
+project:
+  name: FinCast
+  seed: 42
+
+paths:
+  data_raw: data/raw
+  data_interim: data/interim
+  data_processed: data/processed
+  data_sample: data/sample
+  models: models
+  logs: logs
+
+database:
+  path: data/app.db
+
+mlflow:
+  tracking_uri: sqlite:///mlflow.db
+  experiments:
+    forecast_income: forecast_income
+    forecast_spend: forecast_spend
+    categorizer: categorizer
+    anomaly: anomaly
+    baselines: baselines
+
+forecast:
+  horizon_months: 1             # predict next month only
+  quantiles: [0.1, 0.5, 0.9]    # lower bound, median, upper bound
+  min_history_months: 3         # fewer months -> friendly message, no forecast
+  cold_start_months: 6          # fewer months -> global model with a visible note
+
+locale:
+  country: DE                   # holiday calendar (holidays package)
+  currency: EUR
