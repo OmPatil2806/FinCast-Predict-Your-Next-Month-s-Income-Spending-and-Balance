@@ -8,8 +8,8 @@ Run by init_db() in app/database/db.py; IF NOT EXISTS makes it safe to run on ev
 CREATE_USERS = """
 CREATE TABLE IF NOT EXISTS users (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
-    username      TEXT    NOT NULL UNIQUE,
-    email         TEXT    NOT NULL UNIQUE,
+    username      TEXT    NOT NULL UNIQUE COLLATE NOCASE,  -- "Om" and "om" are the same user
+    email         TEXT    NOT NULL UNIQUE COLLATE NOCASE,
     password_hash TEXT    NOT NULL,              -- bcrypt hash, never the plain password
     created_at    TEXT    NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
