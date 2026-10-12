@@ -499,7 +499,7 @@ flowchart LR
 
 | Phase | Name | Main result | Estimate | Status |
 |---|---|---|---|---|
-| 1 | Setup | Environment, Git, folder skeleton, config | 0.5 day | ⬜ To do |
+| 1 | Setup | Environment, Git, folder skeleton, config | 0.5 day | ✅ Done |
 | 2 | Database and Login | SQLite tables, bcrypt auth, session guard | 1-2 days | ⬜ To do |
 | 3 | Import and Overview | CSV parser, cleaning, Overview dashboard | 2-3 days | ⬜ To do |
 | 4 | Data and EDA | Synthetic generator, macro API, EDA notebook | 2-3 days | ⬜ To do |
