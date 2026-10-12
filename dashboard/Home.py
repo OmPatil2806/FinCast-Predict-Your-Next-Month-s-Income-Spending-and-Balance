@@ -12,18 +12,9 @@ import streamlit as st  # noqa: E402
 
 from app.auth.auth_service import LOGIN_FAILED, AuthError, login, register  # noqa: E402
 from app.auth.session import current_username, is_logged_in, login_user  # noqa: E402
-from app.components.layout import show_footer, show_sidebar  # noqa: E402
-from app.database.db import init_db  # noqa: E402
+from app.components.layout import setup_database, show_footer, show_sidebar  # noqa: E402
 
 st.set_page_config(page_title="FinCast", page_icon="💶", layout="centered")
-
-
-@st.cache_resource
-def setup_database() -> Path:
-    """Create the database and tables once per app start."""
-    return init_db()
-
-
 setup_database()
 
 
@@ -31,7 +22,7 @@ def show_login_form() -> None:
     with st.form("login_form"):
         identifier = st.text_input("Username or email")
         password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Login", use_container_width=True)
+        submitted = st.form_submit_button("Login", width="stretch")
     if submitted:
         user = login(identifier, password)
         if user is None:
@@ -47,7 +38,7 @@ def show_register_form() -> None:
         email = st.text_input("Email")
         password = st.text_input("Password", type="password", help="At least 8 characters")
         confirm = st.text_input("Confirm password", type="password")
-        submitted = st.form_submit_button("Create account", use_container_width=True)
+        submitted = st.form_submit_button("Create account", width="stretch")
     if submitted:
         if password != confirm:
             st.error("Passwords do not match.")
