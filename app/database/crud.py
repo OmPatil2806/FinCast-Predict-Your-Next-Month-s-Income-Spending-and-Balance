@@ -5,8 +5,11 @@ Every query on user data filters by user_id, so users only ever see their own ro
 The optional db_path argument lets tests use a temporary database.
 """
 
+import hashlib
 import sqlite3
 from pathlib import Path
+
+import pandas as pd
 
 from app.database.db import get_connection
 
@@ -59,3 +62,82 @@ def get_user_by_email(email: str, db_path: str | Path | None = None) -> dict | N
         return _row_to_dict(row)
     finally:
         conn.close()
+
+
+# ---------- transactions ----------
+
+TRANSACTION_COLUMNS = [
+    "id", "date", "description", "amount", "category", "category_source",
+    "is_income", "source", "anomaly_status", "created_at",
+]
+
+
+def make_dedupe_hash(date, description: str, amount: float, occurrence: int = 1) -> str:
+    """Fingerprint of one transaction. The occurrence number keeps identical rows apart
+    (two 3.50 coffees on one day), while re-uploading the same file gives the same hashes."""
+    key = f"{pd.Timestamp(date):%Y-%m-%d}|{description}|{float(amount):.2f}|{int(occurrence)}"
+    return hashlib.sha256(key.encode("utf-8")).hexdigest()[:32]
+
+
+def add_transactions(user_id: int, df: pd.DataFrame, source: str = "csv",
+                     db_path: str | Path | None = None) -> dict:
+    """Save cleaned transactions for a user and skip any that are already stored.
+
+    df needs date, description and amount (the output of clean_transactions);
+    is_income, occurrence and category are used when present.
+    Returns {"added": n, "skipped": m}.
+    """
+    if df.empty:
+        return {"added": 0, "skipped": 0}
+    rows = []
+    for rec in df.to_dict("records"):
+        amount = round(float(rec["amount"]), 2)
+        rows.append((
+            user_id,
+            f"{pd.Timestamp(rec['date']):%Y-%m-%d}",
+            rec["description"],
+            amount,
+            rec.get("category"),
+            rec.get("category_source"),
+            int(rec.get("is_income", amount > 0)),
+            source,
+            make_dedupe_hash(rec["date"], rec["description"], amount, rec.get("occurrence", 1)),
+        ))
+    conn = get_connection(db_path)
+    try:
+        with conn:
+            before = conn.total_changes
+            conn.executemany(
+                """INSERT OR IGNORE INTO transactions
+                   (user_id, date, description, amount, category, category_source,
+                    is_income, source, dedupe_hash)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                rows,
+            )
+            added = conn.total_changes - before
+        return {"added": added, "skipped": len(rows) - added}
+    finally:
+        conn.close()
+
+
+def get_transactions(user_id: int, start=None, end=None,
+                     db_path: str | Path | None = None) -> pd.DataFrame:
+    """Return one user's transactions, newest first, optionally between start and end (inclusive)."""
+    query = f"SELECT {', '.join(TRANSACTION_COLUMNS)} FROM transactions WHERE user_id = ?"
+    params: list = [user_id]
+    if start is not None:
+        query += " AND date >= ?"
+        params.append(f"{pd.Timestamp(start):%Y-%m-%d}")
+    if end is not None:
+        query += " AND date <= ?"
+        params.append(f"{pd.Timestamp(end):%Y-%m-%d}")
+    query += " ORDER BY date DESC, id DESC"
+
+    conn = get_connection(db_path)
+    try:
+        df = pd.read_sql_query(query, conn, params=params)
+    finally:
+        conn.close()
+    df["date"] = pd.to_datetime(df["date"])
+    df["is_income"] = df["is_income"].astype(bool)
+    return df
