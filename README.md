@@ -500,8 +500,8 @@ flowchart LR
 | Phase | Name | Main result | Estimate | Status |
 |---|---|---|---|---|
 | 1 | Setup | Environment, Git, folder skeleton, config | 0.5 day | ✅ Done |
-| 2 | Database and Login | SQLite tables, bcrypt auth, session guard | 1-2 days | ⬜ To do |
-| 3 | Import and Overview | CSV parser, cleaning, Overview dashboard | 2-3 days | ⬜ To do |
+| 2 | Database and Login | SQLite tables, bcrypt auth, session guard | 1-2 days | 🟡 Code done (manual check 2.9 pending) |
+| 3 | Import and Overview | CSV parser, cleaning, Overview dashboard | 2-3 days | ✅ Done |
 | 4 | Data and EDA | Synthetic generator, macro API, EDA notebook | 2-3 days | ⬜ To do |
 | 5 | Categoriser and Aggregation | Rules + TF-IDF model, monthly tables | 2 days | ⬜ To do |
 | 6 | Features and Baselines | Feature table, backtest, baseline scores | 2-3 days | ⬜ To do |
