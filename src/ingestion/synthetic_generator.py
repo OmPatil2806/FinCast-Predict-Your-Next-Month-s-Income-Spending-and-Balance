@@ -5,12 +5,16 @@ generated users instead. Every user belongs to one of four archetypes; each arch
 gives ranges, and each user draws their own values from those ranges.
 
 Step 4.1: archetypes and user profiles (this part).
-Step 4.2: one function per kind of transaction (below). Step 4.3: generate the full dataset.
+Step 4.2: one function per kind of transaction. Step 4.3: generate and save the full dataset.
+
+Run on its own with:  python -m src.ingestion.synthetic_generator
 Everything is driven by a numpy random Generator, so a fixed seed gives identical data.
 """
 
+import time
 import zlib
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -230,6 +234,8 @@ MERCHANTS = {
 ELECTRICITY = ["Vattenfall Strom Abschlag", "E.ON Energie Abschlag", "Stadtwerke Strom"]
 INTERNET = ["Telekom Internet", "Vodafone Kabel", "O2 DSL"]
 PHONE = ["Vodafone Mobilfunk", "Telekom Mobilfunk", "Congstar", "Aldi Talk"]
+GERMAN_MONTHS = ["Januar", "Februar", "Maerz", "April", "Mai", "Juni", "Juli",
+                 "August", "September", "Oktober", "November", "Dezember"]
 CLIENTS = ["Mueller GmbH", "Schmidt & Partner", "Nordlicht Media", "Tech Solutions AG",
            "Weber Consulting", "Blau Design Studio", "Fischer IT", "Kraft Agentur"]
 SHOCKS = [  # (description, low, high, category)
@@ -302,7 +308,7 @@ def salary(user: UserProfile, month_start, start, rng) -> list[dict]:
 def rent(user: UserProfile, month_start, start, rng) -> list[dict]:
     amount = user.rent * (1 + YEARLY_RENT_INCREASE) ** _years_since_start(month_start, start)
     day = 1 if rng.random() < 0.9 else int(rng.integers(2, 4))
-    return [_row(_date(month_start, day), f"Miete Wohnung {month_start:%B}", -amount, "Rent")]
+    return [_row(_date(month_start, day), f"Miete Wohnung {GERMAN_MONTHS[month_start.month - 1]}", -amount, "Rent")]
 
 
 def utilities(user: UserProfile, month_start, price: float, rng) -> list[dict]:
@@ -433,3 +439,77 @@ def generate_month(user: UserProfile, month_start: pd.Timestamp, start: pd.Times
         + shocks(user, month_start, price, rng)
     )
     return sorted(rows, key=lambda r: r["date"])
+
+
+# ---------- step 4.3: full dataset ----------
+
+OUTPUT_COLUMNS = ["user_id", "archetype", "date", "description", "amount", "category"]
+
+
+def generate_dataset(n_users: int = 300, months: int = 36, start: str = "2023-10-01",
+                     seed: int = 42) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Generate all users and their transactions.
+
+    Returns (transactions, users): transactions has OUTPUT_COLUMNS with the true category
+    as label; users has one row per profile (archetype, income, rent, car, ...).
+    """
+    users = make_users(n_users, seed=seed)
+    rng = np.random.default_rng(seed + 1)
+    start_ts = pd.Timestamp(start)
+    month_starts = pd.date_range(start_ts, periods=months, freq="MS")
+
+    rows = []
+    for user in users:
+        for month_start in month_starts:
+            for row in generate_month(user, month_start, start_ts, rng):
+                row["user_id"] = user.user_id
+                row["archetype"] = user.archetype
+                rows.append(row)
+
+    transactions = pd.DataFrame(rows, columns=OUTPUT_COLUMNS)
+    transactions = transactions.sort_values(["user_id", "date"], kind="stable", ignore_index=True)
+
+    profiles = pd.DataFrame([
+        {**{k: v for k, v in asdict(u).items() if k != "subscriptions"},
+         "expected_income": u.expected_income,
+         "n_subscriptions": len(u.subscriptions),
+         "subscriptions": "; ".join(name for name, _ in u.subscriptions)}
+        for u in users
+    ])
+    return transactions, profiles
+
+
+def save_dataset(transactions: pd.DataFrame, users: pd.DataFrame, out_dir: str | Path,
+                 transactions_file: str = "synthetic_transactions.csv",
+                 users_file: str = "synthetic_users.csv") -> tuple[Path, Path]:
+    """Write both tables as CSV (dates as YYYY-MM-DD) and return their paths."""
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    tx_path, users_path = out_dir / transactions_file, out_dir / users_file
+    transactions.to_csv(tx_path, index=False, date_format="%Y-%m-%d")
+    users.to_csv(users_path, index=False)
+    return tx_path, users_path
+
+
+def main() -> None:
+    from src.utils.helpers import load_config, resolve_path
+
+    config = load_config()
+    settings = config["synthetic"]
+    began = time.perf_counter()
+    transactions, users = generate_dataset(
+        n_users=settings["n_users"], months=settings["months"],
+        start=settings["start"], seed=config["project"]["seed"],
+    )
+    tx_path, users_path = save_dataset(
+        transactions, users, resolve_path(config["paths"]["data_raw"]),
+        settings["transactions_file"], settings["users_file"],
+    )
+    print(f"{len(transactions):,} transactions for {len(users)} users "
+          f"({transactions['date'].min():%Y-%m} to {transactions['date'].max():%Y-%m}) "
+          f"in {time.perf_counter() - began:.1f}s")
+    print(f"-> {tx_path}\n-> {users_path}")
+
+
+if __name__ == "__main__":
+    main()

@@ -31,6 +31,13 @@ forecast:
   min_history_months: 3         # fewer months -> friendly message, no forecast
   cold_start_months: 6          # fewer months -> global model with a visible note
 
+synthetic:
+  n_users: 300                  # generated training users
+  months: 36                    # history length per user
+  start: "2023-10-01"           # first month (36 months -> Oct 2023 to Sep 2026)
+  transactions_file: synthetic_transactions.csv   # written to paths.data_raw
+  users_file: synthetic_users.csv
+
 locale:
   country: DE                   # holiday calendar (holidays package)
   currency: EUR
