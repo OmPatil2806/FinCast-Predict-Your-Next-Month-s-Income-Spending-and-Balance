@@ -108,13 +108,13 @@ The forecasting models need many users with long histories, but real personal ba
 |---|---|---|---|
 | **User transactions** | Bank CSV export (date, description, amount) or manual entry | Upload page; stored in SQLite `transactions` | The only truly personal data; powers personalised forecasts. |
 | **Synthetic users** | Generated salary, rent, groceries, subscriptions, seasonal spikes, freelancer income | `src/ingestion/synthetic_generator.py` | Real bank data is private and short per person. Many synthetic users give the global model enough history to learn from. |
-| **Public datasets** | Kaggle personal-finance and bank-transaction datasets (licence checked) | `src/ingestion/public_dataset.py` | Adds realism to merchant names and category labels. |
+| ~~Public datasets~~ | **Not used.** Kaggle personal-finance datasets were planned but dropped. | — | The synthetic generator already produces realistic merchant names and true category labels, and using only generated data avoids licence and privacy questions. |
 | **Inflation and rates** | ECB Data Portal / Eurostat HICP inflation, key interest rate (FRED for US data) | `src/ingestion/macro_api.py` | Macro context for price drift; cached locally so the app also works offline. |
 | **Calendar** | Public holidays, paydays, month length, month-end effects | Python `holidays` package | Explains seasonality such as December gifts or summer travel. |
 
-> **Data honesty note:** the training data is largely **synthetic**. Models learn from generated users plus public data; only the logged-in user's own uploads are real personal data.
+> **Data honesty note:** all training data is **synthetic**. `synthetic_generator.py` creates **300 users × 36 months (Oct 2023 – Sep 2026), about 381,000 transactions**, across 4 archetypes (salaried single, salaried family, freelancer, student), each transaction with its true category. It is fully reproducible from the fixed seed: `python -m src.ingestion.synthetic_generator`. No public or real bank datasets are used for training; the only real personal data is what a logged-in user uploads, and it never leaves their account.
 
-> **Key design decision:** Train a **global model** on many synthetic and public users, then personalise it with each user's own history. Until a user has about six months of data, the app uses the global model and says so.
+> **Key design decision:** Train a **global model** on many synthetic users, then personalise it with each user's own history. Until a user has about six months of data, the app uses the global model and says so.
 
 ---
 
@@ -133,7 +133,7 @@ flowchart TB
     DB[("<b>SQLite app database</b><br/>users · transactions · forecasts · goals")]
     MODELS[("<b>models/</b> (champion)<br/>exported from MLflow registry")]
     PIPE["<b>ML PIPELINE</b> (src/ + pipelines/)<br/>ingest → clean → categorize → aggregate → features → train → backtest → MLflow"]
-    INPUTS["Inputs: synthetic + public datasets · ECB/Eurostat APIs · holiday calendar · user bank CSV"]
+    INPUTS["Inputs: synthetic users · ECB/Eurostat APIs · holiday calendar · user bank CSV"]
 
     UI --> SVC
     UI --> FC
@@ -209,7 +209,6 @@ fincast/
 ├── src/
 │   ├── ingestion/
 │   │   ├── synthetic_generator.py
-│   │   ├── public_dataset.py
 │   │   ├── macro_api.py
 │   │   └── bank_csv_parser.py
 │   ├── preprocessing/
@@ -291,7 +290,7 @@ Data moves left to right through four folders. Raw data is never edited by hand,
 
 | Folder | What it is | What we build in it |
 |---|---|---|
-| `raw/` | Untouched downloads and generated data. | Synthetic transactions CSV, Kaggle files, cached macro data. Git-ignored when large. |
+| `raw/` | Untouched downloads and generated data. | Synthetic transactions and user profiles CSV, cached macro data. Git-ignored. |
 | `interim/` | Cleaned, categorised transactions. | Output of `cleaning.py` and `categorizer.py`. |
 | `processed/` | Model-ready tables. | Monthly aggregates and the feature table used for training (`monthly.parquet`, `features.parquet`). |
 | `sample/` | Tiny demo data committed to Git. | `sample_bank_export.csv` so a visitor to the deployed app can try it without uploading anything. |
@@ -305,7 +304,6 @@ One module per data source. Every module returns the same standard schema: `user
 | File | What it is | What we build in it |
 |---|---|---|
 | `synthetic_generator.py` | Creates realistic fake users. | Archetypes (salaried single, family, freelancer, student); salary on payday, rent on the 1st, weekly groceries with noise, subscriptions, seasonal spikes, inflation drift, random shocks. Writes `data/raw/synthetic_transactions.csv`. |
-| `public_dataset.py` | Loader for downloaded Kaggle data. | Reads the CSV, renames columns to the standard schema, fixes date and sign conventions. |
 | `macro_api.py` | Inflation and interest-rate fetcher. | Calls the ECB/Eurostat API, caches the result to `data/raw/macro.csv`, falls back to the cache when offline. |
 | `bank_csv_parser.py` | Parser for a user's own bank export. | Detects delimiter, date format and decimal comma; maps columns; returns the standard schema. Used by the Import page. |
 </details>
@@ -419,7 +417,7 @@ Pipelines are the one-command entry points; root files describe and configure th
 
 | File | What it is | What we build in it |
 |---|---|---|
-| `run_ingestion.py` | Stage 1 runner. | Generates synthetic data, loads public data, fetches macro data, writes `data/raw/`. |
+| `run_ingestion.py` | Stage 1 runner. | Generates synthetic data, fetches macro data, writes `data/raw/`. |
 | `run_training.py` | Stage 2 runner. | Cleans, categorises, aggregates, builds features, trains all models, exports the champion to `models/`. |
 | `run_all.py` | Everything. | Calls ingestion then training; used for a clean rebuild. |
 | `models/` | Exported champion models. | `forecaster_*.joblib`, `categorizer.joblib`, `anomaly.joblib`, and `model_meta.json` (version, features, metrics). Committed to Git so the deployed app can load them. |
@@ -666,14 +664,14 @@ def require_login():
 
 ### PHASE 4 · Data Collection and Exploratory Analysis
 
-**Goal:** Build the training data. Because real bank data is private and short, create many realistic synthetic users and enrich them with public and macro data. **Time:** 2-3 days
+**Goal:** Build the training data. Because real bank data is private and short, create many realistic synthetic users and enrich them with macro data. **Time:** 2-3 days
 
 | Step | What to do | Where |
 |---|---|---|
 | 4.1 | Define user archetypes: salaried single, salaried family, freelancer (irregular income), student. Each gets its own income and spending levels. | `src/ingestion/synthetic_generator.py` |
 | 4.2 | Write component functions: `salary()`, `rent()`, `utilities()`, `subscriptions()`, `groceries()`, `dining()`, `transport()`, `seasonal()` (December gifts, summer travel), `shocks()` (car repair, medical bill), each with noise. | `src/ingestion/synthetic_generator.py` |
 | 4.3 | Generate about 300 users for 36 months each with a fixed random seed. Keep the true category as a label column for training the categoriser. | `data/raw/synthetic_transactions.csv` |
-| 4.4 | Download one Kaggle personal-finance dataset, map it to the standard schema, and note its licence in the README. | `src/ingestion/public_dataset.py` |
+| 4.4 | ~~Download one Kaggle personal-finance dataset~~ — **dropped**: the project uses synthetic data only; the README's Data Sources section says so. | `README.md` |
 | 4.5 | Fetch monthly inflation (HICP) and the ECB key rate; cache to CSV; add an offline fallback. | `src/ingestion/macro_api.py` |
 | 4.6 | Add a holiday table with the `holidays` package (country configurable). | `src/utils/helpers.py` |
 | 4.7 | Write `run_ingestion.py` that runs all of the above in order and prints a summary (rows, users, date range). | `pipelines/run_ingestion.py` |
@@ -928,7 +926,7 @@ joblib
 | Risk | Why it matters | What to do |
 |---|---|---|
 | **Salaried income is hard to beat** | Income is almost constant, so naive baselines are strong. | Report honestly; put the modelling effort on variable spending and freelancers; keep the baseline as champion if the model does not win. |
-| **Synthetic data is not reality** | Models learn the generator's rules, not real behaviour. | Say so in the README; allow personalisation from the user's own CSV; evaluate on a small real or public dataset if possible. |
+| **Synthetic data is not reality** | Models learn the generator's rules, not real behaviour. | Say so in the README; allow personalisation from the user's own CSV; the generator uses many merchant spellings, irregular freelance income, seasonality and random shocks to stay realistic. |
 | **Too little history per user** | A new user has few months of data. | Cold-start logic: global model, visible note, minimum-history messages. |
 | **Data leakage** | Future information sneaks into features and inflates scores. | Always `shift(1)` before rolling; leakage test; time-based splits only. |
 | **Model file mismatch** | A model saved with one library version fails on another. | Pin `scikit-learn` and `lightgbm` versions in deployment requirements. |
@@ -948,7 +946,7 @@ Points found while reviewing the blueprint, to be handled during the matching ph
 | 3 | Starting balance | The end-of-month balance needs a current/opening balance; add it to `profiles` (or ask on the Forecast page). The negative-balance risk is end-of-month only, not intra-month. | 2, 8 |
 | 4 | Cold-start realism | Training users have 36 months, new users have 3-6. Truncate held-out users' histories in the backtest so short-history performance is measured. | 6, 7 |
 | 5 | Quantile crossing | Separately trained 10th/50th/90th percentile models can cross; sort the predictions. | 7 |
-| 6 | Categoriser evaluation | Synthetic descriptions come from the same keyword lists as the rules, so 90% on them is easy. Validate on the public dataset too. | 5 |
+| 6 | Categoriser evaluation | If synthetic descriptions came from the same keyword lists as the rules, 90% would be easy. The generator therefore uses several spellings per merchant (and more merchants than the keyword lists); report rule coverage and model accuracy separately. | 5 |
 | 7 | Table gaps | `monthly_summary` needs a `category` column; add storage for category corrections and anomaly Confirm/Dismiss status; `UNIQUE(user_id, target_month, metric)` on `forecasts`; `ON DELETE CASCADE` on foreign keys. | 2 |
 | 8 | Postgres upgrade path | Use SQLAlchemy from the start so switching from SQLite only changes the connection string. | 2 |
 | 9 | Phase ordering | The Overview category donut (Phase 3) depends on the categoriser (Phase 5) - show manual categories until then. Start the MLflow UI in Phase 5. | 3, 5 |
