@@ -138,12 +138,12 @@ def _expected_spending(user: "UserProfile") -> float:
     transport = 3 * 62 if user.has_car else 60
     return (user.rent + user.utilities + sum(p for _, p in user.subscriptions)
             + user.groceries_weekly * WEEKS_PER_MONTH + user.dining + user.leisure + shopping
-            + transport + 60 + 90)   # + occasional tickets and seasonal costs spread over the year
+            + transport + 60 + 90 + 25)   # + tickets, seasonal costs spread over the year, health
 
 
 def _expected_net_income(user: "UserProfile") -> float:
     if user.income_type == "freelance":
-        return 0.92 * user.salary * 0.85   # lean months, then 15% income-tax prepayments
+        return 0.80 * user.salary * 0.85   # plan for lean months, then 15% income-tax prepayments
     return user.expected_income
 
 
@@ -227,6 +227,10 @@ MERCHANTS = {
         "Amazon EU Marketplace", "AMZN Mktp DE", "Zalando Bestellung", "H&M Online",
         "IKEA Deutschland", "MediaMarkt", "dm-drogerie markt", "Rossmann Drogerie",
         "Otto Versand", "Decathlon",
+    ],
+    "pharmacy": [
+        "Apotheke am Markt", "Linden Apotheke", "Stadt-Apotheke", "Shop Apotheke Online",
+        "DocMorris", "Rathaus Apotheke",
     ],
     "fuel": ["Shell Tankstelle", "ARAL Station", "TotalEnergies", "ESSO Station", "JET Tankstelle"],
     "transport_misc": ["DB Bahn Ticket", "DB Fernverkehr", "Uber Trip", "FlixBus", "BVG Einzelticket"],
@@ -413,6 +417,25 @@ def seasonal(user: UserProfile, month_start, price: float, rng) -> list[dict]:
     return rows
 
 
+def health(user: UserProfile, month_start, price: float, rng) -> list[dict]:
+    """Small regular health costs: pharmacy, occasional physio or doctor fees, rarely new glasses."""
+    rows = []
+    size = 1.5 if user.archetype == "salaried_family" else 1.0
+    for _ in range(int(rng.poisson(0.9 * size))):
+        shop = MERCHANTS["pharmacy"][int(rng.integers(len(MERCHANTS["pharmacy"])))]
+        rows.append(_row(_random_day(rng, month_start), shop, -rng.uniform(4, 35) * price, "Health"))
+    if rng.random() < 0.10:
+        rows.append(_row(_random_day(rng, month_start), "Physiotherapie Praxis Zuzahlung",
+                         -rng.uniform(20, 60) * price, "Health"))
+    if rng.random() < 0.06:
+        rows.append(_row(_random_day(rng, month_start), "Arztpraxis IGeL Leistung",
+                         -rng.uniform(30, 120) * price, "Health"))
+    if rng.random() < 0.01:
+        rows.append(_row(_random_day(rng, month_start), "Fielmann Brille",
+                         -rng.uniform(90, 350) * price, "Health"))
+    return rows
+
+
 def shocks(user: UserProfile, month_start, price: float, rng) -> list[dict]:
     if rng.random() >= user.shock_probability:
         return []
@@ -435,6 +458,7 @@ def generate_month(user: UserProfile, month_start: pd.Timestamp, start: pd.Times
         + dining(user, month_start, price, rng)
         + leisure(user, month_start, price, rng)
         + transport(user, month_start, price, rng)
+        + health(user, month_start, price, rng)
         + seasonal(user, month_start, price, rng)
         + shocks(user, month_start, price, rng)
     )
