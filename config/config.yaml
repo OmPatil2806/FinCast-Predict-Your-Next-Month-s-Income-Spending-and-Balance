@@ -38,6 +38,16 @@ synthetic:
   transactions_file: synthetic_transactions.csv   # written to paths.data_raw
   users_file: synthetic_users.csv
 
+macro:
+  base_url: https://data-api.ecb.europa.eu/service/data
+  series:                       # ECB Data Portal series keys (dataflow/key)
+    inflation_de: ICP/M.DE.N.000000.4.ANR        # HICP Germany, annual rate of change, %
+    ecb_rate: FM/B.U2.EUR.4F.KR.MRR_FR.LEV       # ECB main refinancing rate, %
+  start: "2022-10"              # 12 months before the synthetic data, so lagged features exist
+  cache_file: macro.csv         # written to paths.data_raw (git-ignored)
+  committed_cache_file: macro_cached.csv   # written to paths.data_sample (committed, used offline)
+  timeout_seconds: 20
+
 locale:
   country: DE                   # holiday calendar (holidays package)
   currency: EUR
