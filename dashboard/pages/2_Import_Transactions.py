@@ -1,5 +1,5 @@
-"""Import page: upload a bank CSV (or use the sample), map columns, check and save;
-or add a single transaction by hand."""
+"""Import page: upload a bank CSV (or use the sample), map columns, check the automatic
+categories and save; add a single transaction by hand; categorise older transactions."""
 
 import datetime as dt
 import hashlib
@@ -15,10 +15,13 @@ import streamlit as st  # noqa: E402
 
 from app.auth.session import require_login  # noqa: E402
 from app.components.layout import setup_database, show_footer, show_sidebar  # noqa: E402
-from app.database.crud import add_transactions, next_occurrence  # noqa: E402
+from app.database.crud import (  # noqa: E402
+    add_transactions, get_uncategorized_transactions, next_occurrence, update_categories,
+)
 from src.ingestion.bank_csv_parser import (  # noqa: E402
     STANDARD_COLUMNS, ParseError, guess_columns, parse_bank_csv, read_raw_csv,
 )
+from src.preprocessing.categorizer import categorize, load_categorizer  # noqa: E402
 from src.preprocessing.cleaning import clean_transactions  # noqa: E402
 from src.utils.helpers import category_names, load_config, resolve_path  # noqa: E402
 
@@ -33,6 +36,12 @@ REMOVAL_REASONS = {
 
 st.set_page_config(page_title="Import · FinCast", page_icon="💶", layout="wide")
 setup_database()
+
+
+@st.cache_resource
+def get_categorizer():
+    """The trained text model, loaded once (None -> rules only)."""
+    return load_categorizer()
 
 
 def euro(value: float) -> str:
@@ -125,18 +134,36 @@ def import_section(user_id: int) -> None:
         return
 
     show_summary(clean, report)
-    st.dataframe(
-        clean[["date", "description", "amount"]],
-        width="stretch", hide_index=True,
+    predicted = categorize(clean, get_categorizer())
+    clean = clean.join(predicted)
+    counts = clean["category_source"].value_counts()
+    review = int(clean["needs_review"].sum())
+    st.caption(f"Categories: {counts.get('rule', 0)} by rules · {counts.get('model', 0)} by the model"
+               + (f" · ⚠ {review} need your review (shown as Other)" if review else "")
+               + " — change any category in the table before saving.")
+
+    table = clean[["date", "description", "amount", "category"]].assign(
+        check=clean["needs_review"].map({True: "⚠ check", False: ""}))
+    edited = st.data_editor(
+        table, width="stretch", hide_index=True, key=f"categories_{file_key}",
+        disabled=["date", "description", "amount", "check"],
         column_config={
             "date": st.column_config.DateColumn("Date", format="DD.MM.YYYY"),
+            "description": "Description",
             "amount": st.column_config.NumberColumn("Amount (€)", format="%.2f"),
+            "category": st.column_config.SelectboxColumn("Category", options=category_names(), required=True),
+            "check": st.column_config.TextColumn(""),
         },
     )
 
     if st.button("Save transactions", type="primary"):
+        changed = edited["category"] != clean["category"]
+        clean["category"] = edited["category"]
+        clean.loc[changed, "category_source"] = "user"     # the user's correction, kept for retraining
         result = add_transactions(user_id, clean, source=st.session_state.get("import_source", "csv"))
-        st.success(f"✅ {result['added']} added, {result['skipped']} already existed.")
+        st.success(f"✅ {result['added']} added, {result['skipped']} already existed"
+                   + (f" ({int(changed.sum())} {'category' if changed.sum() == 1 else 'categories'} corrected by you)."
+                      if changed.any() else "."))
 
 
 def manual_entry_section(user_id: int) -> None:
@@ -174,9 +201,29 @@ def manual_entry_section(user_id: int) -> None:
     if category:
         clean["category"] = category
         clean["category_source"] = "user"
+    else:   # no category chosen: categorise automatically, like an import
+        clean = clean.join(categorize(clean, get_categorizer())[["category", "category_source"]])
     add_transactions(user_id, clean, source="manual")
     sign = "−" if row["amount"] < 0 else "+"
-    st.success(f"✅ Added: {row['description']}, {sign}{euro(abs(row['amount']))} on {row['date']:%d.%m.%Y}.")
+    st.success(f"✅ Added: {row['description']}, {sign}{euro(abs(row['amount']))} on {row['date']:%d.%m.%Y} "
+               f"as {clean.iloc[0]['category']}.")
+
+
+def older_transactions_section(user_id: int) -> None:
+    """Fill in categories for transactions imported before automatic categorisation existed."""
+    pending = get_uncategorized_transactions(user_id)
+    if pending.empty:
+        return
+    st.divider()
+    st.subheader("Older transactions without a category")
+    st.write(f"{len(pending)} of your transactions have no category yet.")
+    if st.button("Categorise my older transactions"):
+        result = categorize(pending, get_categorizer())
+        updates = pending[["id"]].join(result[["category", "category_source"]])
+        updated = update_categories(user_id, updates)
+        review = int(result["needs_review"].sum())
+        st.success(f"✅ {updated} transactions categorised"
+                   + (f" ({review} set to Other — worth a check)." if review else "."))
 
 
 def main() -> None:
@@ -185,6 +232,7 @@ def main() -> None:
     st.title("Import transactions")
     import_section(user_id)
     manual_entry_section(user_id)
+    older_transactions_section(user_id)
 
 
 main()

@@ -158,3 +158,35 @@ def get_transactions(user_id: int, start=None, end=None,
     df["date"] = pd.to_datetime(df["date"])
     df["is_income"] = df["is_income"].astype(bool)
     return df
+
+
+def get_uncategorized_transactions(user_id: int, db_path: str | Path | None = None) -> pd.DataFrame:
+    """The user's transactions that have no category yet (id, description, amount)."""
+    conn = get_connection(db_path)
+    try:
+        return pd.read_sql_query(
+            "SELECT id, description, amount FROM transactions WHERE user_id = ? AND category IS NULL",
+            conn, params=[user_id],
+        )
+    finally:
+        conn.close()
+
+
+def update_categories(user_id: int, updates: pd.DataFrame, db_path: str | Path | None = None) -> int:
+    """Set category and category_source for existing rows (columns: id, category, category_source).
+
+    Only rows that belong to user_id are changed. Returns the number of rows updated.
+    """
+    if updates.empty:
+        return 0
+    rows = [(r["category"], r["category_source"], int(r["id"]), user_id)
+            for r in updates.to_dict("records")]
+    conn = get_connection(db_path)
+    try:
+        with conn:
+            before = conn.total_changes
+            conn.executemany(
+                "UPDATE transactions SET category = ?, category_source = ? WHERE id = ? AND user_id = ?", rows)
+            return conn.total_changes - before
+    finally:
+        conn.close()

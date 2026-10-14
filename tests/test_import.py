@@ -4,7 +4,9 @@ import pandas as pd
 import pytest
 
 from app.auth.auth_service import register
-from app.database.crud import add_transactions, get_transactions, next_occurrence
+from app.database.crud import (
+    add_transactions, get_transactions, get_uncategorized_transactions, next_occurrence, update_categories,
+)
 from app.database.db import init_db
 from src.ingestion.bank_csv_parser import parse_bank_csv
 from src.preprocessing.aggregate_monthly import aggregate_by_category, aggregate_monthly
@@ -95,3 +97,19 @@ def test_missing_months_are_filled_with_zero():
 def test_spending_by_category_groups_missing_as_uncategorised(sample):
     by_category = aggregate_by_category(sample)
     assert by_category.to_dict("records") == [{"category": "Uncategorised", "expenses": 5121.18}]
+
+
+def test_categorize_older_transactions_only_for_own_user(db, user_id, sample):
+    other = register("other_user", "other@example.com", "secret123", db_path=db)
+    add_transactions(user_id, sample.head(3), db_path=db)
+    add_transactions(other, sample.head(3), db_path=db)
+    pending = get_uncategorized_transactions(user_id, db_path=db)
+    assert len(pending) == 3
+
+    updates = pending[["id"]].assign(category="Rent", category_source="rule")
+    assert update_categories(user_id, updates, db_path=db) == 3
+    assert get_uncategorized_transactions(user_id, db_path=db).empty
+    # the other user's identical rows are untouched, even if their ids were passed
+    other_ids = get_uncategorized_transactions(other, db_path=db)[["id"]]
+    assert update_categories(user_id, other_ids.assign(category="Rent", category_source="rule"), db_path=db) == 0
+    assert len(get_uncategorized_transactions(other, db_path=db)) == 3
