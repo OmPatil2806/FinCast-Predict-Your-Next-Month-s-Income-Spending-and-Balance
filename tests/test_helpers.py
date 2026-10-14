@@ -2,7 +2,11 @@ import random
 
 import numpy as np
 
-from src.utils.helpers import get_project_root, load_config, resolve_path, set_seed
+import pandas as pd
+
+from src.utils.helpers import (
+    get_holidays, get_project_root, holidays_per_month, load_config, resolve_path, set_seed,
+)
 
 
 def test_project_root_contains_config():
@@ -30,3 +34,26 @@ def test_set_seed_makes_results_repeatable():
     set_seed(42)
     second = (random.random(), np.random.rand())
     assert first == second
+
+
+def test_german_holidays_2025():
+    table = get_holidays(2025, country="DE")
+    assert len(table) == 9                      # nationwide holidays in Germany
+    assert pd.Timestamp("2025-12-25") in set(table["date"])
+    assert pd.Timestamp("2025-10-03") in set(table["date"])   # Tag der Deutschen Einheit
+
+
+def test_holidays_per_month():
+    calendar = holidays_per_month("2025-01", "2025-12", country="DE").set_index("month")
+    assert len(calendar) == 12
+    assert calendar.loc[pd.Period("2025-12"), "holidays"] == 2
+    assert calendar.loc[pd.Period("2025-04"), "holidays"] == 2   # Good Friday, Easter Monday
+    assert calendar.loc[pd.Period("2025-08"), "holidays"] == 0
+    assert calendar.loc[pd.Period("2025-02"), "days_in_month"] == 28
+    # December 2025: 23 weekdays minus Christmas Day and Boxing Day (Thu, Fri) = 21
+    assert calendar.loc[pd.Period("2025-12"), "working_days"] == 21
+    assert calendar["holidays"].sum() == 9
+
+
+def test_holiday_country_comes_from_config():
+    assert len(get_holidays(2025)) == len(get_holidays(2025, country=load_config()["locale"]["country"]))
