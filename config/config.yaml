@@ -14,6 +14,8 @@ paths:
   logs: logs
 
 categories_file: config/categories.yaml   # category names + keyword rules
+categorizer:
+  confidence_threshold: 0.5     # model guesses below this become "Other" + needs_review (step 5.4)
 
 database:
   path: data/app.db

@@ -85,3 +85,49 @@ def test_model_learns_and_rules_come_first():
     result = predict_with_rules(model, new)
     assert result["category"].tolist() == ["Groceries", "Dining", "Groceries"]
     assert result["category_source"].tolist() == ["model", "model", "rule"]
+
+
+
+# ---------- categorize(): rules + model + threshold (step 5.4) ----------
+
+import numpy as np  # noqa: E402
+
+from src.preprocessing.categorizer import categorize  # noqa: E402
+
+
+class FixedModel:
+    """Stand-in model whose top answer is always 'Dining' with a chosen confidence."""
+
+    classes_ = np.array(["Dining", "Groceries", "Health", "Leisure"])
+
+    def __init__(self, confidence):
+        self.confidence = confidence
+
+    def predict_proba(self, X):
+        rest = (1 - self.confidence) / 3          # spread the remainder so Dining stays on top
+        return np.tile([self.confidence, rest, rest, rest], (len(X), 1))
+
+
+ROWS = pd.DataFrame({"description": ["REWE Markt", "Vapiano"], "amount": [-10.0, -20.0]})
+
+
+def test_rules_win_and_confident_model_is_used():
+    result = categorize(ROWS, FixedModel(0.9), threshold=0.5)
+    assert result["category"].tolist() == ["Groceries", "Dining"]
+    assert result["category_source"].tolist() == ["rule", "model"]
+    assert result["confidence"].tolist() == [1.0, 0.9]
+    assert result["needs_review"].tolist() == [False, False]
+
+
+def test_unsure_model_falls_back_to_other_and_flags_review():
+    result = categorize(ROWS, FixedModel(0.3), threshold=0.5)
+    assert result.loc[1, "category"] == "Other"
+    assert result.loc[1, "needs_review"]
+    assert result.loc[0, "category"] == "Groceries"          # the rule is untouched
+
+
+def test_without_model_rules_only():
+    result = categorize(ROWS, model=None)
+    assert result["category"].tolist() == ["Groceries", "Other"]
+    assert result["category_source"].tolist() == ["rule", None]
+    assert result["needs_review"].tolist() == [False, True]

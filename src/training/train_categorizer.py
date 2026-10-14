@@ -25,7 +25,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
 from src.ingestion.bank_csv_parser import parse_bank_csv
-from src.preprocessing.categorizer import direction, merchant_key, normalize_description, rule_categorize
+from src.preprocessing.categorizer import categorize, merchant_key, model_inputs
 from src.utils.helpers import load_config, resolve_path
 
 FEATURES = ["text", "direction"]
@@ -43,8 +43,7 @@ def build_model(seed: int = 42) -> Pipeline:
 
 def to_features(df: pd.DataFrame) -> pd.DataFrame:
     """description + amount -> the two model inputs."""
-    return pd.DataFrame({"text": normalize_description(df["description"]).values,
-                         "direction": direction(df["amount"]).values}, index=df.index)
+    return model_inputs(df)
 
 
 def distinct_examples(transactions: pd.DataFrame) -> pd.DataFrame:
@@ -67,30 +66,41 @@ def evaluate_new_spellings(examples: pd.DataFrame, seed: int) -> dict:
     return _scores(test["category"], model.predict(test[FEATURES]))
 
 
-def evaluate_unseen_merchants(examples: pd.DataFrame, seed: int, repeats: int = 5) -> dict:
-    """B: whole merchants held out (averaged over several random splits, as the result varies a lot)."""
+def evaluate_unseen_merchants(examples: pd.DataFrame, seed: int, repeats: int = 20,
+                              thresholds=(0.3, 0.4, 0.5, 0.6, 0.7)) -> dict:
+    """B: whole merchants held out, repeated over several random splits (the result varies a lot).
+
+    Also shows, per confidence threshold, how many guesses the model would keep and how
+    accurate those kept guesses are - this is how the categorizer threshold is chosen.
+    """
     groups = merchant_key(examples["text"])
     splitter = GroupShuffleSplit(n_splits=repeats, test_size=0.2, random_state=seed)
-    runs = []
+    runs, confidence, correct = [], [], []
     for train_idx, test_idx in splitter.split(examples, groups=groups):
         train, test = examples.iloc[train_idx], examples.iloc[test_idx]
         model = build_model(seed).fit(train[FEATURES], train["category"])
-        runs.append(_scores(test["category"], model.predict(test[FEATURES])))
+        probabilities = model.predict_proba(test[FEATURES])
+        predicted = model.classes_[probabilities.argmax(axis=1)]
+        runs.append(_scores(test["category"], predicted))
+        confidence += list(probabilities.max(axis=1))
+        correct += list(predicted == test["category"].values)
+    confidence, correct = np.array(confidence), np.array(correct)
+    by_threshold = {
+        t: {"kept": round(float((confidence >= t).mean()), 3),
+            "accuracy_of_kept": round(float(correct[confidence >= t].mean()), 3) if (confidence >= t).any() else None}
+        for t in thresholds
+    }
     return {"accuracy": round(float(np.mean([r["accuracy"] for r in runs])), 4),
             "accuracy_min": min(r["accuracy"] for r in runs),
             "accuracy_max": max(r["accuracy"] for r in runs),
             "macro_f1": round(float(np.mean([r["macro_f1"] for r in runs])), 4),
-            "n": int(np.mean([r["n"] for r in runs])), "splits": repeats}
+            "n": int(np.mean([r["n"] for r in runs])), "splits": repeats,
+            "by_threshold": by_threshold}
 
 
 def predict_with_rules(model: Pipeline, df: pd.DataFrame) -> pd.DataFrame:
-    """Rules first, the model for every row they miss (step 5.4 turns this into categorize())."""
-    result = rule_categorize(df)
-    missing = result["category"].isna()
-    if missing.any():
-        result.loc[missing, "category"] = model.predict(to_features(df[missing]))
-        result.loc[missing, "category_source"] = "model"
-    return result
+    """Rules + model + confidence threshold: exactly what the app uses (categorize)."""
+    return categorize(df, model)
 
 
 def evaluate_pipeline_on_users(transactions: pd.DataFrame, seed: int) -> tuple[dict, dict]:
@@ -104,6 +114,7 @@ def evaluate_pipeline_on_users(transactions: pd.DataFrame, seed: int) -> tuple[d
     predicted = predict_with_rules(model, test)
     by_source = {source: _scores(test["category"][part.index], part["category"])
                  for source, part in predicted.groupby("category_source")}
+    by_source["sent_to_review"] = int(predicted["needs_review"].sum())
     per_category = f1_score(test["category"], predicted["category"], average=None,
                             labels=sorted(test["category"].unique()), zero_division=0)
     return ({**_scores(test["category"], predicted["category"]), "by_source": by_source},

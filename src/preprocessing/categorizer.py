@@ -1,7 +1,8 @@
 """Assign a category to each transaction.
 
 Step 5.2: keyword rules from config/categories.yaml (rule_categorize).
-Step 5.4 adds the text model for rows the rules cannot match, wrapped in one categorize(df).
+Step 5.4: categorize(df, model) - rules first, the text model for the rest, and "Other" plus a
+review flag when the model is not confident enough.
 
 Rule semantics (see the comments in categories.yaml):
   - lower-cased description, keyword must match at the start of a word
@@ -13,7 +14,7 @@ import re
 
 import pandas as pd
 
-from src.utils.helpers import load_categories
+from src.utils.helpers import load_categories, load_config
 
 RULE = "rule"
 MODEL = "model"
@@ -92,3 +93,44 @@ def rule_coverage(df: pd.DataFrame, rules: dict | None = None,
         report["accuracy_when_matched"] = float((predicted[covered] == truth[covered]).mean()) if covered.any() else None
         report["coverage_by_category"] = covered.groupby(truth).mean().round(3).to_dict()
     return report
+
+
+# ---------- rules + model (step 5.4) ----------
+
+def model_inputs(df: pd.DataFrame) -> pd.DataFrame:
+    """The two columns the text model expects."""
+    return pd.DataFrame({"text": normalize_description(df["description"]).values,
+                         "direction": direction(df["amount"]).values}, index=df.index)
+
+
+def categorize(df: pd.DataFrame, model=None, threshold: float | None = None) -> pd.DataFrame:
+    """Categorise transactions: rules first, the model for the rest.
+
+    Returns df's index with columns:
+      category         final category (the fallback "Other" when unsure)
+      category_source  "rule" or "model" (None if there was no model and no rule matched)
+      confidence       1.0 for rules, the model's top probability otherwise
+      needs_review     True when the category is a fallback the user should check
+    Without a model, rows no rule matches become the fallback with needs_review=True.
+    """
+    rules = load_categories()
+    threshold = load_config()["categorizer"]["confidence_threshold"] if threshold is None else threshold
+
+    result = rule_categorize(df, rules)
+    result["confidence"] = result["category"].notna().astype(float)
+    result["needs_review"] = False
+
+    open_rows = result["category"].isna()
+    if open_rows.any() and model is not None:
+        probabilities = model.predict_proba(model_inputs(df[open_rows]))
+        best = probabilities.argmax(axis=1)
+        result.loc[open_rows, "category"] = model.classes_[best]
+        result.loc[open_rows, "category_source"] = MODEL
+        result.loc[open_rows, "confidence"] = probabilities.max(axis=1).round(4)
+        unsure = open_rows & (result["confidence"] < threshold)
+        result.loc[unsure, "category"] = rules["fallback"]
+        result.loc[unsure, "needs_review"] = True
+    elif open_rows.any():
+        result.loc[open_rows, "category"] = rules["fallback"]
+        result.loc[open_rows, "needs_review"] = True
+    return result
