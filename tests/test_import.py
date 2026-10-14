@@ -9,7 +9,9 @@ from app.database.crud import (
 )
 from app.database.db import init_db
 from src.ingestion.bank_csv_parser import parse_bank_csv
-from src.preprocessing.aggregate_monthly import aggregate_by_category, aggregate_monthly
+from src.preprocessing.aggregate_monthly import (
+    aggregate_by_category, aggregate_monthly, aggregate_user_month_category,
+)
 from src.preprocessing.cleaning import clean_transactions
 from src.utils.helpers import get_project_root
 
@@ -113,3 +115,34 @@ def test_categorize_older_transactions_only_for_own_user(db, user_id, sample):
     other_ids = get_uncategorized_transactions(other, db_path=db)[["id"]]
     assert update_categories(user_id, other_ids.assign(category="Rent", category_source="rule"), db_path=db) == 0
     assert len(get_uncategorized_transactions(other, db_path=db)) == 3
+
+
+def test_user_month_category_table():
+    tx = pd.DataFrame({
+        "user_id": ["a", "a", "a", "a", "b"],
+        "date": pd.to_datetime(["2026-01-05", "2026-01-25", "2026-03-02", "2026-03-10", "2026-02-01"]),
+        "amount": [-100.0, 2000.0, -50.0, -30.0, -10.0],
+        "category": ["Groceries", "Income", "Groceries", None, "Dining"],
+    })
+    table = aggregate_user_month_category(tx, opening_balances={"a": 500.0})
+    a_total = table[(table["user_id"] == "a") & (table["category"] == "ALL")].set_index("month")
+
+    # user a: Jan-Mar with February filled in; user b: only February
+    assert a_total.index.astype(str).tolist() == ["2026-01", "2026-02", "2026-03"]
+    assert table[table["user_id"] == "b"]["month"].astype(str).unique().tolist() == ["2026-02"]
+    # every user-month has ALL + every category seen in the data (incl. Uncategorised)
+    assert set(table["category"]) == {"ALL", "Dining", "Groceries", "Income", "Uncategorised"}
+    assert len(table) == 4 * 5
+    # totals, savings rate and running balance from the opening balance
+    assert a_total["savings"].tolist() == [1900.0, 0.0, -80.0]
+    assert a_total.loc[pd.Period("2026-01"), "savings_rate"] == 0.95
+    assert a_total["balance_end"].tolist() == [2400.0, 2400.0, 2320.0]
+    # category rows have no balance and add up to the ALL rows
+    categories = table[table["category"] != "ALL"]
+    assert categories["balance_end"].isna().all()
+    assert categories.groupby(["user_id", "month"])["expenses"].sum().sum() == table.loc[table["category"] == "ALL", "expenses"].sum()
+
+
+def test_user_month_category_reconciles_with_sample(sample):
+    table = aggregate_user_month_category(sample.assign(category="Groceries"))
+    assert table.loc[table["category"] == "ALL", "savings"].sum() == pytest.approx(sample["amount"].sum())
