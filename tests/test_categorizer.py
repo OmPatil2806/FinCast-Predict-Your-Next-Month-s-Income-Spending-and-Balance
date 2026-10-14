@@ -57,3 +57,31 @@ def test_coverage_report():
     assert report["coverage"] == 0.5
     assert report["accuracy_when_matched"] == 1.0
     assert report["coverage_by_category"] == {"Dining": 0.0, "Groceries": 0.5, "Income": 1.0}
+
+
+# ---------- text model helpers and training (step 5.3) ----------
+
+from src.preprocessing.categorizer import direction, merchant_key, normalize_description  # noqa: E402
+from src.training.train_categorizer import build_model, distinct_examples, predict_with_rules  # noqa: E402
+
+
+def test_normalize_description():
+    text = pd.Series(["McDonalds 1180", "  REWE   City 0815 ", None])
+    assert normalize_description(text).tolist() == ["mcdonalds 0000", "rewe city 0000", ""]
+    assert merchant_key(normalize_description(text)).tolist() == ["mcdonalds", "rewe", ""]
+    assert direction(pd.Series([10.0, -3.0])).tolist() == ["in", "out"]
+
+
+def test_model_learns_and_rules_come_first():
+    transactions = pd.DataFrame({
+        "description": ["Kaufland Berlin", "Kaufland Hamburg", "Vapiano 12", "Vapiano 99", "Gehalt", "REWE"] * 3,
+        "amount": [-30.0, -25.0, -15.0, -18.0, 3000.0, -12.0] * 3,
+        "category": ["Groceries", "Groceries", "Dining", "Dining", "Income", "Groceries"] * 3,
+    })
+    examples = distinct_examples(transactions)
+    assert len(examples) == 5            # "Vapiano 12" and "Vapiano 99" collapse to one text
+    model = build_model().fit(examples[["text", "direction"]], examples["category"])
+    new = pd.DataFrame({"description": ["Kaufland Muenchen", "Vapiano 7", "REWE City"], "amount": [-9.0, -9.0, -9.0]})
+    result = predict_with_rules(model, new)
+    assert result["category"].tolist() == ["Groceries", "Dining", "Groceries"]
+    assert result["category_source"].tolist() == ["model", "model", "rule"]

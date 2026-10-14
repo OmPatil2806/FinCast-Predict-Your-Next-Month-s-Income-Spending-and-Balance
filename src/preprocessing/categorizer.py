@@ -16,6 +16,30 @@ import pandas as pd
 from src.utils.helpers import load_categories
 
 RULE = "rule"
+MODEL = "model"
+
+
+def normalize_description(text: pd.Series) -> pd.Series:
+    """Text the model sees: lower case, every digit as 0, single spaces.
+
+    "McDonalds 1180" and "McDonalds 2231" become the same "mcdonalds 0000", so store and
+    invoice numbers do not split one merchant into many.
+    """
+    return (text.fillna("").astype(str).str.lower()
+            .str.replace(r"\d", "0", regex=True)
+            .str.replace(r"\s+", " ", regex=True)
+            .str.strip())
+
+
+def direction(amount: pd.Series) -> pd.Series:
+    """'in' for money received, 'out' for money spent (a model feature next to the text)."""
+    return pd.to_numeric(amount, errors="coerce").gt(0).map({True: "in", False: "out"})
+
+
+def merchant_key(normalized: pd.Series) -> pd.Series:
+    """First word of the normalised description, used to keep a merchant's spellings together
+    when splitting train/test ("rewe markt berlin" and "rewe city 0000" -> "rewe")."""
+    return normalized.str.split().str[0].fillna("")
 
 
 def _compiled_rules(rules: dict | None = None) -> list[tuple[str, str | None, re.Pattern]]:

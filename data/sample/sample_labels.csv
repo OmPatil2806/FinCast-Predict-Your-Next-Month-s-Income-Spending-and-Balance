@@ -1,0 +1,31 @@
+description,category
+Miete Wohnung Juli,Rent
+Miete Wohnung August,Rent
+Miete Wohnung September,Rent
+Vattenfall Strom Abschlag,Utilities
+Telekom Internet,Utilities
+Vodafone Mobilfunk,Utilities
+REWE Markt Berlin,Groceries
+LIDL Filiale 1234,Groceries
+ALDI SUED,Groceries
+Netflix.com,Subscriptions
+Spotify AB,Subscriptions
+McFit Mitgliedsbeitrag,Subscriptions
+DB Bahn Ticket Hamburg,Transport
+DB Bahn Ticket Muenchen,Transport
+Shell Tankstelle,Transport
+Uber Trip,Transport
+Uber Trip Barcelona,Transport
+Restaurant Bella Italia,Dining
+Restaurant Barcelona Tapas,Dining
+Restaurant Sushi Bar,Dining
+Kino CineStar,Leisure
+Lufthansa Flug Barcelona,Leisure
+Booking.com Hotel Barcelona,Leisure
+Amazon EU Marketplace,Shopping
+Zalando Bestellung,Shopping
+Rossmann Drogerie,Shopping
+Apotheke am Markt,Health
+Allianz Haftpflicht Versicherung,Other
+Gehalt ACME GmbH,Income
+Amazon Erstattung Retoure,Income
