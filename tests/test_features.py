@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.features.build_features import add_targets, build_series
+from src.features.build_features import add_lag_features, add_targets, build_series
 from src.preprocessing.aggregate_monthly import aggregate_user_month_category
 
 
@@ -36,3 +36,26 @@ def test_target_is_next_month_value():
     assert groceries["target"].tolist()[:2] == [110.0, 120.0]
     assert np.isnan(groceries["target"].iloc[-1])                 # nothing to predict after the last month
     assert (groceries["target_month"] == groceries["month"] + 1).all()
+
+
+def test_lag_and_rolling_features_use_only_the_past():
+    table = add_lag_features(add_targets(build_series(make_monthly(15))))
+    g = table[table["series"] == "expenses:Groceries"].reset_index(drop=True)
+    # groceries in month i = 100 + 10 * i
+    row = g.iloc[13]                                   # origin = 14th month, target = 15th month
+    assert row["value"] == 230.0 and row["target"] == 240.0
+    assert row["lag_1"] == 230.0                       # month t
+    assert row["lag_2"] == 220.0 and row["lag_3"] == 210.0
+    assert row["lag_12"] == 120.0                      # t-11: same calendar month as the target, a year earlier
+    assert row["roll_mean_3"] == pytest.approx((210 + 220 + 230) / 3)
+    assert row["roll_mean_6"] == pytest.approx(sum(100 + 10 * i for i in range(8, 14)) / 6)
+    assert row["roll_std_6"] == pytest.approx(pd.Series([180, 190, 200, 210, 220, 230]).std())
+    assert row["history_months"] == 14
+
+
+def test_short_history_gives_nan_not_future_values():
+    table = add_lag_features(add_targets(build_series(make_monthly(15))))
+    g = table[table["series"] == "expenses:Groceries"].reset_index(drop=True)
+    assert np.isnan(g.loc[0, "lag_2"]) and np.isnan(g.loc[1, "roll_mean_3"])
+    assert g["lag_12"].isna().sum() == 11              # needs 12 months of history
+    assert g.loc[11, "lag_12"] == 100.0                # first month with a full year behind it
