@@ -48,6 +48,9 @@ macro:
   committed_cache_file: macro_cached.csv   # written to paths.data_sample (committed, used offline)
   timeout_seconds: 20
 
+calendar:
+  file: calendar.csv            # monthly holiday counts, written to paths.data_raw
+
 locale:
   country: DE                   # holiday calendar (holidays package)
   currency: EUR
