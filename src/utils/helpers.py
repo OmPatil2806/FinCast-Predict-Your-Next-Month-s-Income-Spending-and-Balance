@@ -28,6 +28,18 @@ def resolve_path(relative_path: str) -> Path:
     return get_project_root() / relative_path
 
 
+@lru_cache(maxsize=None)
+def load_categories() -> dict:
+    """Category rules from config/categories.yaml: {'fallback': 'Other', 'categories': [...]}."""
+    with open(resolve_path(load_config()["categories_file"]), encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+
+def category_names() -> list[str]:
+    """All category names in the order they are listed in categories.yaml."""
+    return [c["name"] for c in load_categories()["categories"]]
+
+
 def set_seed(seed: int | None = None) -> int:
     """Fix the random generators so results can be reproduced. Defaults to the config seed."""
     if seed is None:

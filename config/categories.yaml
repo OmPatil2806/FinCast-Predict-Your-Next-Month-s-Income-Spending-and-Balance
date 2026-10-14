@@ -1,0 +1,65 @@
+# FinCast categories and the keywords used by the rule-based categoriser (step 5.2).
+#
+# How the rules work:
+#   - the transaction description is lower-cased and each keyword must match at the START of a word
+#     ("etf" matches "ETF Sparplan" but not "Netflix"; "energie" matches "E.ON Energie" but not "TotalEnergies")
+#   - categories are checked from top to bottom and the FIRST match wins, so specific
+#     keywords sit above general ones (e.g. "aldi talk" under Utilities before "aldi" under Groceries,
+#     "amazon prime" under Subscriptions before "amazon" under Shopping)
+#   - sign: income  -> only matches money coming in (amount > 0)
+#     sign: expense -> only matches money going out (amount < 0); no sign -> either
+#   - rows no rule matches go to the text model (step 5.3); if it is unsure they become "Other"
+#
+# The lists are deliberately NOT complete: many merchants in the data (Kaufland, Netto, Vapiano,
+# Starbucks, AMZN Mktp, DocMorris, FlixBus, ...) are left for the text model to learn.
+
+fallback: Other
+
+categories:
+  - name: Income
+    sign: income
+    keywords: [gehalt, lohn, minijob, kindergeld, familienkasse, bafoeg, bafög, rechnung, honorar,
+               erstattung, gutschrift, rente]
+
+  - name: Rent
+    sign: expense
+    keywords: [miete, kaltmiete, warmmiete, hausverwaltung]
+
+  - name: Savings
+    sign: expense
+    keywords: [sparplan, tagesgeld, sparkonto, depot, festgeld, etf]
+
+  - name: Subscriptions
+    sign: expense
+    keywords: [netflix, spotify, disney, amazon prime, icloud, youtube premium, mcfit]
+
+  - name: Utilities
+    sign: expense
+    keywords: [strom, energie, stadtwerke, telekom, vodafone, internet, dsl, aldi talk, mobilfunk]
+
+  - name: Transport
+    sign: expense
+    keywords: [deutschlandticket, bahn, tankstelle, shell, aral, uber, kfz, werkstatt, adac]
+
+  - name: Groceries
+    sign: expense
+    keywords: [rewe, lidl, aldi, edeka]
+
+  - name: Dining
+    sign: expense
+    keywords: [restaurant, pizzeria, cafe, café, imbiss]
+
+  - name: Health
+    sign: expense
+    keywords: [apotheke, arzt, zahnarzt, praxis, krankenhaus]
+
+  - name: Leisure
+    sign: expense
+    keywords: [kino, eventim, konzert, booking.com, lufthansa, hotel]
+
+  - name: Shopping
+    sign: expense
+    keywords: [amazon, zalando, ikea, saturn, geschenke]
+
+  - name: Other
+    keywords: [finanzamt, steuer, versicherung, haftpflicht, schulbedarf, gebühr, gebuehr]

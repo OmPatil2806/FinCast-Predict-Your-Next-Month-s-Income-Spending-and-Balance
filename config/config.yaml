@@ -13,6 +13,8 @@ paths:
   models: models
   logs: logs
 
+categories_file: config/categories.yaml   # category names + keyword rules
+
 database:
   path: data/app.db
 

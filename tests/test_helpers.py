@@ -5,7 +5,8 @@ import numpy as np
 import pandas as pd
 
 from src.utils.helpers import (
-    get_holidays, get_project_root, holidays_per_month, load_config, resolve_path, set_seed,
+    category_names, get_holidays, get_project_root, holidays_per_month, load_categories, load_config,
+    resolve_path, set_seed,
 )
 
 
@@ -57,3 +58,16 @@ def test_holidays_per_month():
 
 def test_holiday_country_comes_from_config():
     assert len(get_holidays(2025)) == len(get_holidays(2025, country=load_config()["locale"]["country"]))
+
+
+def test_categories_file():
+    rules = load_categories()
+    names = category_names()
+    assert len(names) == 12 and len(set(names)) == 12
+    assert set(names) == {"Income", "Rent", "Savings", "Subscriptions", "Utilities", "Transport", "Groceries",
+                          "Dining", "Health", "Leisure", "Shopping", "Other"}
+    assert rules["fallback"] in names
+    keywords = [k for c in rules["categories"] for k in c["keywords"]]
+    assert all(k == k.lower() for k in keywords)          # rules match on lower-cased text
+    assert len(keywords) == len(set(keywords))            # no keyword in two categories
+    assert all(c.get("sign") in (None, "income", "expense") for c in rules["categories"])

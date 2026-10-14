@@ -20,14 +20,9 @@ from src.ingestion.bank_csv_parser import (  # noqa: E402
     STANDARD_COLUMNS, ParseError, guess_columns, parse_bank_csv, read_raw_csv,
 )
 from src.preprocessing.cleaning import clean_transactions  # noqa: E402
-from src.utils.helpers import load_config, resolve_path  # noqa: E402
+from src.utils.helpers import category_names, load_config, resolve_path  # noqa: E402
 
 SAMPLE_FILE = "sample_bank_export.csv"
-# Category names from the blueprint; Phase 5 moves them to config/categories.yaml.
-CATEGORIES = [
-    "Groceries", "Rent", "Utilities", "Transport", "Dining", "Leisure", "Health",
-    "Shopping", "Subscriptions", "Savings", "Income", "Other",
-]
 REMOVAL_REASONS = {
     "missing_date": "missing date",
     "empty_description": "empty description",
@@ -156,7 +151,7 @@ def manual_entry_section(user_id: int) -> None:
         with right:
             amount = st.number_input("Amount (€)", min_value=0.0, value=None, step=0.01, format="%.2f")
             kind = st.radio("Type", ["Expense", "Income"], horizontal=True)
-        category = st.selectbox("Category (optional)", [""] + CATEGORIES)
+        category = st.selectbox("Category (optional)", [""] + category_names())
         submitted = st.form_submit_button("Add transaction")
 
     if not submitted:
