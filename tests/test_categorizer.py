@@ -131,3 +131,20 @@ def test_without_model_rules_only():
     assert result["category"].tolist() == ["Groceries", "Other"]
     assert result["category_source"].tolist() == ["rule", None]
     assert result["needs_review"].tolist() == [False, True]
+
+
+# ---------- saved model (step 5.5) ----------
+
+from src.preprocessing.categorizer import load_categorizer  # noqa: E402
+
+
+def test_missing_model_file_means_rules_only(tmp_path):
+    assert load_categorizer(tmp_path / "nothing.joblib") is None
+
+
+def test_committed_model_loads_and_categorizes():
+    model = load_categorizer()
+    assert model is not None, "models/categorizer.joblib should be committed"
+    result = categorize(pd.DataFrame({"description": ["Kaufland Berlin", "REWE"], "amount": [-30.0, -10.0]}), model)
+    assert result["category"].tolist() == ["Groceries", "Groceries"]
+    assert result["category_source"].tolist() == ["model", "rule"]

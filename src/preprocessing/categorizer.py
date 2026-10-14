@@ -11,10 +11,12 @@ Rule semantics (see the comments in categories.yaml):
 """
 
 import re
+from pathlib import Path
 
+import joblib
 import pandas as pd
 
-from src.utils.helpers import load_categories, load_config
+from src.utils.helpers import load_categories, load_config, resolve_path
 
 RULE = "rule"
 MODEL = "model"
@@ -134,3 +136,14 @@ def categorize(df: pd.DataFrame, model=None, threshold: float | None = None) -> 
         result.loc[open_rows, "category"] = rules["fallback"]
         result.loc[open_rows, "needs_review"] = True
     return result
+
+
+def categorizer_path() -> Path:
+    config = load_config()
+    return resolve_path(config["paths"]["models"]) / config["categorizer"]["model_file"]
+
+
+def load_categorizer(path: str | Path | None = None):
+    """The trained text model from models/, or None if it has not been trained yet (rules only then)."""
+    path = Path(path) if path else categorizer_path()
+    return joblib.load(path) if path.exists() else None

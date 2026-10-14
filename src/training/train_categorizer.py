@@ -11,24 +11,38 @@ DISTINCT (description, direction, category) rows, and evaluated three ways:
 plus the hand-labelled sample bank export as an independent check.
 
 Run:  python -m src.training.train_categorizer
-(Step 5.5 adds MLflow logging and saves the model to models/categorizer.joblib.)
+Saves models/categorizer.joblib (+ categorizer_meta.json) and logs the run to the MLflow
+experiment "categorizer" (view with: mlflow ui --backend-store-uri sqlite:///mlflow.db).
 """
 
+import json
+import tempfile
+from datetime import datetime, timezone
+from pathlib import Path
+
+import joblib
+import matplotlib
+import mlflow
 import numpy as np
 import pandas as pd
+import sklearn
 from sklearn.compose import ColumnTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
 from sklearn.model_selection import GroupShuffleSplit, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
 from src.ingestion.bank_csv_parser import parse_bank_csv
-from src.preprocessing.categorizer import categorize, merchant_key, model_inputs
-from src.utils.helpers import load_config, resolve_path
+from src.preprocessing.categorizer import categorize, categorizer_path, merchant_key, model_inputs
+from src.utils.helpers import load_config, mlflow_tracking_uri, resolve_path
+
+matplotlib.use("Agg")   # draw figures without a screen
 
 FEATURES = ["text", "direction"]
+MODEL_PARAMS = {"analyzer": "char_wb", "ngram_range": "2-5", "C": 10.0, "class_weight": "balanced",
+                "classifier": "LogisticRegression"}
 SAMPLE_LABELS = "sample_labels.csv"
 
 
@@ -37,7 +51,7 @@ def build_model(seed: int = 42) -> Pipeline:
         ("text", TfidfVectorizer(analyzer="char_wb", ngram_range=(2, 5), sublinear_tf=True), "text"),
         ("direction", OneHotEncoder(handle_unknown="ignore"), ["direction"]),
     ])
-    classifier = LogisticRegression(max_iter=3000, C=10.0, class_weight="balanced", random_state=seed)
+    classifier = LogisticRegression(max_iter=3000, C=MODEL_PARAMS["C"], class_weight="balanced", random_state=seed)
     return Pipeline([("features", features), ("classifier", classifier)])
 
 
@@ -103,7 +117,7 @@ def predict_with_rules(model: Pipeline, df: pd.DataFrame) -> pd.DataFrame:
     return categorize(df, model)
 
 
-def evaluate_pipeline_on_users(transactions: pd.DataFrame, seed: int) -> tuple[dict, dict]:
+def evaluate_pipeline_on_users(transactions: pd.DataFrame, seed: int) -> tuple[dict, dict, pd.DataFrame]:
     """C: train on 80% of users, score rules + model on every transaction of the other 20%."""
     users = transactions["user_id"].unique()
     rng = np.random.default_rng(seed)
@@ -117,8 +131,10 @@ def evaluate_pipeline_on_users(transactions: pd.DataFrame, seed: int) -> tuple[d
     by_source["sent_to_review"] = int(predicted["needs_review"].sum())
     per_category = f1_score(test["category"], predicted["category"], average=None,
                             labels=sorted(test["category"].unique()), zero_division=0)
+    labels = sorted(test["category"].unique())
     return ({**_scores(test["category"], predicted["category"]), "by_source": by_source},
-            dict(zip(sorted(test["category"].unique()), np.round(per_category, 3))))
+            {label: float(v) for label, v in zip(labels, np.round(per_category, 3))},
+            pd.DataFrame({"truth": test["category"].values, "predicted": predicted["category"].values}))
 
 
 def evaluate_sample_file(model: Pipeline) -> dict | None:
@@ -143,7 +159,7 @@ def _xy(examples: pd.DataFrame):
 def train_categorizer(transactions: pd.DataFrame, seed: int = 42) -> tuple[Pipeline, dict]:
     """Evaluate (A, B, C, sample) and fit the final model on all distinct examples."""
     examples = distinct_examples(transactions)
-    pipeline_scores, f1_per_category = evaluate_pipeline_on_users(transactions, seed)
+    pipeline_scores, f1_per_category, predictions = evaluate_pipeline_on_users(transactions, seed)
     final_model = build_model(seed).fit(*_xy(examples))
     metrics = {
         "distinct_examples": len(examples),
@@ -152,19 +168,109 @@ def train_categorizer(transactions: pd.DataFrame, seed: int = 42) -> tuple[Pipel
         "C_rules_plus_model_heldout_users": pipeline_scores,
         "C_f1_per_category": f1_per_category,
         "sample_file": evaluate_sample_file(final_model),
+        "C_predictions": predictions,
     }
     return final_model, metrics
 
 
+def save_model(model: Pipeline, metrics: dict, threshold: float, path: Path | None = None) -> tuple[Path, Path]:
+    """Write the model (joblib) and a small JSON with what it is and how good it was."""
+    path = Path(path) if path else categorizer_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(model, path, compress=3)
+    meta = {
+        "trained_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "sklearn_version": sklearn.__version__,     # the app must load it with the same version
+        "params": MODEL_PARAMS,
+        "confidence_threshold": threshold,
+        "classes": [str(c) for c in model.classes_],
+        "distinct_examples": metrics["distinct_examples"],
+        "metrics": {
+            "rules_plus_model_heldout_users_accuracy": metrics["C_rules_plus_model_heldout_users"]["accuracy"],
+            "unseen_merchants_accuracy": metrics["B_unseen_merchants"]["accuracy"],
+            "unseen_merchants_kept_at_threshold": metrics["B_unseen_merchants"]["by_threshold"].get(threshold),
+            "sample_file_accuracy": (metrics["sample_file"] or {}).get("accuracy"),
+        },
+    }
+    meta_path = path.with_name(load_config()["categorizer"]["meta_file"])
+    meta_path.write_text(json.dumps(meta, indent=2))
+    return path, meta_path
+
+
+def confusion_figure(predictions: pd.DataFrame):
+    """Confusion matrix of rules + model on held-out users (row-normalised, one hue)."""
+    import matplotlib.pyplot as plt
+
+    labels = sorted(set(predictions["truth"]) | set(predictions["predicted"]))
+    matrix = confusion_matrix(predictions["truth"], predictions["predicted"], labels=labels, normalize="true")
+    fig, ax = plt.subplots(figsize=(7, 6))
+    ax.imshow(matrix, cmap="Blues", vmin=0, vmax=1)
+    ax.set_xticks(range(len(labels)), labels, rotation=45, ha="right")
+    ax.set_yticks(range(len(labels)), labels)
+    ax.set_xlabel("predicted"); ax.set_ylabel("true category")
+    for (i, j), v in np.ndenumerate(matrix):
+        if v >= 0.005:
+            ax.text(j, i, f"{v:.0%}", ha="center", va="center", fontsize=7, color="white" if v > 0.5 else "#0b0b0b")
+    ax.set_title("Categoriser on held-out users (rules + model)", loc="left")
+    fig.tight_layout()
+    return fig
+
+
+def log_to_mlflow(metrics: dict, threshold: float, model_path: Path, meta_path: Path) -> str:
+    """One run in the 'categorizer' experiment: parameters, metrics, plots and the model files."""
+    config = load_config()
+    mlflow.set_tracking_uri(mlflow_tracking_uri())
+    name = config["mlflow"]["experiments"]["categorizer"]
+    if mlflow.get_experiment_by_name(name) is None:
+        artifacts = resolve_path("mlruns") / name
+        mlflow.create_experiment(name, artifact_location=artifacts.as_uri())
+    mlflow.set_experiment(name)
+
+    flat = {
+        "rules_plus_model_accuracy": metrics["C_rules_plus_model_heldout_users"]["accuracy"],
+        "rules_plus_model_macro_f1": metrics["C_rules_plus_model_heldout_users"]["macro_f1"],
+        "new_spellings_accuracy": metrics["A_new_spellings"]["accuracy"],
+        "unseen_merchants_accuracy": metrics["B_unseen_merchants"]["accuracy"],
+        "unseen_merchants_macro_f1": metrics["B_unseen_merchants"]["macro_f1"],
+        "sent_to_review_heldout_users": metrics["C_rules_plus_model_heldout_users"]["by_source"]["sent_to_review"],
+    }
+    if metrics["sample_file"]:
+        flat["sample_file_accuracy"] = metrics["sample_file"]["accuracy"]
+    for t, row in metrics["B_unseen_merchants"]["by_threshold"].items():
+        flat[f"unseen_kept_at_{t}"] = row["kept"]
+        if row["accuracy_of_kept"] is not None:
+            flat[f"unseen_accuracy_of_kept_at_{t}"] = row["accuracy_of_kept"]
+    for category, f1 in metrics["C_f1_per_category"].items():
+        flat[f"f1_{category}"] = f1
+
+    with mlflow.start_run(run_name="tfidf_char_logreg") as run:
+        mlflow.log_params({**MODEL_PARAMS, "confidence_threshold": threshold,
+                           "distinct_examples": metrics["distinct_examples"]})
+        mlflow.log_metrics(flat)
+        mlflow.log_figure(confusion_figure(metrics["C_predictions"]), "confusion_matrix.png")
+        mlflow.log_dict({k: v for k, v in metrics.items() if k != "C_predictions"}, "metrics.json")
+        mlflow.log_artifact(str(model_path), "model")
+        mlflow.log_artifact(str(meta_path), "model")
+        return run.info.run_id
+
+
 def main() -> None:
     config = load_config()
+    threshold = config["categorizer"]["confidence_threshold"]
     path = resolve_path(config["paths"]["data_raw"]) / config["synthetic"]["transactions_file"]
     transactions = pd.read_csv(path)
     model, metrics = train_categorizer(transactions, seed=config["project"]["seed"])
+
     print(f"Distinct training examples: {metrics['distinct_examples']}")
     for key in ("A_new_spellings", "B_unseen_merchants", "C_rules_plus_model_heldout_users", "sample_file"):
         print(f"{key}: {metrics[key]}")
     print("F1 per category (C):", metrics["C_f1_per_category"])
+
+    model_path, meta_path = save_model(model, metrics, threshold)
+    print(f"Saved {model_path.relative_to(resolve_path('.'))} ({model_path.stat().st_size / 1024:.0f} KB) "
+          f"and {meta_path.name}")
+    run_id = log_to_mlflow(metrics, threshold, model_path, meta_path)
+    print(f"MLflow run {run_id} in experiment '{config['mlflow']['experiments']['categorizer']}'")
 
 
 if __name__ == "__main__":

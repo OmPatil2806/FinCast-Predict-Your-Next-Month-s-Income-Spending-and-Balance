@@ -1,0 +1,35 @@
+{
+  "trained_at": "2026-10-14T11:57:59+00:00",
+  "sklearn_version": "1.9.1",
+  "params": {
+    "analyzer": "char_wb",
+    "ngram_range": "2-5",
+    "C": 10.0,
+    "class_weight": "balanced",
+    "classifier": "LogisticRegression"
+  },
+  "confidence_threshold": 0.5,
+  "classes": [
+    "Dining",
+    "Groceries",
+    "Health",
+    "Income",
+    "Leisure",
+    "Other",
+    "Rent",
+    "Shopping",
+    "Subscriptions",
+    "Transport",
+    "Utilities"
+  ],
+  "distinct_examples": 130,
+  "metrics": {
+    "rules_plus_model_heldout_users_accuracy": 1.0,
+    "unseen_merchants_accuracy": 0.4211,
+    "unseen_merchants_kept_at_threshold": {
+      "kept": 0.225,
+      "accuracy_of_kept": 0.908
+    },
+    "sample_file_accuracy": 1.0
+  }
+}

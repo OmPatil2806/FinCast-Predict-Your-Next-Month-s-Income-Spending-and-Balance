@@ -28,6 +28,16 @@ def resolve_path(relative_path: str) -> Path:
     return get_project_root() / relative_path
 
 
+def mlflow_tracking_uri() -> str:
+    """The MLflow tracking URI from config.yaml, with a relative sqlite path anchored at the project root
+    (so runs land in the same mlflow.db no matter which folder a script is started from)."""
+    uri = load_config()["mlflow"]["tracking_uri"]
+    prefix = "sqlite:///"
+    if uri.startswith(prefix) and not Path(uri[len(prefix):]).is_absolute():
+        return prefix + (get_project_root() / uri[len(prefix):]).as_posix()
+    return uri
+
+
 @lru_cache(maxsize=None)
 def load_categories() -> dict:
     """Category rules from config/categories.yaml: {'fallback': 'Other', 'categories': [...]}."""

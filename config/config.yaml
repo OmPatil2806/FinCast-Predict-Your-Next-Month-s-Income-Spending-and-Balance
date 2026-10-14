@@ -16,6 +16,8 @@ paths:
 categories_file: config/categories.yaml   # category names + keyword rules
 categorizer:
   confidence_threshold: 0.5     # model guesses below this become "Other" + needs_review (step 5.4)
+  model_file: categorizer.joblib          # in paths.models (committed, loaded by the app)
+  meta_file: categorizer_meta.json
 
 database:
   path: data/app.db
