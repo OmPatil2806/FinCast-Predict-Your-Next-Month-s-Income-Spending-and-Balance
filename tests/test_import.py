@@ -10,7 +10,7 @@ from app.database.crud import (
 from app.database.db import init_db
 from src.ingestion.bank_csv_parser import parse_bank_csv
 from src.preprocessing.aggregate_monthly import (
-    aggregate_by_category, aggregate_monthly, aggregate_user_month_category,
+    ReconciliationError, aggregate_by_category, aggregate_monthly, aggregate_user_month_category, reconcile,
 )
 from src.preprocessing.cleaning import clean_transactions
 from src.utils.helpers import get_project_root
@@ -146,3 +146,19 @@ def test_user_month_category_table():
 def test_user_month_category_reconciles_with_sample(sample):
     table = aggregate_user_month_category(sample.assign(category="Groceries"))
     assert table.loc[table["category"] == "ALL", "savings"].sum() == pytest.approx(sample["amount"].sum())
+
+
+def test_reconcile_passes_and_catches_mismatch(sample):
+    tx = sample.assign(user_id="u1", category="Groceries")
+    table = aggregate_user_month_category(tx)
+    assert reconcile(table, tx)["max_user_gap"] == 0
+
+    broken = table.copy()
+    broken.loc[broken["category"] == "ALL", "savings"] += 1.0     # every month off by €1
+    with pytest.raises(ReconciliationError, match="do not reconcile"):
+        reconcile(broken, tx)
+
+    broken = table.copy()
+    broken.loc[broken["category"] == "Groceries", "expenses"] += 5.0
+    with pytest.raises(ReconciliationError, match="category rows differ"):
+        reconcile(broken, tx)

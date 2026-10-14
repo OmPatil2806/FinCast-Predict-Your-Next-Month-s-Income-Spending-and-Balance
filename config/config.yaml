@@ -57,6 +57,9 @@ macro:
 calendar:
   file: calendar.csv            # monthly holiday counts, written to paths.data_raw
 
+processed:
+  monthly_file: monthly.parquet # user x month x category table, written to paths.data_processed
+
 locale:
   country: DE                   # holiday calendar (holidays package)
   currency: EUR

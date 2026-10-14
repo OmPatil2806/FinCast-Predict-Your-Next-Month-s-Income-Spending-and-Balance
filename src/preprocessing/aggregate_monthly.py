@@ -130,3 +130,32 @@ def aggregate_user_month_category(transactions: pd.DataFrame,
                               key=lambda col: col.map(order).fillna(1) if col.name == "category" else col,
                               kind="stable").reset_index(drop=True)
     return table[LONG_COLUMNS]
+
+
+class ReconciliationError(ValueError):
+    """The monthly table does not add up to the raw transactions."""
+
+
+def reconcile(monthly: pd.DataFrame, transactions: pd.DataFrame, tolerance: float = 0.01) -> dict:
+    """Check that, for every user, the monthly "ALL" savings add up to the raw transaction sum
+    and that the category rows add up to the "ALL" rows. Raises ReconciliationError otherwise."""
+    users = transactions["user_id"] if "user_id" in transactions else pd.Series("user", index=transactions.index)
+    raw = transactions["amount"].groupby(users).sum()
+    totals = monthly[monthly["category"] == TOTAL]
+    aggregated = totals.groupby("user_id")["savings"].sum()
+    per_user = (raw - aggregated.reindex(raw.index).fillna(0)).abs()
+
+    parts = monthly[monthly["category"] != TOTAL].groupby(["user_id", "month"])[["income", "expenses"]].sum()
+    whole = totals.set_index(["user_id", "month"])[["income", "expenses"]]
+    category_gap = (parts.reindex(whole.index) - whole).abs().to_numpy().max() if len(whole) else 0.0
+
+    problems = []
+    if (per_user > tolerance).any():
+        worst = per_user.idxmax()
+        problems.append(f"{int((per_user > tolerance).sum())} users do not reconcile (worst: {worst}, off by €{per_user.max():,.2f})")
+    if category_gap > tolerance:
+        problems.append(f"category rows differ from the month totals by up to €{category_gap:,.2f}")
+    if problems:
+        raise ReconciliationError("; ".join(problems))
+    return {"users": int(len(raw)), "raw_total": round(float(raw.sum()), 2),
+            "monthly_total": round(float(aggregated.sum()), 2), "max_user_gap": round(float(per_user.max()), 4)}

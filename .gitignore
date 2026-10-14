@@ -16,6 +16,7 @@ mlflow.db
 # Large or generated data
 data/raw/
 data/interim/
+data/processed/*.parquet
 
 # Databases
 *.db
