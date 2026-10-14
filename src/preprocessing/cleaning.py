@@ -1,4 +1,5 @@
-"""Data quality functions: turn parsed transactions into clean rows ready to save.
+"""Data quality functions: turn parsed transactions into clean rows ready to save,
+and check a whole dataset before it is used for training (validate_transactions).
 
 Input:  DataFrame with date, description, amount (the standard schema from the parsers).
 Output: the same columns plus is_income and occurrence, and a report of removed rows.
@@ -66,3 +67,71 @@ def clean_transactions(df: pd.DataFrame,
         logger.info("Cleaning removed %d of %d rows: %s", report["removed_rows"], report["input_rows"],
                     {k: v for k, v in report.items() if k in checks and v})
     return out, report
+
+
+# ---------- data checks (step 4.9) ----------
+
+MAX_ABS_AMOUNT = 50_000      # a single private transaction above this is almost certainly an error
+MAX_GAP_MONTHS = 2           # a user may skip at most this many months in a row
+
+
+class DataValidationError(ValueError):
+    """Raised with a list of every problem found, so they can all be fixed at once."""
+
+    def __init__(self, problems: list[str]):
+        self.problems = problems
+        super().__init__("Data checks failed:\n- " + "\n- ".join(problems))
+
+
+def validate_transactions(df: pd.DataFrame, today: pd.Timestamp | None = None,
+                          max_abs_amount: float = MAX_ABS_AMOUNT,
+                          max_gap_months: int = MAX_GAP_MONTHS) -> dict:
+    """Check a transactions table and raise DataValidationError listing every problem.
+
+    Checks: no future dates, no empty descriptions, amounts within +/- max_abs_amount,
+    and no user with a gap of more than max_gap_months months without any transaction.
+    Without a user_id column the whole table is treated as one user.
+    Returns a short report when everything passes.
+    """
+    missing = [c for c in REQUIRED_COLUMNS if c not in df.columns]
+    if missing:
+        raise DataValidationError([f"missing columns: {', '.join(missing)}"])
+
+    today = (today or pd.Timestamp.today()).normalize()
+    dates = pd.to_datetime(df["date"], errors="coerce")
+    descriptions = df["description"].fillna("").astype(str).str.strip()
+    amounts = pd.to_numeric(df["amount"], errors="coerce")
+    problems = []
+
+    def report(mask: pd.Series, message: str) -> None:
+        count = int(mask.sum())
+        if count:
+            examples = ", ".join(str(i) for i in df.index[mask][:3])
+            problems.append(f"{count:,} {message} (e.g. rows {examples})")
+
+    report(dates.isna(), "rows with a missing or invalid date")
+    report(dates > today, f"rows dated after {today:%Y-%m-%d}")
+    report(descriptions == "", "rows with an empty description")
+    report(amounts.isna(), "rows with a missing or non-numeric amount")
+    report(amounts.abs() > max_abs_amount, f"rows with an amount beyond ±€{max_abs_amount:,.0f}")
+
+    users = df["user_id"] if "user_id" in df.columns else pd.Series("all", index=df.index)
+    months = pd.DataFrame({"user": users, "month": dates.dt.to_period("M")}).dropna().drop_duplicates()
+    gaps = {}
+    for user, group in months.groupby("user"):
+        ordered = group["month"].sort_values()
+        steps = (ordered.dt.year.diff() * 12 + ordered.dt.month.diff()).dropna() - 1  # months skipped
+        if len(steps) and steps.max() > max_gap_months:
+            gaps[user] = int(steps.max())
+    if gaps:
+        examples = ", ".join(f"{u} ({g} months)" for u, g in list(gaps.items())[:3])
+        problems.append(f"{len(gaps)} users with a gap longer than {max_gap_months} months: {examples}")
+
+    if problems:
+        raise DataValidationError(problems)
+    return {
+        "rows": len(df),
+        "users": int(months["user"].nunique()),
+        "first_date": dates.min(),
+        "last_date": dates.max(),
+    }

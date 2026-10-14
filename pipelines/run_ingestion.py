@@ -2,7 +2,7 @@
 
     python pipelines/run_ingestion.py
 
-1. synthetic users and transactions (src/ingestion/synthetic_generator.py)
+1. synthetic users and transactions (src/ingestion/synthetic_generator.py), then data checks
 2. macro data from the ECB, with the cached copy as fallback (src/ingestion/macro_api.py)
 3. monthly calendar features: holidays and working days (src/utils/helpers.py)
 
@@ -22,6 +22,7 @@ import pandas as pd  # noqa: E402
 
 from src.ingestion.macro_api import MacroDataUnavailable, load_macro  # noqa: E402
 from src.ingestion.synthetic_generator import generate_dataset, save_dataset  # noqa: E402
+from src.preprocessing.cleaning import DataValidationError, validate_transactions  # noqa: E402
 from src.utils.helpers import holidays_per_month, load_config, resolve_path, set_seed  # noqa: E402
 
 logger = logging.getLogger("run_ingestion")
@@ -37,6 +38,7 @@ def run_synthetic(config: dict, raw_dir: Path) -> pd.DataFrame:
         n_users=settings["n_users"], months=settings["months"],
         start=settings["start"], seed=config["project"]["seed"],
     )
+    validate_transactions(transactions)   # stop before saving if the generator produced bad data
     save_dataset(transactions, users, raw_dir, settings["transactions_file"], settings["users_file"])
     return transactions
 
@@ -64,10 +66,15 @@ def main() -> int:
     began = time.perf_counter()
 
     t = time.perf_counter()
-    transactions = run_synthetic(config, raw_dir)
+    try:
+        transactions = run_synthetic(config, raw_dir)
+    except DataValidationError as err:
+        print(f"[1/3] Synthetic users FAILED\n{err}")
+        return 1
     _step(1, 3, "Synthetic users ",
           f"{len(transactions):,} transactions · {transactions['user_id'].nunique()} users · "
-          f"{transactions['date'].min():%Y-%m} → {transactions['date'].max():%Y-%m}", time.perf_counter() - t)
+          f"{transactions['date'].min():%Y-%m} → {transactions['date'].max():%Y-%m} · checks passed",
+          time.perf_counter() - t)
 
     t = time.perf_counter()
     macro, message = run_macro()
