@@ -502,7 +502,7 @@ flowchart LR
 | 3 | Import and Overview | CSV parser, cleaning, Overview dashboard | 2-3 days | ✅ Done |
 | 4 | Data and EDA | Synthetic generator, macro API, EDA notebook | 2-3 days | ✅ Done (ECB cache still to fetch on a PC with internet) |
 | 5 | Categoriser and Aggregation | Rules + TF-IDF model, monthly tables | 2 days | ✅ Done |
-| 6 | Features and Baselines | Feature table, backtest, baseline scores | 2-3 days | ⬜ To do |
+| 6 | Features and Baselines | Feature table, backtest, baseline scores | 2-3 days | ✅ Done (macro features switch on once the ECB cache exists) |
 | 7 | Models and MLflow | LightGBM, ETS, quantiles, champion export | 4-5 days | ⬜ To do |
 | 8 | Forecast Pages | Forecast, What-If, Anomalies, Goals, Profile | 4-5 days | ⬜ To do |
 | 9 | Monitoring, Tests, Docs | Accuracy tracking, pytest, README | 2-3 days | ⬜ To do |
