@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "created_at": "2026-10-15T12:45:46+00:00",
+  "git_commit": "3da5ac4",
+  "feature_columns": [
+    "lag_1",
+    "lag_2",
+    "lag_3",
+    "lag_12",
+    "roll_mean_3",
+    "roll_mean_6",
+    "roll_std_6",
+    "history_months",
+    "month_sin",
+    "month_cos",
+    "holidays",
+    "working_days",
+    "days_in_month",
+    "fixed_share",
+    "income_volatility"
+  ],
+  "quantiles": [
+    0.1,
+    0.5,
+    0.9
+  ],
+  "training_data": {
+    "users": 300,
+    "rows": 126000,
+    "target_months": "2023-11 to 2026-09"
+  },
+  "champion_rule": "LightGBM is champion only if its MAE is >= 10% below the best baseline",
+  "libraries": {
+    "python": "3.13.16",
+    "lightgbm": "4.7.0",
+    "scikit-learn": "1.9.1",
+    "pandas": "3.0.5",
+    "numpy": "2.5.3"
+  },
+  "families": {
+    "income": {
+      "file": "forecaster_income.joblib",
+      "size_kb": 941.1,
+      "mode": "relative",
+      "params": {
+        "n_estimators": 300,
+        "learning_rate": 0.05,
+        "num_leaves": 31,
+        "min_child_samples": 40,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "reg_lambda": 1.0
+      },
+      "width_factor": 1.0,
+      "series_levels": [
+        "income"
+      ],
+      "champions": {
+        "income": "lightgbm"
+      },
+      "backtest": {
+        "test_months": "2024-11 to 2026-09",
+        "mae": 411.7193,
+        "rmse": 1168.5478,
+        "smape": 14.2612,
+        "n": 6900.0,
+        "coverage": 0.7759,
+        "mean_width": 1035.0762,
+        "baseline_only_mae": 460.9552,
+        "lightgbm_only_mae": 411.7193,
+        "check": {
+          "pick_months": "2024-11 to 2025-09",
+          "check_months": "2025-10 to 2026-09",
+          "agree": 1,
+          "series": 1,
+          "check_mae_champions": 407.3306,
+          "check_mae_best_baseline": 455.6426,
+          "check_mae_lightgbm": 407.3306
+        }
+      },
+      "registry": {
+        "name": "fincast_forecaster_income",
+        "version": 1,
+        "alias": "champion",
+        "run_id": "30f9c96ea63447c6b965320b5eb19e7a"
+      }
+    },
+    "spend": {
+      "file": "forecaster_spend.joblib",
+      "size_kb": 934.9,
+      "mode": "raw",
+      "params": {
+        "n_estimators": 300,
+        "learning_rate": 0.05,
+        "num_leaves": 31,
+        "min_child_samples": 40,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "reg_lambda": 1.0
+      },
+      "width_factor": 1.0,
+      "series_levels": [
+        "expenses",
+        "expenses:Dining",
+        "expenses:Groceries",
+        "expenses:Health",
+        "expenses:Leisure",
+        "expenses:Other",
+        "expenses:Rent",
+        "expenses:Shopping",
+        "expenses:Subscriptions",
+        "expenses:Transport",
+        "expenses:Utilities"
+      ],
+      "champions": {
+        "expenses": "same_month_last_year",
+        "expenses:Dining": "mean_3",
+        "expenses:Groceries": "mean_3",
+        "expenses:Health": "lightgbm",
+        "expenses:Leisure": "lightgbm",
+        "expenses:Other": "same_month_last_year",
+        "expenses:Rent": "last_month",
+        "expenses:Shopping": "same_month_last_year",
+        "expenses:Subscriptions": "last_month",
+        "expenses:Transport": "lightgbm",
+        "expenses:Utilities": "mean_3"
+      },
+      "backtest": {
+        "test_months": "2024-11 to 2026-09",
+        "mae": 55.2272,
+        "rmse": 154.518,
+        "smape": 26.9929,
+        "n": 75900.0,
+        "coverage": 0.8507,
+        "mean_width": 196.0783,
+        "baseline_only_mae": 59.3269,
+        "lightgbm_only_mae": 55.715,
+        "check": {
+          "pick_months": "2024-11 to 2025-09",
+          "check_months": "2025-10 to 2026-09",
+          "agree": 11,
+          "series": 11,
+          "check_mae_champions": 51.7076,
+          "check_mae_best_baseline": 58.8145,
+          "check_mae_lightgbm": 51.3545
+        }
+      },
+      "registry": {
+        "name": "fincast_forecaster_spend",
+        "version": 1,
+        "alias": "champion",
+        "run_id": "97d7cf697fd94c9b88b882e357930985"
+      }
+    }
+  }
+}

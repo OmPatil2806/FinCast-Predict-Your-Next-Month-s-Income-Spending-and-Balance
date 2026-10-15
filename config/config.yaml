@@ -39,6 +39,9 @@ forecast:
   params_file: forecast_params.json   # in paths.models: tuned LightGBM settings per family (step 7.6)
   champion_threshold: 0.10     # LightGBM must beat the best baseline's MAE by >= 10 % to be champion (step 7.8)
   champions_file: champions.json      # in paths.models: champion per series + the reason
+  model_file: "forecaster_{family}.joblib"   # in paths.models: exported champion per family (step 7.9)
+  meta_file: model_meta.json    # in paths.models: version, features, metrics, date of the exported champion
+  registry_name: "fincast_forecaster_{family}"   # MLflow Model Registry name; alias "champion" = live version
   tuning:
     trials: 30                  # Optuna trials per family
     tune_folds: 6               # test months the trials are scored on ...

@@ -22,9 +22,7 @@ Run:  python -m src.training.train_forecaster            (7.3 median comparison)
 
 import argparse
 import json
-from dataclasses import dataclass, field
 
-import lightgbm as lgb
 import mlflow
 import numpy as np
 import pandas as pd
@@ -32,6 +30,9 @@ import pandas as pd
 from src.evaluation.backtest import backtest_folds
 from src.evaluation.metrics import coverage, mae, pinball_loss, point_metrics, summarize
 from src.features.build_features import build_features
+from src.forecasting.model import (  # noqa: F401  (re-exported: training code and tests import them from here)
+    DEFAULT_PARAMS, ForecastModel, from_model_output, model_inputs, scale_of, to_model_target, widen,
+)
 from src.training.train_baselines import BASELINES, series_group
 from src.utils.helpers import load_config, resolve_path
 from src.utils.mlflow_utils import setup_experiment
@@ -41,11 +42,6 @@ MODES = ("raw", "relative")
 FAMILY_MODE = {"income": "relative", "spend": "raw"}   # lower overall MAE in the 7.3 comparison
 QUANTILES = (0.1, 0.5, 0.9)
 TARGET_COVERAGE = 0.80                                  # a 10-90 % range should hold ~80 % of real values
-DEFAULT_PARAMS = {
-    "n_estimators": 300, "learning_rate": 0.05, "num_leaves": 31, "min_child_samples": 40,
-    "subsample": 0.8, "subsample_freq": 1, "colsample_bytree": 0.8, "reg_lambda": 1.0,
-    "verbose": -1, "n_jobs": 4,
-}
 
 
 def saved_params() -> dict:
@@ -61,52 +57,6 @@ def family_rows(table: pd.DataFrame, family: str) -> pd.DataFrame:
     is_income = table["series"] == "income"
     rows = table[is_income] if family == "income" else table[~is_income]
     return rows.reset_index(drop=True)
-
-
-def scale_of(rows: pd.DataFrame) -> pd.Series:
-    """The series' recent level, used by the relative mode."""
-    return rows["roll_mean_6"].fillna(rows["roll_mean_3"]).fillna(rows["lag_1"]).fillna(0.0).clip(lower=0.0)
-
-
-def to_model_target(rows: pd.DataFrame, mode: str) -> pd.Series:
-    if mode == "raw":
-        return rows["target"]
-    return np.log1p(rows["target"].clip(lower=0)) - np.log1p(scale_of(rows))
-
-
-def from_model_output(rows: pd.DataFrame, output: np.ndarray, mode: str) -> np.ndarray:
-    if mode == "raw":
-        return np.clip(output, 0, None)
-    return np.clip(np.expm1(output + np.log1p(scale_of(rows).to_numpy())), 0, None)
-
-
-def model_inputs(rows: pd.DataFrame, feature_columns: list[str], series_levels: list[str]) -> pd.DataFrame:
-    X = rows[feature_columns].copy()
-    if len(series_levels) > 1:
-        X["series"] = pd.Categorical(rows["series"], categories=series_levels)
-    return X
-
-
-@dataclass
-class ForecastModel:
-    """A fitted LightGBM model plus everything needed to use it on new rows."""
-    family: str
-    mode: str
-    quantile: float
-    feature_columns: list[str]
-    series_levels: list[str]
-    params: dict = field(default_factory=dict)
-    booster: lgb.LGBMRegressor | None = None
-
-    def fit(self, rows: pd.DataFrame) -> "ForecastModel":
-        objective = {"objective": "l1"} if self.quantile == 0.5 else {"objective": "quantile", "alpha": self.quantile}
-        self.booster = lgb.LGBMRegressor(**{**DEFAULT_PARAMS, **self.params, **objective})
-        self.booster.fit(model_inputs(rows, self.feature_columns, self.series_levels), to_model_target(rows, self.mode))
-        return self
-
-    def predict(self, rows: pd.DataFrame) -> np.ndarray:
-        output = self.booster.predict(model_inputs(rows, self.feature_columns, self.series_levels))
-        return from_model_output(rows, output, self.mode)
 
 
 def backtest_family(table: pd.DataFrame, family: str, mode: str, feature_columns: list[str],
@@ -219,14 +169,6 @@ def backtest_family_quantiles(table: pd.DataFrame, family: str, mode: str, featu
         out.append(test[["user_id", "series", "month", "target_month"]].assign(
             actual=test["target"].to_numpy(), lower=values[:, 0], predicted=values[:, 1], upper=values[:, 2]))
     return pd.concat(out, ignore_index=True)
-
-
-def widen(predictions: pd.DataFrame, factor: float) -> pd.DataFrame:
-    """Scale the distance from the median to each bound by `factor` (>1 wider, <1 narrower)."""
-    out = predictions.copy()
-    out["lower"] = np.clip(out["predicted"] - factor * (out["predicted"] - predictions["lower"]), 0, None)
-    out["upper"] = out["predicted"] + factor * (predictions["upper"] - out["predicted"])
-    return out
 
 
 def calibrate_width(predictions: pd.DataFrame, target: float = TARGET_COVERAGE,

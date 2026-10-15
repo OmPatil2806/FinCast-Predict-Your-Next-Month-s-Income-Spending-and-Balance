@@ -33,17 +33,15 @@ import numpy as np
 import pandas as pd
 
 from src.evaluation.metrics import coverage, mae, point_metrics
+from src.forecasting.model import LIGHTGBM, apply_champions
 from src.features.build_features import build_features
-from src.training.train_baselines import BASELINES, series_group
+from src.training.train_baselines import series_group
 from src.training.train_forecaster import (
     FAMILIES, FAMILY_MODE, TARGET_COVERAGE, backtest_family_quantiles, calibrate_width, compare_with_baselines,
-    saved_params, widen,
+    saved_params,
 )
 from src.utils.helpers import load_config, resolve_path
 from src.utils.mlflow_utils import setup_experiment
-
-LIGHTGBM = "lightgbm"
-
 
 def choose_champions(per_series: pd.DataFrame, threshold: float) -> pd.DataFrame:
     """per_series from compare_with_baselines -> one champion per series, with the reason."""
@@ -67,26 +65,6 @@ def choose_width(factor: float, calibration: dict, target: float = TARGET_COVERA
         return factor, f"calibrated factor {factor:.2f}: check-month coverage {raw:.1%} -> {calibrated:.1%}"
     return 1.0, (f"raw width kept: factor {factor:.2f} would move check-month coverage {raw:.1%} -> "
                  f"{calibrated:.1%}, further from {target:.0%}")
-
-
-def apply_champions(rows: pd.DataFrame, lower: np.ndarray, median: np.ndarray, upper: np.ndarray,
-                    champions: dict, factor: float) -> pd.DataFrame:
-    """Final forecast: champion point per series, LightGBM range (widened), stretched to hold the point.
-
-    rows: feature rows (need series + the lag columns the baselines use). champions: series -> name;
-    a series without an entry uses LightGBM.
-    """
-    point = np.asarray(median, dtype=float).copy()
-    names = rows["series"].map(champions).fillna(LIGHTGBM).to_numpy()
-    for name, forecast in BASELINES.items():
-        mask = names == name
-        if mask.any():
-            point[mask] = forecast(rows[mask]).to_numpy()
-    band = widen(pd.DataFrame({"lower": lower, "predicted": median, "upper": upper}), factor)
-    point = np.clip(point, 0, None)
-    return pd.DataFrame({"champion": names, "lower": np.minimum(band["lower"].to_numpy(), point),
-                         "predicted": point, "upper": np.maximum(band["upper"].to_numpy(), point)},
-                        index=rows.index)
 
 
 def select_family(table: pd.DataFrame, family: str, feature_columns: list[str], threshold: float,

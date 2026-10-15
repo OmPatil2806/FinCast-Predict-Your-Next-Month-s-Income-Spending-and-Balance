@@ -23,14 +23,9 @@ import pandas as pd
 from src.evaluation.backtest import backtest_folds, holdout_user_folds
 from src.evaluation.metrics import point_metrics, summarize
 from src.features.build_features import build_features
+from src.forecasting.model import BASELINES
 from src.utils.helpers import load_config, resolve_path
 from src.utils.mlflow_utils import setup_experiment
-
-BASELINES = {
-    "last_month": lambda t: t["lag_1"],
-    "same_month_last_year": lambda t: t["lag_12"].fillna(t["lag_1"]),
-    "mean_3": lambda t: t["roll_mean_3"].fillna(t["lag_1"]),
-}
 
 
 def series_group(series: pd.Series) -> pd.Series:
