@@ -121,3 +121,53 @@ def test_build_features_one_call():
     assert {"lag_12", "month_sin", "holidays", "inflation_de", "fixed_share"} <= set(info["feature_columns"])
     assert set(info["feature_columns"]) <= set(table.columns)
     assert len(table) == 15 * 4                          # 15 months x 4 series, no rows added by merges
+
+
+# ---------- step 6.6: leakage test ----------
+# The strongest check there is: change the FUTURE and make sure the past does not move.
+# For every forecast origin month m, rebuild all features after scrambling every transaction
+# dated after m. Every feature of the rows with origin <= m must stay exactly the same.
+# The target (month m+1) is allowed to change - it IS the future - and the calendar features
+# describe the target month on purpose (the calendar is known in advance).
+
+from src.ingestion.synthetic_generator import generate_dataset  # noqa: E402
+
+MACRO = pd.DataFrame({"month": pd.period_range("2023-08", periods=40, freq="M"),
+                      "inflation_de": np.linspace(6.0, 2.0, 40), "ecb_rate": np.linspace(4.5, 2.0, 40)})
+
+
+def _features(transactions: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
+    table, info = build_features(aggregate_user_month_category(transactions), macro=MACRO, country="DE")
+    return table.set_index(["user_id", "series", "month"]).sort_index(), info["feature_columns"]
+
+
+@pytest.fixture(scope="module")
+def small_dataset():
+    transactions, _ = generate_dataset(n_users=6, months=20, start="2024-01-01", seed=7)
+    return transactions
+
+
+@pytest.mark.parametrize("cutoff", ["2024-06", "2024-12", "2025-04"])
+def test_no_feature_uses_data_after_the_origin_month(small_dataset, cutoff):
+    original, features = _features(small_dataset)
+
+    future = small_dataset["date"].dt.to_period("M") > pd.Period(cutoff)
+    rng = np.random.default_rng(0)
+    scrambled = small_dataset.copy()
+    scrambled.loc[future, "amount"] = scrambled.loc[future, "amount"] * rng.uniform(0.1, 5.0, future.sum())
+    changed, _ = _features(scrambled)
+
+    past = original.index.get_level_values("month") <= pd.Period(cutoff)
+    pd.testing.assert_frame_equal(original.loc[past, features], changed.loc[past, features])
+    # sanity: the scramble really changed something, and targets of the cutoff month did change
+    assert not original["value"].equals(changed["value"])
+    at_cutoff = original.index.get_level_values("month") == pd.Period(cutoff)
+    assert not np.allclose(original.loc[at_cutoff, "target"], changed.loc[at_cutoff, "target"])
+
+
+def test_calendar_is_the_documented_exception():
+    table, info = build_features(make_monthly(4), macro=MACRO, country="DE")
+    calendar = [c for c in info["feature_columns"] if c in ("month_sin", "month_cos", "holidays", "working_days", "days_in_month")]
+    assert len(calendar) == 5
+    # they depend only on target_month, never on any transaction amount
+    assert (table.groupby("target_month")[calendar].nunique() <= 1).all().all()
