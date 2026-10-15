@@ -18,7 +18,6 @@ Written to reports/figures/ (and logged to the forecast_income / forecast_spend 
 Run:  python -m src.training.explain_forecaster
 """
 
-import json
 from pathlib import Path
 
 import matplotlib
@@ -35,7 +34,7 @@ from src.evaluation.backtest import backtest_folds  # noqa: E402
 from src.evaluation.metrics import point_metrics  # noqa: E402
 from src.features.build_features import build_features  # noqa: E402
 from src.training.train_forecaster import (  # noqa: E402
-    FAMILIES, FAMILY_MODE, ForecastModel, family_rows, model_inputs,
+    FAMILIES, FAMILY_MODE, ForecastModel, family_rows, model_inputs, saved_params,
 )
 from src.utils.helpers import load_config, resolve_path  # noqa: E402
 from src.utils.mlflow_utils import setup_experiment  # noqa: E402
@@ -43,15 +42,6 @@ from src.utils.mlflow_utils import setup_experiment  # noqa: E402
 EXAMPLE_SERIES = {"income": "income", "spend": "expenses"}
 UNITS = {"raw": "€", "relative": "log-points vs recent level, ≈ %"}
 SCALE = {"raw": 1.0, "relative": 100.0}                 # display factor for the SHAP values
-
-
-def tuned_params() -> dict:
-    """Per-family settings saved by step 7.6 (empty dict -> the defaults)."""
-    config = load_config()
-    path = resolve_path(config["paths"]["models"]) / config["forecast"]["params_file"]
-    if not path.exists():
-        return {}
-    return {family: entry["params"] for family, entry in json.loads(path.read_text())["families"].items()}
 
 
 def explain_family(table: pd.DataFrame, family: str, feature_columns: list[str], params: dict | None = None) -> dict:
@@ -140,7 +130,7 @@ def main() -> None:
     config = load_config()
     monthly = pd.read_parquet(resolve_path(config["paths"]["data_processed"]) / config["processed"]["monthly_file"])
     table, info = build_features(monthly)
-    params = tuned_params()
+    params = saved_params()
     reports = resolve_path("reports")
     for family in FAMILIES:
         result = explain_family(table, family, info["feature_columns"], params.get(family))

@@ -37,6 +37,8 @@ forecast:
   min_history_months: 3         # fewer months -> friendly message, no forecast
   cold_start_months: 6          # fewer months -> global model with a visible note
   params_file: forecast_params.json   # in paths.models: tuned LightGBM settings per family (step 7.6)
+  champion_threshold: 0.10     # LightGBM must beat the best baseline's MAE by >= 10 % to be champion (step 7.8)
+  champions_file: champions.json      # in paths.models: champion per series + the reason
   tuning:
     trials: 30                  # Optuna trials per family
     tune_folds: 6               # test months the trials are scored on ...

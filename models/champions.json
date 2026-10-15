@@ -1,0 +1,158 @@
+{
+  "created_at": "2026-10-15T12:40:00+00:00",
+  "rule": "LightGBM is champion only if its MAE is >= 10% below the best baseline",
+  "threshold": 0.1,
+  "metric": "mae",
+  "families": {
+    "income": {
+      "mode": "relative",
+      "test_months": "2024-11 to 2026-09",
+      "width_factor": 1.0,
+      "width_reason": "raw width kept: factor 1.30 would move check-month coverage 85.0% -> 92.9%, further from 80%",
+      "system": {
+        "mae": 411.7193,
+        "rmse": 1168.5478,
+        "smape": 14.2612,
+        "n": 6900.0,
+        "coverage": 0.7759,
+        "mean_width": 1035.0762,
+        "baseline_only_mae": 460.9552,
+        "lightgbm_only_mae": 411.7193
+      },
+      "check": {
+        "pick_months": "2024-11 to 2025-09",
+        "check_months": "2025-10 to 2026-09",
+        "agree": 1,
+        "series": 1,
+        "check_mae_champions": 407.3306,
+        "check_mae_best_baseline": 455.6426,
+        "check_mae_lightgbm": 407.3306
+      },
+      "series": {
+        "income": {
+          "champion": "lightgbm",
+          "lightgbm_mae": 411.72,
+          "best_baseline": "mean_3",
+          "baseline_mae": 460.96,
+          "improvement": 0.1068,
+          "reason": "LightGBM MAE 411.72 is 10.7% below the best baseline (mean_3 460.96); threshold 10%"
+        }
+      }
+    },
+    "spend": {
+      "mode": "raw",
+      "test_months": "2024-11 to 2026-09",
+      "width_factor": 1.0,
+      "width_reason": "calibration chose factor 1.00 (no change): check-month coverage 82.0%",
+      "system": {
+        "mae": 55.2272,
+        "rmse": 154.518,
+        "smape": 26.9929,
+        "n": 75900.0,
+        "coverage": 0.8507,
+        "mean_width": 196.0783,
+        "baseline_only_mae": 59.3269,
+        "lightgbm_only_mae": 55.715
+      },
+      "check": {
+        "pick_months": "2024-11 to 2025-09",
+        "check_months": "2025-10 to 2026-09",
+        "agree": 11,
+        "series": 11,
+        "check_mae_champions": 51.7076,
+        "check_mae_best_baseline": 58.8145,
+        "check_mae_lightgbm": 51.3545
+      },
+      "series": {
+        "expenses": {
+          "champion": "same_month_last_year",
+          "lightgbm_mae": 242.09,
+          "best_baseline": "same_month_last_year",
+          "baseline_mae": 243.81,
+          "improvement": 0.007,
+          "reason": "LightGBM MAE 242.09 is only +0.7% vs same_month_last_year 243.81; below the 10% threshold, baseline kept"
+        },
+        "expenses:Dining": {
+          "champion": "mean_3",
+          "lightgbm_mae": 44.04,
+          "best_baseline": "mean_3",
+          "baseline_mae": 48.1,
+          "improvement": 0.0846,
+          "reason": "LightGBM MAE 44.04 is only +8.5% vs mean_3 48.10; below the 10% threshold, baseline kept"
+        },
+        "expenses:Groceries": {
+          "champion": "mean_3",
+          "lightgbm_mae": 24.53,
+          "best_baseline": "mean_3",
+          "baseline_mae": 23.23,
+          "improvement": -0.056,
+          "reason": "LightGBM MAE 24.53 is only -5.6% vs mean_3 23.23; below the 10% threshold, baseline kept"
+        },
+        "expenses:Health": {
+          "champion": "lightgbm",
+          "lightgbm_mae": 34.18,
+          "best_baseline": "mean_3",
+          "baseline_mae": 44.28,
+          "improvement": 0.2282,
+          "reason": "LightGBM MAE 34.18 is 22.8% below the best baseline (mean_3 44.28); threshold 10%"
+        },
+        "expenses:Leisure": {
+          "champion": "lightgbm",
+          "lightgbm_mae": 91.8,
+          "best_baseline": "same_month_last_year",
+          "baseline_mae": 112.68,
+          "improvement": 0.1853,
+          "reason": "LightGBM MAE 91.80 is 18.5% below the best baseline (same_month_last_year 112.68); threshold 10%"
+        },
+        "expenses:Other": {
+          "champion": "same_month_last_year",
+          "lightgbm_mae": 8.82,
+          "best_baseline": "same_month_last_year",
+          "baseline_mae": 3.28,
+          "improvement": -1.691,
+          "reason": "LightGBM MAE 8.82 is only -169.1% vs same_month_last_year 3.28; below the 10% threshold, baseline kept"
+        },
+        "expenses:Rent": {
+          "champion": "last_month",
+          "lightgbm_mae": 8.9,
+          "best_baseline": "last_month",
+          "baseline_mae": 1.67,
+          "improvement": -4.32,
+          "reason": "LightGBM MAE 8.90 is only -432.0% vs last_month 1.67; below the 10% threshold, baseline kept"
+        },
+        "expenses:Shopping": {
+          "champion": "same_month_last_year",
+          "lightgbm_mae": 76.42,
+          "best_baseline": "same_month_last_year",
+          "baseline_mae": 80.26,
+          "improvement": 0.0479,
+          "reason": "LightGBM MAE 76.42 is only +4.8% vs same_month_last_year 80.26; below the 10% threshold, baseline kept"
+        },
+        "expenses:Subscriptions": {
+          "champion": "last_month",
+          "lightgbm_mae": 0.37,
+          "best_baseline": "last_month",
+          "baseline_mae": 0.0,
+          "improvement": 0.0,
+          "reason": "LightGBM MAE 0.37 is only +0.0% vs last_month 0.00; below the 10% threshold, baseline kept"
+        },
+        "expenses:Transport": {
+          "champion": "lightgbm",
+          "lightgbm_mae": 79.32,
+          "best_baseline": "same_month_last_year",
+          "baseline_mae": 93.43,
+          "improvement": 0.151,
+          "reason": "LightGBM MAE 79.32 is 15.1% below the best baseline (same_month_last_year 93.43); threshold 10%"
+        },
+        "expenses:Utilities": {
+          "champion": "mean_3",
+          "lightgbm_mae": 2.4,
+          "best_baseline": "mean_3",
+          "baseline_mae": 1.86,
+          "improvement": -0.2944,
+          "reason": "LightGBM MAE 2.40 is only -29.4% vs mean_3 1.86; below the 10% threshold, baseline kept"
+        }
+      }
+    }
+  }
+}

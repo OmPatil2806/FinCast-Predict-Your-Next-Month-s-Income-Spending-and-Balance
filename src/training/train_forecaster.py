@@ -21,6 +21,7 @@ Run:  python -m src.training.train_forecaster            (7.3 median comparison)
 """
 
 import argparse
+import json
 from dataclasses import dataclass, field
 
 import lightgbm as lgb
@@ -45,6 +46,15 @@ DEFAULT_PARAMS = {
     "subsample": 0.8, "subsample_freq": 1, "colsample_bytree": 0.8, "reg_lambda": 1.0,
     "verbose": -1, "n_jobs": 4,
 }
+
+
+def saved_params() -> dict:
+    """Per-family settings chosen by step 7.6 (models/forecast_params.json); empty dict -> the defaults."""
+    config = load_config()
+    path = resolve_path(config["paths"]["models"]) / config["forecast"]["params_file"]
+    if not path.exists():
+        return {}
+    return {family: entry["params"] for family, entry in json.loads(path.read_text())["families"].items()}
 
 
 def family_rows(table: pd.DataFrame, family: str) -> pd.DataFrame:
