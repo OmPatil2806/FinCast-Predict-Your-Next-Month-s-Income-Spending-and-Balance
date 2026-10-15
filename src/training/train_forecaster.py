@@ -13,10 +13,14 @@ Target modes (step 7.3 compares them)
 
 Step 7.3: median models (L1 loss) per family and mode on all 23 backtest months, compared with the
 best baseline on exactly the same rows, logged to MLflow (one parent run, one nested run per fold).
+Step 7.4: 10th / 50th / 90th percentile models -> a forecast range. Its coverage is checked, and a
+width factor is calibrated on the earlier test months and verified on the later ones.
 
-Run:  python -m src.training.train_forecaster
+Run:  python -m src.training.train_forecaster            (7.3 median comparison)
+      python -m src.training.train_forecaster --ranges   (7.4 ranges)
 """
 
+import argparse
 from dataclasses import dataclass, field
 
 import lightgbm as lgb
@@ -25,7 +29,7 @@ import numpy as np
 import pandas as pd
 
 from src.evaluation.backtest import backtest_folds
-from src.evaluation.metrics import mae, point_metrics, summarize
+from src.evaluation.metrics import coverage, mae, pinball_loss, point_metrics, summarize
 from src.features.build_features import build_features
 from src.training.train_baselines import BASELINES, series_group
 from src.utils.helpers import load_config, resolve_path
@@ -33,6 +37,9 @@ from src.utils.mlflow_utils import setup_experiment
 
 FAMILIES = {"income": "forecast_income", "spend": "forecast_spend"}
 MODES = ("raw", "relative")
+FAMILY_MODE = {"income": "relative", "spend": "raw"}   # lower overall MAE in the 7.3 comparison
+QUANTILES = (0.1, 0.5, 0.9)
+TARGET_COVERAGE = 0.80                                  # a 10-90 % range should hold ~80 % of real values
 DEFAULT_PARAMS = {
     "n_estimators": 300, "learning_rate": 0.05, "num_leaves": 31, "min_child_samples": 40,
     "subsample": 0.8, "subsample_freq": 1, "colsample_bytree": 0.8, "reg_lambda": 1.0,
@@ -179,6 +186,108 @@ def run_median_comparison(table: pd.DataFrame, feature_columns: list[str], users
     return results
 
 
+def backtest_family_quantiles(table: pd.DataFrame, family: str, mode: str, feature_columns: list[str],
+                              quantiles=QUANTILES, params: dict | None = None,
+                              last_n_folds: int | None = None) -> pd.DataFrame:
+    """Like backtest_family, but fits one model per quantile in every fold.
+
+    Returns actual, lower (q10), predicted (median) and upper (q90). Quantile models are trained
+    separately, so they can cross; each row's three values are sorted to keep lower <= median <= upper.
+    """
+    rows = family_rows(table, family)
+    levels = sorted(rows["series"].unique())
+    folds = backtest_folds(rows)
+    if last_n_folds:
+        folds = folds[-last_n_folds:]
+    out = []
+    for fold in folds:
+        train, test = rows.iloc[fold.train_idx], rows.iloc[fold.test_idx]
+        values = np.column_stack([
+            ForecastModel(family, mode, q, feature_columns, levels, params or {}).fit(train).predict(test)
+            for q in quantiles])
+        values.sort(axis=1)                                       # no crossing quantiles
+        out.append(test[["user_id", "series", "month", "target_month"]].assign(
+            actual=test["target"].to_numpy(), lower=values[:, 0], predicted=values[:, 1], upper=values[:, 2]))
+    return pd.concat(out, ignore_index=True)
+
+
+def widen(predictions: pd.DataFrame, factor: float) -> pd.DataFrame:
+    """Scale the distance from the median to each bound by `factor` (>1 wider, <1 narrower)."""
+    out = predictions.copy()
+    out["lower"] = np.clip(out["predicted"] - factor * (out["predicted"] - predictions["lower"]), 0, None)
+    out["upper"] = out["predicted"] + factor * (predictions["upper"] - out["predicted"])
+    return out
+
+
+def calibrate_width(predictions: pd.DataFrame, target: float = TARGET_COVERAGE,
+                    factors=np.round(np.arange(0.5, 3.01, 0.05), 2)) -> tuple[float, dict]:
+    """Choose the width factor on the EARLIER half of the test months, check it on the LATER half.
+
+    Fitting the factor on the same months it is judged on would flatter the result.
+    """
+    months = sorted(predictions["target_month"].unique())
+    split = months[len(months) // 2]
+    early, late = predictions[predictions["target_month"] < split], predictions[predictions["target_month"] >= split]
+    gaps = {f: abs(coverage(early["actual"], *widen(early, f)[["lower", "upper"]].T.to_numpy()) - target) for f in factors}
+    factor = float(min(gaps, key=gaps.get))
+    report = {
+        "factor": factor,
+        "calibration_months": f"{months[0]} to {split - 1}",
+        "check_months": f"{split} to {months[-1]}",
+        "coverage_raw_check": coverage(late["actual"], late["lower"], late["upper"]),
+        "coverage_calibrated_check": coverage(late["actual"], *widen(late, factor)[["lower", "upper"]].T.to_numpy()),
+    }
+    return factor, report
+
+
+def run_ranges(table: pd.DataFrame, feature_columns: list[str], users: pd.DataFrame | None = None,
+               log: bool = True) -> dict:
+    """Step 7.4: quantile models per family, coverage before/after calibration, pinball loss."""
+    results = {}
+    for family, experiment in FAMILIES.items():
+        mode = FAMILY_MODE[family]
+        predictions = backtest_family_quantiles(table, family, mode, feature_columns)
+        factor, calibration = calibrate_width(predictions)
+        calibrated = widen(predictions, factor)
+        calibrated["series_group"] = series_group(calibrated["series"])
+        if users is not None:
+            calibrated = calibrated.merge(users[["user_id", "archetype"]], on="user_id", how="left")
+        metrics = {
+            "coverage_raw": coverage(predictions["actual"], predictions["lower"], predictions["upper"]),
+            "coverage_calibrated": coverage(calibrated["actual"], calibrated["lower"], calibrated["upper"]),
+            "pinball_q10": pinball_loss(predictions["actual"], predictions["lower"], 0.1),
+            "pinball_q50": pinball_loss(predictions["actual"], predictions["predicted"], 0.5),
+            "pinball_q90": pinball_loss(predictions["actual"], predictions["upper"], 0.9),
+            "mae": mae(predictions["actual"], predictions["predicted"]),
+            "mean_width_calibrated": float((calibrated["upper"] - calibrated["lower"]).mean()),
+        }
+        by = ["series_group", "archetype"] if "archetype" in calibrated else "series_group"
+        results[family] = {"mode": mode, "factor": factor, "calibration": calibration, "metrics": metrics,
+                           "predictions": calibrated,
+                           "by_group": summarize(calibrated, by, lower="lower", upper="upper")}
+        if log:
+            setup_experiment(experiment)
+            with mlflow.start_run(run_name=f"lgbm_quantiles_{mode}"):
+                mlflow.log_params({**DEFAULT_PARAMS, "family": family, "mode": mode,
+                                   "quantiles": "0.1,0.5,0.9", "width_factor": factor})
+                mlflow.log_metrics({**metrics, "coverage_raw_check": calibration["coverage_raw_check"],
+                                    "coverage_calibrated_check": calibration["coverage_calibrated_check"]})
+    return results
+
+
+def _print_ranges(results: dict) -> None:
+    for family, r in results.items():
+        m, c = r["metrics"], r["calibration"]
+        print(f"\n=== {family} ({r['mode']}): coverage raw {m['coverage_raw']:.1%} -> calibrated "
+              f"{m['coverage_calibrated']:.1%} (width factor {r['factor']:.2f})")
+        print(f"    factor chosen on {c['calibration_months']}, checked on {c['check_months']}: "
+              f"{c['coverage_raw_check']:.1%} -> {c['coverage_calibrated_check']:.1%}")
+        print(f"    pinball q10 {m['pinball_q10']:.2f} · q50 {m['pinball_q50']:.2f} · q90 {m['pinball_q90']:.2f} · "
+              f"mean range width €{m['mean_width_calibrated']:,.0f}")
+        table = r["by_group"][[c for c in r["by_group"].columns if c in ("series_group", "archetype", "mae", "coverage", "n")]]
+        print(table.to_string(index=False, formatters={"mae": "€{:,.2f}".format, "coverage": "{:.1%}".format}))
+
+
 def _print(results: dict) -> None:
     for (family, mode), r in results.items():
         o = r["overall"]
@@ -189,11 +298,17 @@ def _print(results: dict) -> None:
             print(r["by_archetype"].round(2).to_string(index=False))
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ranges", action="store_true", help="step 7.4: quantile models and coverage")
+    args = parser.parse_args(argv)
     config = load_config()
     monthly = pd.read_parquet(resolve_path(config["paths"]["data_processed"]) / config["processed"]["monthly_file"])
     users = pd.read_csv(resolve_path(config["paths"]["data_raw"]) / config["synthetic"]["users_file"])
     table, info = build_features(monthly)
+    if args.ranges:
+        _print_ranges(run_ranges(table, info["feature_columns"], users))
+        return
     results = run_median_comparison(table, info["feature_columns"], users)
     _print(results)
     for family in FAMILIES:
