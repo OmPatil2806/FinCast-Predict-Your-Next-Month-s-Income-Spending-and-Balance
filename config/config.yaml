@@ -60,6 +60,9 @@ calendar:
 processed:
   monthly_file: monthly.parquet # user x month x category table, written to paths.data_processed
 
+baselines:
+  scores_file: baseline_scores.json   # in paths.models: best baseline MAE per series = the bar to beat (step 6.9)
+
 locale:
   country: DE                   # holiday calendar (holidays package)
   currency: EUR

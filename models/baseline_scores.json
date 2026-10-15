@@ -1,0 +1,72 @@
+{
+  "created_at": "2026-10-15T08:22:40+00:00",
+  "test_months": 23,
+  "metric": "mae",
+  "best_by_series": {
+    "expenses": {
+      "baseline": "same_month_last_year",
+      "mae": 243.81,
+      "smape": 10.71
+    },
+    "expenses:Dining": {
+      "baseline": "mean_3",
+      "mae": 48.1,
+      "smape": 36.95
+    },
+    "expenses:Groceries": {
+      "baseline": "mean_3",
+      "mae": 23.23,
+      "smape": 7.01
+    },
+    "expenses:Health": {
+      "baseline": "mean_3",
+      "mae": 44.28,
+      "smape": 116.96
+    },
+    "expenses:Leisure": {
+      "baseline": "same_month_last_year",
+      "mae": 112.68,
+      "smape": 54.03
+    },
+    "expenses:Other": {
+      "baseline": "same_month_last_year",
+      "mae": 3.28,
+      "smape": 2.49
+    },
+    "expenses:Rent": {
+      "baseline": "last_month",
+      "mae": 1.67,
+      "smape": 0.17
+    },
+    "expenses:Shopping": {
+      "baseline": "same_month_last_year",
+      "mae": 80.26,
+      "smape": 46.67
+    },
+    "expenses:Subscriptions": {
+      "baseline": "last_month",
+      "mae": 0.0,
+      "smape": 0.0
+    },
+    "expenses:Transport": {
+      "baseline": "same_month_last_year",
+      "mae": 93.43,
+      "smape": 45.17
+    },
+    "expenses:Utilities": {
+      "baseline": "mean_3",
+      "mae": 1.86,
+      "smape": 1.3
+    },
+    "income": {
+      "baseline": "mean_3",
+      "mae": 460.96,
+      "smape": 15.45
+    }
+  },
+  "overall_by_baseline": {
+    "last_month": 160.43,
+    "mean_3": 128.49,
+    "same_month_last_year": 109.82
+  }
+}
