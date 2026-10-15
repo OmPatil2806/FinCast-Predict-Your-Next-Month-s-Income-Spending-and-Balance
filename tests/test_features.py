@@ -4,7 +4,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.features.build_features import add_calendar_features, add_lag_features, add_targets, build_series
+from src.features.build_features import (
+    add_calendar_features, add_lag_features, add_macro_features, add_targets, build_series,
+)
 from src.preprocessing.aggregate_monthly import aggregate_user_month_category
 
 
@@ -72,3 +74,30 @@ def test_calendar_features_describe_the_target_month():
     dec, jan, jun = [(np.sin(2 * np.pi * (m - 1) / 12), np.cos(2 * np.pi * (m - 1) / 12)) for m in (12, 1, 6)]
     assert np.hypot(dec[0] - jan[0], dec[1] - jan[1]) < np.hypot(jun[0] - jan[0], jun[1] - jan[1])
     assert len(table) == len(build_series(make_monthly(13)))   # merge adds columns, never rows
+
+
+def test_macro_features_use_the_month_before_the_origin():
+    # hand-made macro table (not real ECB figures)
+    macro = pd.DataFrame({"month": pd.period_range("2024-12", periods=6, freq="M"),
+                          "inflation_de": [2.0, 2.1, 2.2, 2.3, 2.4, 2.5],
+                          "ecb_rate": [3.15, 3.15, 2.90, 2.65, 2.65, 2.40]})
+    table, added = add_macro_features(add_targets(build_series(make_monthly(4))), macro)
+    assert added
+    by_month = table[table["series"] == "income"].set_index("month")
+    # forecast made at the end of March 2025 sees February's figures
+    assert by_month.loc[pd.Period("2025-03"), "inflation_de"] == 2.2
+    assert by_month.loc[pd.Period("2025-03"), "ecb_rate"] == 2.90
+    assert by_month.loc[pd.Period("2025-01"), "inflation_de"] == 2.0     # December 2024
+
+
+def test_macro_features_skipped_without_data(monkeypatch):
+    from src.ingestion import macro_api
+
+    def no_data(*args, **kwargs):
+        raise macro_api.MacroDataUnavailable("no cache")
+
+    monkeypatch.setattr(macro_api, "load_macro", no_data)
+    table = add_targets(build_series(make_monthly(3)))
+    same, added = add_macro_features(table)
+    assert not added
+    assert list(same.columns) == list(table.columns)

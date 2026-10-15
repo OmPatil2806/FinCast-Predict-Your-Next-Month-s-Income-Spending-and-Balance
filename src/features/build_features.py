@@ -11,7 +11,7 @@ A row is "the forecast made at the end of month t for the target month t+1":
 Feature names count back from the target month: lag_1 = month t, lag_12 = same month last year.
 
 Step 6.1: series + targets. 6.2: lags and rolling stats. 6.3: calendar of the target month.
-(6.4-6.5 add macro and profile features.)
+6.4: macro data (lagged). (6.5 adds profile features.)
 """
 
 import numpy as np
@@ -99,3 +99,29 @@ def add_calendar_features(table: pd.DataFrame, country: str | None = None) -> pd
     out = out.merge(calendar[["target_month", "holidays", "working_days", "days_in_month"]],
                     on="target_month", how="left")
     return out.sort_values(KEYS, ignore_index=True)
+
+
+# ---------- step 6.4: macro data, lagged so it was published at forecast time ----------
+
+MACRO_FEATURES = ["inflation_de", "ecb_rate"]
+
+
+def add_macro_features(table: pd.DataFrame, macro: pd.DataFrame | None = None) -> tuple[pd.DataFrame, bool]:
+    """Add German inflation and the ECB rate of month t-1 (one month before the origin).
+
+    Inflation for month t is only published around the middle of month t+1, so at the end of
+    month t the latest figure a real forecaster has is t-1; the rate is lagged the same way.
+    macro defaults to the cached ECB data (load_macro). If there is none, the table is returned
+    unchanged and the second value is False, so the pipeline can say the features were skipped.
+    """
+    if macro is None:
+        from src.ingestion.macro_api import MacroDataUnavailable, load_macro
+        try:
+            macro = load_macro(refresh=False)
+        except MacroDataUnavailable:
+            return table, False
+
+    lagged = macro[["month"] + MACRO_FEATURES].copy()
+    lagged["month"] = pd.PeriodIndex(lagged["month"], freq="M") + 1   # value of t-1 joins origin month t
+    out = table.merge(lagged, on="month", how="left")
+    return out.sort_values(KEYS, ignore_index=True), True
