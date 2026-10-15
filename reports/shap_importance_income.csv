@@ -1,0 +1,16 @@
+feature,mean_abs_shap,share
+roll_mean_6,1.73125,0.21492
+income_volatility,1.68369,0.20901
+roll_std_6,1.05596,0.13109
+lag_12,0.76048,0.09441
+month_sin,0.63943,0.07938
+roll_mean_3,0.5125,0.06362
+lag_1,0.42284,0.05249
+lag_3,0.2857,0.03547
+lag_2,0.25436,0.03158
+history_months,0.25354,0.03147
+fixed_share,0.19972,0.02479
+month_cos,0.1154,0.01433
+working_days,0.04787,0.00594
+holidays,0.0467,0.0058
+days_in_month,0.04598,0.00571
