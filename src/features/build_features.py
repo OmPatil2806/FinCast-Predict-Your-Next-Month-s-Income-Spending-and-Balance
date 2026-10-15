@@ -11,7 +11,7 @@ A row is "the forecast made at the end of month t for the target month t+1":
 Feature names count back from the target month: lag_1 = month t, lag_12 = same month last year.
 
 Step 6.1: series + targets. 6.2: lags and rolling stats. 6.3: calendar of the target month.
-6.4: macro data (lagged). (6.5 adds profile features.)
+6.4: macro data (lagged). 6.5: profile features. build_features() runs all of them.
 """
 
 import numpy as np
@@ -125,3 +125,57 @@ def add_macro_features(table: pd.DataFrame, macro: pd.DataFrame | None = None) -
     lagged["month"] = pd.PeriodIndex(lagged["month"], freq="M") + 1   # value of t-1 joins origin month t
     out = table.merge(lagged, on="month", how="left")
     return out.sort_values(KEYS, ignore_index=True), True
+
+
+# ---------- step 6.5: user profile features (from the user's own past months) ----------
+
+FIXED_COST_SERIES = ["expenses:Rent", "expenses:Utilities", "expenses:Subscriptions"]
+PROFILE_FEATURES = ["fixed_share", "income_volatility"]
+
+
+def add_profile_features(table: pd.DataFrame) -> pd.DataFrame:
+    """Two descriptions of the user's budget, from months <= t only:
+
+    fixed_share        rent + utilities + subscriptions as a share of total spending, last 3 months
+    income_volatility  std / mean of monthly income over the last 6 months (~0.03 salary, ~0.6 freelance)
+
+    The synthetic archetype is deliberately NOT a feature: real app users have no such label,
+    so the model has to recognise salaried vs. freelance behaviour from these numbers.
+    """
+    wide = table.pivot_table(index=["user_id", "month"], columns="series", values="value", aggfunc="sum")
+    wide = wide.sort_index()
+    by_user = wide.groupby(level="user_id", sort=False)
+
+    fixed = wide.reindex(columns=FIXED_COST_SERIES).fillna(0).sum(axis=1)
+    fixed_3 = fixed.groupby(level="user_id", sort=False).transform(lambda s: s.rolling(3, min_periods=3).sum())
+    spend_3 = by_user[EXPENSES].transform(lambda s: s.rolling(3, min_periods=3).sum())
+    income_mean = by_user[INCOME].transform(lambda s: s.rolling(6, min_periods=6).mean())
+    income_std = by_user[INCOME].transform(lambda s: s.rolling(6, min_periods=6).std())
+
+    profile = pd.DataFrame({
+        "fixed_share": (fixed_3 / spend_3.where(spend_3 > 0)).round(4),
+        "income_volatility": (income_std / income_mean.where(income_mean > 0)).round(4),
+    }).reset_index()
+    out = table.merge(profile, on=["user_id", "month"], how="left")
+    return out.sort_values(KEYS, ignore_index=True)
+
+
+# ---------- everything in one call ----------
+
+BASE_FEATURES = list(LAGS) + [f"roll_mean_{w}" for w in ROLL_WINDOWS] + ["roll_std_6", "history_months"]
+
+
+def build_features(monthly: pd.DataFrame, macro: pd.DataFrame | None = None,
+                   country: str | None = None) -> tuple[pd.DataFrame, dict]:
+    """The full feature table from the user x month x category table (step 5.7).
+
+    Returns (table, info): info["feature_columns"] lists the model inputs (plus the categorical
+    'series'), info["macro"] says whether the ECB features could be added.
+    """
+    table = add_targets(build_series(monthly))
+    table = add_lag_features(table)
+    table = add_calendar_features(table, country=country)
+    table, macro_added = add_macro_features(table, macro)
+    table = add_profile_features(table)
+    features = BASE_FEATURES + CALENDAR_FEATURES + (MACRO_FEATURES if macro_added else []) + PROFILE_FEATURES
+    return table, {"feature_columns": features, "categorical": ["series"], "macro": macro_added}

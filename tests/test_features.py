@@ -5,7 +5,8 @@ import pandas as pd
 import pytest
 
 from src.features.build_features import (
-    add_calendar_features, add_lag_features, add_macro_features, add_targets, build_series,
+    add_calendar_features, add_lag_features, add_macro_features, add_profile_features, add_targets,
+    build_features, build_series,
 )
 from src.preprocessing.aggregate_monthly import aggregate_user_month_category
 
@@ -101,3 +102,22 @@ def test_macro_features_skipped_without_data(monkeypatch):
     same, added = add_macro_features(table)
     assert not added
     assert list(same.columns) == list(table.columns)
+
+
+def test_profile_features():
+    table = add_profile_features(add_targets(build_series(make_monthly(8))))
+    row = table[(table["series"] == "income") & (table["month"] == pd.Period("2025-06"))].iloc[0]
+    # last 3 months (Apr-Jun): rent 800 each, groceries 130 + 140 + 150
+    assert row["fixed_share"] == pytest.approx(2400 / (2400 + 420), abs=1e-4)
+    assert row["income_volatility"] == 0.0               # same salary every month
+    first = table[(table["series"] == "income") & (table["month"] == pd.Period("2025-02"))].iloc[0]
+    assert np.isnan(first["fixed_share"]) and np.isnan(first["income_volatility"])   # not enough history yet
+
+
+def test_build_features_one_call():
+    table, info = build_features(make_monthly(15), macro=pd.DataFrame(
+        {"month": pd.period_range("2024-12", periods=16, freq="M"), "inflation_de": 2.0, "ecb_rate": 2.5}))
+    assert info["macro"] is True
+    assert {"lag_12", "month_sin", "holidays", "inflation_de", "fixed_share"} <= set(info["feature_columns"])
+    assert set(info["feature_columns"]) <= set(table.columns)
+    assert len(table) == 15 * 4                          # 15 months x 4 series, no rows added by merges
