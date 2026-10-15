@@ -47,6 +47,15 @@ forecast:
     tune_folds: 6               # test months the trials are scored on ...
     holdout_folds: 6            # ... all before the last 6, kept unseen for the before/after check
 
+anomaly:
+  model_file: anomaly.joblib    # in paths.models (step 7.10)
+  meta_file: anomaly_meta.json
+  contamination_grid: [0.005, 0.01, 0.015, 0.02, 0.03]   # share of expenses flagged; chosen on the validation months
+  train_months: 18              # months 1-18 train, 19-24 choose the flag rate, the rest test
+  validation_months: 6
+  planted_duplicates: 400       # per evaluation window: a charge repeated within 0-2 days
+  planted_price_rises: 400      # per evaluation window: a subscription charged 15-60 % more once
+
 synthetic:
   n_users: 300                  # generated training users
   months: 36                    # history length per user

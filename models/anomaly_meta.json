@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "created_at": "2026-10-15T13:38:38+00:00",
+  "model": "IsolationForest",
+  "params": {
+    "n_estimators": 200,
+    "max_samples": 1024,
+    "random_state": 42,
+    "n_jobs": -1
+  },
+  "features": [
+    "category_z",
+    "merchant_z",
+    "merchant_seen",
+    "new_merchant_z",
+    "days_since_merchant",
+    "days_since_same"
+  ],
+  "contamination": 0.03,
+  "threshold": 0.559928,
+  "flag_method": "rule",
+  "flag_method_reason": "validation F1: rule 0.686 vs forest 0.368",
+  "periods": {
+    "train": "2023-10 to 2025-03",
+    "validation": "2025-04 to 2025-09",
+    "test": "2025-10 to 2026-09"
+  },
+  "test": {
+    "flag_rate": 0.0343,
+    "precision": 0.1465,
+    "recall": 0.6369,
+    "false_alarm_rate": 0.0295,
+    "flags": 4143,
+    "known_anomalies": 953,
+    "f1": 0.2382,
+    "recall_shock": 0.8389,
+    "n_shock": 149,
+    "recall_duplicate": 0.9876,
+    "n_duplicate": 404,
+    "recall_price_rise": 0.2075,
+    "n_price_rise": 400,
+    "average_precision": 0.1692
+  },
+  "rule_baseline": {
+    "flag_rate": 0.014,
+    "precision": 0.4947,
+    "recall": 0.8772,
+    "false_alarm_rate": 0.0071,
+    "flags": 1690,
+    "known_anomalies": 953,
+    "f1": 0.6326,
+    "recall_shock": 0.7584,
+    "n_shock": 149,
+    "recall_duplicate": 1.0,
+    "n_duplicate": 404,
+    "recall_price_rise": 0.7975,
+    "n_price_rise": 400
+  },
+  "libraries": {
+    "scikit-learn": "1.9.1",
+    "pandas": "3.0.5",
+    "numpy": "2.5.3"
+  },
+  "file": "anomaly.joblib",
+  "size_kb": 1468.0
+}
