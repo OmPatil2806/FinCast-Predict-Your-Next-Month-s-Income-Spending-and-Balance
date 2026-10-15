@@ -1,15 +1,21 @@
-"""Stage 2 of the pipeline: turn the raw transactions into model-ready tables (and, later, models).
+"""Stage 2 of the pipeline: raw transactions -> model-ready tables -> trained, exported models.
 
-    python pipelines/run_training.py                       # categorise, aggregate, check, save
+    python pipelines/run_training.py                       # data + all models (~4 min)
+    python pipelines/run_training.py --data-only           # only the data steps
     python pipelines/run_training.py --train-categorizer   # also retrain + log the categoriser first
+    python pipelines/run_training.py --tune                # also re-run the Optuna search (+~10 min)
+    python pipelines/run_training.py --experiments         # also the 7.3 / 7.4 / 7.5 comparisons (+~10 min)
 
-Current steps:
-1. (optional) retrain the categoriser and log it to MLflow (src/training/train_categorizer.py)
-2. categorise every transaction with the app's own categorize() and compare with the true labels
-3. aggregate to one row per user x month x category (+ "ALL" totals and end balance)
-4. reconcile the table with the raw transactions, then save data/processed/monthly.parquet
-5. build the model features (src/features/build_features.py), save data/processed/features.parquet
-Phase 7 adds the baselines and forecasting models here.
+Data steps:
+  (optional) retrain the categoriser and log it to MLflow (src/training/train_categorizer.py)
+  categorise every transaction with the app's own categorize() and compare with the true labels
+  aggregate to one row per user x month x category (+ "ALL" totals and end balance)
+  reconcile the table with the raw transactions, then save data/processed/monthly.parquet
+  build the model features (src/features/build_features.py), save data/processed/features.parquet
+Model steps (each one is also runnable on its own with python -m src.training.<module>):
+  baselines (6.9) -> [tuning 7.6] -> [comparisons 7.3-7.5] -> champion rule (7.8)
+  -> export + registry (7.9) -> SHAP explanations (7.7) -> anomaly model (7.10)
+Without --tune the settings already in models/forecast_params.json are used.
 """
 
 import argparse
@@ -69,13 +75,37 @@ def save_features(features: pd.DataFrame, config: dict) -> Path:
     return path
 
 
+def model_steps(tune: bool = False, experiments: bool = False) -> list[tuple[str, str, object]]:
+    """(label, what it produces, function) for every model step, in order. Imported lazily (heavy)."""
+    from src.training import (
+        explain_forecaster, export_champion, select_champion, train_anomaly, train_baselines, train_forecaster,
+        train_statistical, tune_forecaster,
+    )
+    steps = [("Baselines ", "models/baseline_scores.json", train_baselines.main)]
+    if tune:
+        steps.append(("Tuning (Optuna) ", "models/forecast_params.json", lambda: tune_forecaster.main([])))
+    if experiments:
+        steps += [("LightGBM median ", "MLflow comparison runs", lambda: train_forecaster.main([])),
+                  ("LightGBM ranges ", "MLflow coverage runs", lambda: train_forecaster.main(["--ranges"])),
+                  ("ETS / SARIMAX ", "MLflow comparison runs", train_statistical.main)]
+    steps += [("Champion rule ", "models/champions.json", select_champion.main),
+              ("Export + registry ", "models/forecaster_*.joblib, model_meta.json", export_champion.main),
+              ("SHAP explanations ", "reports/figures/", explain_forecaster.main),
+              ("Anomaly model ", "models/anomaly.joblib, anomaly_meta.json", train_anomaly.main)]
+    return steps
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--train-categorizer", action="store_true", help="retrain and log the categoriser first")
+    parser.add_argument("--data-only", action="store_true", help="stop after the features")
+    parser.add_argument("--tune", action="store_true", help="re-run the Optuna search (step 7.6)")
+    parser.add_argument("--experiments", action="store_true", help="also run the 7.3 / 7.4 / 7.5 comparisons")
     args = parser.parse_args(argv)
 
     config = load_config()
-    total = 5 if args.train_categorizer else 4
+    steps = [] if args.data_only else model_steps(args.tune, args.experiments)
+    total = (5 if args.train_categorizer else 4) + len(steps)
     step = 0
     began = time.perf_counter()
 
@@ -127,7 +157,14 @@ def main(argv: list[str] | None = None) -> int:
           f"{len(info['feature_columns'])} features, {macro} macro → {path.relative_to(ROOT)} "
           f"({path.stat().st_size / 1024:.0f} KB)", time.perf_counter() - t)
 
-    print(f"Done in {time.perf_counter() - began:.1f}s.")
+    for label, produces, run in steps:
+        step += 1
+        print(f"\n[{step}/{total}] {label}{'-' * (24 - len(label))}")
+        t = time.perf_counter()
+        run()
+        _step(step, total, label, f"done → {produces}", time.perf_counter() - t)
+
+    print(f"\nDone in {time.perf_counter() - began:.1f}s.")
     return 0
 
 

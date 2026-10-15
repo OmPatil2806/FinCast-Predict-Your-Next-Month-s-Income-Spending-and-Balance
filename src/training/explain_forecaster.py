@@ -96,6 +96,7 @@ def save_plots(result: dict, figures: Path) -> list[Path]:
     shap.plots.bar(explanation, max_display=15, show=False)
     save("shap_summary", f"{family}: mean |SHAP| per input ({unit}), forecasts for {month}")
 
+    np.random.seed(0)                                     # the beeswarm jitters points randomly
     shap.plots.beeswarm(explanation, max_display=15, show=False)
     save("shap_beeswarm", f"{family}: input value vs push on the forecast ({unit})")
 
