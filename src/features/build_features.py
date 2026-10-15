@@ -10,12 +10,15 @@ A row is "the forecast made at the end of month t for the target month t+1":
     target        the series in month t+1 (what the model must predict; NaN for the last month)
 Feature names count back from the target month: lag_1 = month t, lag_12 = same month last year.
 
-Step 6.1: series + targets. Step 6.2: lag and rolling features. (6.3-6.5 add calendar, macro, profile.)
+Step 6.1: series + targets. 6.2: lags and rolling stats. 6.3: calendar of the target month.
+(6.4-6.5 add macro and profile features.)
 """
 
+import numpy as np
 import pandas as pd
 
 from src.preprocessing.aggregate_monthly import TOTAL
+from src.utils.helpers import holidays_per_month
 
 INCOME = "income"
 EXPENSES = "expenses"
@@ -72,3 +75,27 @@ def add_lag_features(table: pd.DataFrame) -> pd.DataFrame:
     out["roll_std_6"] = grouped.transform(lambda s: s.rolling(6, min_periods=6).std())
     out["history_months"] = grouped.cumcount() + 1
     return out
+
+
+# ---------- step 6.3: calendar of the target month (known in advance) ----------
+
+CALENDAR_FEATURES = ["month_sin", "month_cos", "holidays", "working_days", "days_in_month"]
+
+
+def add_calendar_features(table: pd.DataFrame, country: str | None = None) -> pd.DataFrame:
+    """Calendar facts about the TARGET month t+1. This is the one place a feature describes a month
+    after the origin: the calendar of next month is known in advance, so it is not leakage.
+
+    month_sin / month_cos place the month on a circle (December sits next to January).
+    """
+    out = table.copy()
+    target_month = out["target_month"]
+    angle = 2 * np.pi * (target_month.dt.month - 1) / 12
+    out["month_sin"] = np.sin(angle).round(6)
+    out["month_cos"] = np.cos(angle).round(6)
+
+    calendar = holidays_per_month(target_month.min(), target_month.max(), country=country)
+    calendar = calendar.rename(columns={"month": "target_month"})
+    out = out.merge(calendar[["target_month", "holidays", "working_days", "days_in_month"]],
+                    on="target_month", how="left")
+    return out.sort_values(KEYS, ignore_index=True)

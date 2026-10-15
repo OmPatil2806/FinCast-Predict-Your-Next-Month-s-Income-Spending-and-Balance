@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.features.build_features import add_lag_features, add_targets, build_series
+from src.features.build_features import add_calendar_features, add_lag_features, add_targets, build_series
 from src.preprocessing.aggregate_monthly import aggregate_user_month_category
 
 
@@ -59,3 +59,16 @@ def test_short_history_gives_nan_not_future_values():
     assert np.isnan(g.loc[0, "lag_2"]) and np.isnan(g.loc[1, "roll_mean_3"])
     assert g["lag_12"].isna().sum() == 11              # needs 12 months of history
     assert g.loc[11, "lag_12"] == 100.0                # first month with a full year behind it
+
+
+def test_calendar_features_describe_the_target_month():
+    table = add_calendar_features(add_targets(build_series(make_monthly(13))), country="DE")
+    row = table[(table["series"] == "income") & (table["month"] == pd.Period("2025-11"))].iloc[0]
+    assert row["target_month"] == pd.Period("2025-12")
+    assert row["holidays"] == 2                        # Christmas Day + Boxing Day
+    assert row["working_days"] == 21 and row["days_in_month"] == 31
+    assert row["month_cos"] == pytest.approx(np.cos(2 * np.pi * 11 / 12))
+    # December and January are neighbours on the circle; June is opposite
+    dec, jan, jun = [(np.sin(2 * np.pi * (m - 1) / 12), np.cos(2 * np.pi * (m - 1) / 12)) for m in (12, 1, 6)]
+    assert np.hypot(dec[0] - jan[0], dec[1] - jan[1]) < np.hypot(jun[0] - jan[0], jun[1] - jan[1])
+    assert len(table) == len(build_series(make_monthly(13)))   # merge adds columns, never rows
