@@ -36,7 +36,8 @@ from sklearn.preprocessing import OneHotEncoder
 
 from src.ingestion.bank_csv_parser import parse_bank_csv
 from src.preprocessing.categorizer import categorize, categorizer_path, merchant_key, model_inputs
-from src.utils.helpers import load_config, mlflow_tracking_uri, resolve_path
+from src.utils.helpers import load_config, resolve_path
+from src.utils.mlflow_utils import setup_experiment
 
 matplotlib.use("Agg")   # draw figures without a screen
 
@@ -218,13 +219,7 @@ def confusion_figure(predictions: pd.DataFrame):
 
 def log_to_mlflow(metrics: dict, threshold: float, model_path: Path, meta_path: Path) -> str:
     """One run in the 'categorizer' experiment: parameters, metrics, plots and the model files."""
-    config = load_config()
-    mlflow.set_tracking_uri(mlflow_tracking_uri())
-    name = config["mlflow"]["experiments"]["categorizer"]
-    if mlflow.get_experiment_by_name(name) is None:
-        artifacts = resolve_path("mlruns") / name
-        mlflow.create_experiment(name, artifact_location=artifacts.as_uri())
-    mlflow.set_experiment(name)
+    setup_experiment("categorizer")
 
     flat = {
         "rules_plus_model_accuracy": metrics["C_rules_plus_model_heldout_users"]["accuracy"],

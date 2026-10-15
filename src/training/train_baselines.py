@@ -23,7 +23,8 @@ import pandas as pd
 from src.evaluation.backtest import backtest_folds, holdout_user_folds
 from src.evaluation.metrics import point_metrics, summarize
 from src.features.build_features import build_features
-from src.utils.helpers import load_config, mlflow_tracking_uri, resolve_path
+from src.utils.helpers import load_config, resolve_path
+from src.utils.mlflow_utils import setup_experiment
 
 BASELINES = {
     "last_month": lambda t: t["lag_1"],
@@ -99,12 +100,7 @@ def save_scores(results: dict, path: Path | None = None) -> Path:
 
 def log_to_mlflow(results: dict) -> list[str]:
     """One run per baseline in the 'baselines' experiment, with the full tables as CSV artifacts."""
-    config = load_config()
-    mlflow.set_tracking_uri(mlflow_tracking_uri())
-    name = config["mlflow"]["experiments"]["baselines"]
-    if mlflow.get_experiment_by_name(name) is None:
-        mlflow.create_experiment(name, artifact_location=(resolve_path("mlruns") / name).as_uri())
-    mlflow.set_experiment(name)
+    setup_experiment("baselines")
 
     run_ids = []
     for baseline in BASELINES:
