@@ -12,12 +12,14 @@ import streamlit as st  # noqa: E402
 from app.auth.session import current_username, require_login  # noqa: E402
 from app.components.cache import bump_cache, forecast as cached_forecast  # noqa: E402
 from app.components.cards import format_euro  # noqa: E402
-from app.components.charts import forecast_fan_chart  # noqa: E402
-from app.components.forecast_view import balance_risk, category_table, range_text  # noqa: E402
+from app.components.charts import INCOME_COLOR, SPENDING_COLOR, accuracy_chart, forecast_fan_chart  # noqa: E402
+from app.components.forecast_view import (  # noqa: E402
+    ACCURACY_METRICS, accuracy_headline, accuracy_table, balance_risk, category_table, range_text,
+)
 from app.components.layout import empty_state, setup_database, show_footer, show_sidebar  # noqa: E402
 from app.database.crud import get_transactions, save_forecast  # noqa: E402
 from src.forecasting.predictor import NotEnoughHistory, complete_history  # noqa: E402
-from src.monitoring.forecast_vs_actual import update_actuals  # noqa: E402
+from src.monitoring.forecast_vs_actual import accuracy, summary, update_actuals  # noqa: E402
 from src.preprocessing.aggregate_monthly import aggregate_monthly  # noqa: E402
 
 TREND_MONTHS = 12
@@ -70,6 +72,38 @@ def show_categories(forecast) -> None:
                "total, so the categories do not add up exactly to the spending forecast above.")
 
 
+def show_accuracy(user_id: int, forecast) -> None:
+    """Step 9.2: how close past forecasts came to what really happened."""
+    st.subheader("How accurate was I?")
+    scored = accuracy(user_id)
+    if scored.empty:
+        st.caption(f"Nothing to check yet. Your {forecast.target_month.strftime('%B %Y')} forecast is compared with "
+                   "what really happens once that month is over and its transactions are imported.")
+        return
+    st.caption("Each month FinCast stores its first forecast; once the month is over it is compared with your real "
+               "numbers. The range is meant to hold the real value about 8 times in 10.")
+    stats = summary(scored).set_index("metric")
+    columns = st.columns(len(stats))
+    for column, (metric, row) in zip(columns, stats.iterrows()):
+        value, help_text = accuracy_headline(row)
+        column.metric(ACCURACY_METRICS[metric], value, border=True)
+        column.caption(help_text)
+
+    choice = st.segmented_control("Show", list(ACCURACY_METRICS), format_func=ACCURACY_METRICS.get,
+                                  default="expenses", key="accuracy_metric") or "expenses"
+    color = {"income": INCOME_COLOR, "expenses": SPENDING_COLOR, "balance": INCOME_COLOR}[choice]
+    figure = accuracy_chart(scored, choice, ACCURACY_METRICS[choice], color)
+    if figure is not None:
+        st.plotly_chart(figure, width="stretch")
+    st.dataframe(accuracy_table(scored, choice), width="stretch", hide_index=True, column_config={
+        "month": "Month",
+        "forecast": st.column_config.NumberColumn("Forecast (€)", format="%.0f"),
+        "range": "Likely range",
+        "actual": st.column_config.NumberColumn("Actual (€)", format="%.0f"),
+        "error": st.column_config.NumberColumn("Actual − forecast (€)", format="%+.0f"),
+        "in_range": "In range"})
+
+
 def main() -> None:
     user_id = require_login()
     show_sidebar()
@@ -111,6 +145,7 @@ def main() -> None:
     st.caption("Shaded fan: where next month will most likely land (10 % – 90 % range). Dotted line: the forecast.")
 
     show_categories(forecast)
+    show_accuracy(user_id, forecast)
 
 
 main()

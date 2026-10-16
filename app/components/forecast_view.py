@@ -45,3 +45,26 @@ def balance_risk(forecast) -> tuple[str, str] | None:
         return "warning", (f"Risk of a negative balance: in a weak month (low income, high spending) your balance "
                            f"could end {month} at {format_euro(balance['lower'], 0)}.")
     return None
+
+
+ACCURACY_METRICS = {"income": "Income", "expenses": "Spending", "balance": "Balance at month end"}
+
+
+def accuracy_table(scored: pd.DataFrame, metric: str) -> pd.DataFrame:
+    """One row per checked month for the panel: forecast, range, actual, error, in range."""
+    part = scored[scored["metric"] == metric].sort_values("target_month", ascending=False)
+    return pd.DataFrame({
+        "month": [pd.Period(m, "M").strftime("%B %Y") for m in part["target_month"]],
+        "forecast": part["predicted"].to_numpy(),
+        "range": [range_text(lo, hi) for lo, hi in zip(part["lower"], part["upper"])],
+        "actual": part["actual"].to_numpy(),
+        "error": part["error"].to_numpy(),
+        "in_range": ["✅ yes" if inside else "❌ no" for inside in part["inside"]],
+    })
+
+
+def accuracy_headline(row) -> tuple[str, str]:
+    """('5 of 6', 'months in range · typical miss €1,013 (37%)') for one metric of summary()."""
+    pct = "" if pd.isna(row["median_abs_pct_error"]) else f" ({row['median_abs_pct_error']:.0%})"
+    return (f"{int(row['inside'])} of {int(row['months'])}",
+            f"months in range · typical miss {format_euro(row['median_abs_error'], 0)}{pct}")

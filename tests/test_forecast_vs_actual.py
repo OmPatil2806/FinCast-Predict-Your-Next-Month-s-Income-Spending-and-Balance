@@ -73,3 +73,20 @@ def test_score_and_summary():
     s = summary(scored).set_index("metric")
     assert s.loc["income", "months"] == 2 and s.loc["income", "inside"] == 1
     assert due_forecasts(f.iloc[0:0], pd.DataFrame({"date": []})).empty
+
+
+def test_accuracy_panel_pieces():
+    from app.components.charts import accuracy_chart
+    from app.components.forecast_view import accuracy_headline, accuracy_table
+    f = pd.DataFrame({"target_month": ["2025-07", "2025-08"], "metric": ["expenses", "expenses"],
+                      "predicted": [2000.0, 2100.0], "lower": [1800.0, 1900.0], "upper": [2300.0, 2400.0],
+                      "actual": [2200.0, 2600.0]})
+    scored = score(f)
+    table = accuracy_table(scored, "expenses")
+    assert table["month"].tolist() == ["August 2025", "July 2025"]                # newest first
+    assert table["in_range"].tolist() == ["❌ no", "✅ yes"] and table["error"].tolist() == [500.0, 200.0]
+    value, detail = accuracy_headline(summary(scored).set_index("metric").loc["expenses"])
+    assert value == "1 of 2" and detail.startswith("months in range · typical miss €350")
+    fig = accuracy_chart(scored, "expenses", "Spending", "#eb6834")
+    assert [t.name for t in fig.data] == ["Forecast range (10–90 %)", "Forecast", "What happened"]
+    assert list(fig.data[0].base) == [1800.0, 1900.0] and accuracy_chart(scored, "income", "Income", "#2a78d6") is None

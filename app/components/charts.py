@@ -18,6 +18,7 @@ POSITIVE_COLOR = "#2a78d6"    # savings above zero
 NEGATIVE_COLOR = "#e34948"    # savings below zero
 MAGNITUDE_COLOR = "#2a78d6"   # single-hue bars (spending by category)
 BEFORE_COLOR = "#a8a6a0"      # neutral grey: the forecast before a what-if change
+ACTUAL_COLOR = "#3b3a37"      # dark neutral ink: what really happened
 INK_MUTED = "#898781"         # axis labels and direct labels (readable on light and dark)
 GRID_COLOR = "rgba(137, 135, 129, 0.22)"
 SURFACE_RING = "rgba(252,252,251,0.9)"   # 2px ring around markers so overlapping points stay readable
@@ -179,3 +180,29 @@ def what_if_chart(before, after) -> go.Figure:
     fig.update_yaxes(tickprefix="€", tickformat=",.0f")
     fig.update_xaxes(showgrid=False)
     return _style(fig, height=360)
+
+
+def accuracy_chart(scored: pd.DataFrame, metric: str, label: str, color: str) -> go.Figure | None:
+    """Per past month: the forecast range (bar), the forecast (diamond) and the real value (dot)."""
+    part = scored[scored["metric"] == metric].sort_values("target_month")
+    if part.empty:
+        return None
+    x = pd.PeriodIndex(part["target_month"], freq="M").to_timestamp()
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=x, y=part["upper"] - part["lower"], base=part["lower"], name="Forecast range (10–90 %)",
+        marker=dict(color=tint(color, 0.22), cornerradius=4, line=dict(width=0)), width=1000 * 3600 * 24 * 12,
+        customdata=part[["lower", "upper"]], hovertemplate="Range €%{customdata[0]:,.0f} – €%{customdata[1]:,.0f}<extra></extra>"))
+    fig.add_trace(go.Scatter(
+        x=x, y=part["predicted"], name="Forecast", mode="markers",
+        marker=dict(size=11, color=color, symbol="diamond", line=dict(width=2, color=SURFACE_RING)),
+        hovertemplate="Forecast €%{y:,.0f}<extra></extra>"))
+    fig.add_trace(go.Scatter(
+        x=x, y=part["actual"], name="What happened", mode="markers",
+        marker=dict(size=10, color=ACTUAL_COLOR, line=dict(width=2, color=SURFACE_RING)),
+        hovertemplate="Actual €%{y:,.0f}<extra></extra>"))
+    fig.update_layout(hovermode="x unified", bargap=0.5)
+    fig.update_xaxes(tickvals=list(x), tickformat="%b %Y", hoverformat="%B %Y")
+    fig.update_yaxes(tickprefix="€", tickformat=",.0f", rangemode="tozero", title=None)
+    fig.update_layout(meta=label)              # the metric name; the page's selector above already shows it
+    return _style(fig, height=320)
