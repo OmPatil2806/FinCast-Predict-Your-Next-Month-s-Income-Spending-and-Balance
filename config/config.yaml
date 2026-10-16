@@ -36,6 +36,8 @@ forecast:
   quantiles: [0.1, 0.5, 0.9]    # lower bound, median, upper bound
   min_history_months: 3         # fewer months -> friendly message, no forecast
   cold_start_months: 6          # fewer months -> global model with a visible note
+  cold_start_file: cold_start.json    # in paths.models: range widening for short histories (step 8.2)
+  cold_start_origins: ["2025-07", "2025-09", "2025-11", "2026-01", "2026-03", "2026-05"]   # first half picks, second half checks
   params_file: forecast_params.json   # in paths.models: tuned LightGBM settings per family (step 7.6)
   champion_threshold: 0.10     # LightGBM must beat the best baseline's MAE by >= 10 % to be champion (step 7.8)
   champions_file: champions.json      # in paths.models: champion per series + the reason

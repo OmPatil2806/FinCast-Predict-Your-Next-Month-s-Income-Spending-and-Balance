@@ -16,8 +16,17 @@ The end balance is this month's balance plus forecast income minus forecast spen
 the low income with the high spending end (and the other way round), so it is deliberately wide.
 Total spending and the categories have their own champions, so the categories need not add up to the total.
 
+Short histories (step 8.2, settings in config.yaml -> forecast):
+    fewer than min_history_months (3) complete months -> NotEnoughHistory, with a friendly message
+    fewer than cold_start_months (6)                   -> forecast with a note; ranges widened by the
+                                                          factor measured in models/cold_start.json
+    fewer than 12                                       -> a note: no "same month last year" yet, so
+                                                          spending forecasts are clearly less accurate
+
 Loads no MLflow and no training code.
 """
+
+import json
 
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -33,6 +42,26 @@ from src.utils.helpers import load_config, resolve_path
 
 FALLBACK = "mean_3"
 FAMILIES = ("income", "spend")
+FULL_YEAR = 12
+
+
+class NotEnoughHistory(ValueError):
+    """Too few complete months for a forecast worth showing."""
+
+    def __init__(self, months: int, needed: int):
+        self.months, self.needed = months, needed
+        more = needed - months
+        super().__init__(f"FinCast needs at least {needed} complete months of transactions to forecast; "
+                         f"you have {months}. Import {more} more month{'s' if more != 1 else ''} "
+                         f"(or wait until the current month is over).")
+
+
+def load_cold_start(models_dir: str | Path | None = None) -> dict:
+    """Range widening for short histories, measured in step 8.2 (empty -> no widening)."""
+    config = load_config()
+    models_dir = Path(models_dir) if models_dir else resolve_path(config["paths"]["models"])
+    path = models_dir / config["forecast"]["cold_start_file"]
+    return json.loads(path.read_text()) if path.exists() else {}
 
 
 @dataclass
@@ -45,6 +74,7 @@ class Forecast:
     balance: dict                      # current, lower, predicted, upper
     model_version: int | None = None
     notes: list = field(default_factory=list)
+    cold_start: bool = False           # fewer than cold_start_months: ranges widened, shown with a note
 
     def get(self, series: str) -> dict:
         """One series as a dict, e.g. forecast.get("income")["predicted"]."""
@@ -80,13 +110,23 @@ def _origin_rows(table: pd.DataFrame, feature_columns: list[str], notes: list) -
 
 
 def forecast_from_transactions(transactions: pd.DataFrame, forecasters: dict | None = None,
-                               opening_balance: float = 0.0, as_of=None, user_id="user") -> Forecast:
-    """Forecast for the month after the last complete month in `transactions` (date, amount, category)."""
+                               opening_balance: float = 0.0, as_of=None, user_id="user",
+                               cold_start: dict | None = None) -> Forecast:
+    """Forecast for the month after the last complete month in `transactions` (date, amount, category).
+
+    Raises NotEnoughHistory when there are fewer than forecast.min_history_months complete months.
+    """
     forecasters = forecasters or load_forecasters()
+    settings = load_config()["forecast"]
     notes: list[str] = []
     history = complete_history(transactions, as_of)
-    if history.empty:
-        raise ValueError("no complete month of transactions yet")
+    months = int(pd.to_datetime(history["date"]).dt.to_period("M").nunique()) if not history.empty else 0
+    if months == 0:
+        raise NotEnoughHistory(0, settings["min_history_months"])
+    first, last = pd.to_datetime(history["date"]).dt.to_period("M").agg(["min", "max"])
+    months = (last - first).n + 1                         # months in between without transactions count too
+    if months < settings["min_history_months"]:
+        raise NotEnoughHistory(months, settings["min_history_months"])
     history = history.assign(user_id=user_id)
 
     monthly = aggregate_user_month_category(history, opening_balances=float(opening_balance))
@@ -110,6 +150,20 @@ def forecast_from_transactions(transactions: pd.DataFrame, forecasters: dict | N
             notes.append(f"no model for {', '.join(unknown['series'])}: 3-month average, no range")
     series = (pd.concat(parts, ignore_index=True).rename(columns={"value": "last_value"})
               [["series", "last_value", "lower", "predicted", "upper", "champion"]])
+    is_cold = months < settings["cold_start_months"]
+    if is_cold:
+        cold_start = load_cold_start() if cold_start is None else cold_start
+        factors = cold_start.get("width_factor", {})
+        is_income = series["series"] == INCOME
+        factor = np.where(is_income, factors.get("income", 1.0), factors.get("spend", 1.0))
+        series["lower"] = np.clip(series["predicted"] - factor * (series["predicted"] - series["lower"]), 0, None)
+        series["upper"] = series["predicted"] + factor * (series["upper"] - series["predicted"])
+        notes.append(f"Based on only {months} months of history: forecasts are less accurate and the ranges "
+                     f"are wider. They improve once you have {settings['cold_start_months']} or more months.")
+    elif months < FULL_YEAR:
+        notes.append(f"{months} months of history: no 'same month last year' yet, so spending forecasts are "
+                     "less accurate until you have 12 months.")
+
     order = {INCOME: 0, EXPENSES: 1}
     series = series.sort_values("series", key=lambda s: s.map(order).fillna(2).astype(str) + s,
                                 ignore_index=True)
@@ -120,9 +174,9 @@ def forecast_from_transactions(transactions: pd.DataFrame, forecasters: dict | N
                "predicted": round(float(current + income["predicted"] - spend["predicted"]), 2),
                "lower": round(float(current + income["lower"] - spend["upper"]), 2),
                "upper": round(float(current + income["upper"] - spend["lower"]), 2)}
-    history_months = int(rows["history_months"].iloc[0]) if "history_months" in rows else int(monthly["month"].nunique())
-    return Forecast(user_id=user_id, origin_month=origin, target_month=origin + 1, history_months=history_months,
-                    series=series, balance=balance, model_version=forecasters["income"].version, notes=notes)
+    return Forecast(user_id=user_id, origin_month=origin, target_month=origin + 1, history_months=months,
+                    series=series, balance=balance, model_version=forecasters["income"].version, notes=notes,
+                    cold_start=is_cold)
 
 
 def forecast_user(user_id: int, db_path: str | Path | None = None, as_of=None,
@@ -131,7 +185,7 @@ def forecast_user(user_id: int, db_path: str | Path | None = None, as_of=None,
     from app.database.crud import get_profile, get_transactions
     transactions = get_transactions(user_id, db_path=db_path)
     if transactions.empty:
-        raise ValueError("no transactions yet - import a bank CSV first")
+        raise NotEnoughHistory(0, load_config()["forecast"]["min_history_months"])
     profile = get_profile(user_id, db_path=db_path) or {}
     return forecast_from_transactions(transactions, forecasters, profile.get("opening_balance") or 0.0,
                                       as_of, user_id)

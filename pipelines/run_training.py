@@ -1,6 +1,6 @@
 """Stage 2 of the pipeline: raw transactions -> model-ready tables -> trained, exported models.
 
-    python pipelines/run_training.py                       # data + all models (~4 min)
+    python pipelines/run_training.py                       # data + all models (~8 min)
     python pipelines/run_training.py --data-only           # only the data steps
     python pipelines/run_training.py --train-categorizer   # also retrain + log the categoriser first
     python pipelines/run_training.py --tune                # also re-run the Optuna search (+~10 min)
@@ -14,7 +14,8 @@ Data steps:
   build the model features (src/features/build_features.py), save data/processed/features.parquet
 Model steps (each one is also runnable on its own with python -m src.training.<module>):
   baselines (6.9) -> [tuning 7.6] -> [comparisons 7.3-7.5] -> champion rule (7.8)
-  -> export + registry (7.9) -> SHAP explanations (7.7) -> anomaly model (7.10)
+  -> export + registry (7.9) -> short-history calibration (8.2) -> SHAP explanations (7.7)
+  -> anomaly model (7.10)
 Without --tune the settings already in models/forecast_params.json are used.
 """
 
@@ -78,8 +79,8 @@ def save_features(features: pd.DataFrame, config: dict) -> Path:
 def model_steps(tune: bool = False, experiments: bool = False) -> list[tuple[str, str, object]]:
     """(label, what it produces, function) for every model step, in order. Imported lazily (heavy)."""
     from src.training import (
-        explain_forecaster, export_champion, select_champion, train_anomaly, train_baselines, train_forecaster,
-        train_statistical, tune_forecaster,
+        calibrate_cold_start, explain_forecaster, export_champion, select_champion, train_anomaly, train_baselines,
+        train_forecaster, train_statistical, tune_forecaster,
     )
     steps = [("Baselines ", "models/baseline_scores.json", train_baselines.main)]
     if tune:
@@ -90,6 +91,7 @@ def model_steps(tune: bool = False, experiments: bool = False) -> list[tuple[str
                   ("ETS / SARIMAX ", "MLflow comparison runs", train_statistical.main)]
     steps += [("Champion rule ", "models/champions.json", select_champion.main),
               ("Export + registry ", "models/forecaster_*.joblib, model_meta.json", export_champion.main),
+              ("Short histories ", "models/cold_start.json", calibrate_cold_start.main),
               ("SHAP explanations ", "reports/figures/", explain_forecaster.main),
               ("Anomaly model ", "models/anomaly.joblib, anomaly_meta.json", train_anomaly.main)]
     return steps

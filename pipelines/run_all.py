@@ -1,6 +1,6 @@
 """Rebuild everything from scratch: raw data, processed tables, models and their exports.
 
-    python pipelines/run_all.py                    # ingestion + training (~5 min)
+    python pipelines/run_all.py                    # ingestion + training (~9 min)
     python pipelines/run_all.py --tune             # also re-run the Optuna search (+~10 min)
     python pipelines/run_all.py --experiments      # also the 7.3 / 7.4 / 7.5 comparisons (+~10 min)
 

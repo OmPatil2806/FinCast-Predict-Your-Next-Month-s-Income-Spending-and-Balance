@@ -11,7 +11,9 @@ from app.auth.auth_service import register
 from app.database.crud import add_transactions, get_profile
 from app.database.db import get_connection, init_db
 from src.features.build_features import build_features
-from src.forecasting.predictor import complete_history, forecast_from_transactions, forecast_user, load_forecasters
+from src.forecasting.predictor import (
+    NotEnoughHistory, complete_history, forecast_from_transactions, forecast_user, load_forecasters,
+)
 from src.ingestion.synthetic_generator import generate_dataset
 from src.preprocessing.aggregate_monthly import aggregate_user_month_category
 
@@ -102,10 +104,45 @@ def test_forecast_from_the_app_database(data, forecasters, tmp_path):
     assert from_db.balance == direct.balance and from_db.model_version == forecasters["income"].version
 
     empty_user = register("new_user", "new@example.com", "secret123", db_path=db)
-    with pytest.raises(ValueError, match="import"):
+    with pytest.raises(NotEnoughHistory, match="Import 3 more months"):
         forecast_user(empty_user, db_path=db, forecasters=forecasters)
 
 
 def test_predictor_loads_without_mlflow():
     code = "import sys, src.forecasting.predictor; print('mlflow' in sys.modules)"
     assert subprocess.run([sys.executable, "-c", code], capture_output=True, text=True).stdout.strip() == "False"
+
+
+def _first_months(transactions, n):
+    dates = pd.to_datetime(transactions["date"])
+    return transactions[dates < dates.min().to_period("M").to_timestamp() + pd.DateOffset(months=n)]
+
+
+def test_too_little_history_gives_a_friendly_message(data, forecasters):
+    transactions, users = data
+    mine = _first_months(transactions[transactions["user_id"] == users["user_id"].iloc[0]], 2)
+    with pytest.raises(NotEnoughHistory) as err:
+        forecast_from_transactions(mine, forecasters, as_of="2025-12-15")
+    assert err.value.months == 2 and err.value.needed == 3 and "1 more month " in str(err.value)
+
+
+def test_short_history_widens_the_range_by_the_measured_factor(data, forecasters):
+    transactions, users = data
+    mine = _first_months(transactions[transactions["user_id"] == users["user_id"].iloc[0]], 4)
+    factors = {"width_factor": {"income": 2.0, "spend": 1.0}}
+    plain = forecast_from_transactions(mine, forecasters, as_of="2025-12-15", cold_start={"width_factor": {}})
+    wide = forecast_from_transactions(mine, forecasters, as_of="2025-12-15", cold_start=factors)
+    assert wide.cold_start and wide.history_months == 4 and any("only 4 months" in n for n in wide.notes)
+    p, w = plain.get("income"), wide.get("income")
+    assert w["predicted"] == p["predicted"]
+    assert w["upper"] - w["predicted"] == pytest.approx(2 * (p["upper"] - p["predicted"]))
+    pd.testing.assert_frame_equal(plain.series.iloc[1:], wide.series.iloc[1:])      # spend factor 1.0
+    assert wide.balance["upper"] - wide.balance["lower"] > plain.balance["upper"] - plain.balance["lower"]
+
+
+def test_under_a_year_gets_a_note_but_no_widening(data, forecasters):
+    transactions, users = data
+    mine = _first_months(transactions[transactions["user_id"] == users["user_id"].iloc[0]], 8)
+    forecast = forecast_from_transactions(mine, forecasters, as_of="2025-12-15")
+    assert not forecast.cold_start and forecast.history_months == 8
+    assert any("12 months" in note for note in forecast.notes)
