@@ -442,3 +442,19 @@ def data_version(user_id: int, db_path: str | Path | None = None) -> tuple:
         return tuple(row)
     finally:
         conn.close()
+
+
+def set_forecast_actuals(user_id: int, actuals: list[tuple], db_path: str | Path | None = None) -> int:
+    """Store real values for stored forecasts: actuals = [(target_month 'YYYY-MM', metric, actual), ...]."""
+    if not actuals:
+        return 0
+    rows = [(round(float(value), 2), user_id, str(month), metric) for month, metric, value in actuals]
+    conn = get_connection(db_path)
+    try:
+        with conn:
+            before = conn.total_changes
+            conn.executemany("UPDATE forecasts SET actual = ? WHERE user_id = ? AND target_month = ? AND metric = ?",
+                             rows)
+            return conn.total_changes - before
+    finally:
+        conn.close()

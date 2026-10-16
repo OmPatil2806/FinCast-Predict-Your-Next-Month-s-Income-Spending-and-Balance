@@ -17,6 +17,7 @@ from app.components.forecast_view import balance_risk, category_table, range_tex
 from app.components.layout import empty_state, setup_database, show_footer, show_sidebar  # noqa: E402
 from app.database.crud import get_transactions, save_forecast  # noqa: E402
 from src.forecasting.predictor import NotEnoughHistory, complete_history  # noqa: E402
+from src.monitoring.forecast_vs_actual import update_actuals  # noqa: E402
 from src.preprocessing.aggregate_monthly import aggregate_monthly  # noqa: E402
 
 TREND_MONTHS = 12
@@ -75,6 +76,8 @@ def main() -> None:
     st.title("Forecast")
 
     transactions = get_transactions(user_id)
+    if update_actuals(user_id):                   # score stored forecasts of finished months (step 9.1)
+        bump_cache()
     try:
         with st.spinner("Forecasting next month…"):
             forecast = cached_forecast(user_id)
