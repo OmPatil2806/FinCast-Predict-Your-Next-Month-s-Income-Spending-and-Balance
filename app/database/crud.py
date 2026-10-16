@@ -245,3 +245,18 @@ def get_forecasts(user_id: int, target_month=None, db_path: str | Path | None = 
         return pd.read_sql_query(query, conn, params=params)
     finally:
         conn.close()
+
+
+def set_anomaly_status(user_id: int, transaction_id: int, status: str | None,
+                       db_path: str | Path | None = None) -> bool:
+    """Record the user's verdict on a flag: 'confirmed', 'dismissed' (or None to undo). True if a row changed."""
+    if status not in (None, "flagged", "confirmed", "dismissed"):
+        raise ValueError(f"unknown anomaly status: {status}")
+    conn = get_connection(db_path)
+    try:
+        with conn:
+            cursor = conn.execute("UPDATE transactions SET anomaly_status = ? WHERE id = ? AND user_id = ?",
+                                  (status, int(transaction_id), user_id))
+            return cursor.rowcount == 1
+    finally:
+        conn.close()
