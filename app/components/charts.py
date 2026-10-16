@@ -17,6 +17,7 @@ SPENDING_COLOR = "#eb6834"    # orange
 POSITIVE_COLOR = "#2a78d6"    # savings above zero
 NEGATIVE_COLOR = "#e34948"    # savings below zero
 MAGNITUDE_COLOR = "#2a78d6"   # single-hue bars (spending by category)
+BEFORE_COLOR = "#a8a6a0"      # neutral grey: the forecast before a what-if change
 INK_MUTED = "#898781"         # axis labels and direct labels (readable on light and dark)
 GRID_COLOR = "rgba(137, 135, 129, 0.22)"
 FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif'
@@ -149,3 +150,25 @@ def forecast_fan_chart(monthly: pd.DataFrame, forecast) -> go.Figure | None:
                      range=[x.iloc[0] - pd.Timedelta(days=12), target + pd.Timedelta(days=55)])
     fig.update_yaxes(tickprefix="€", tickformat=",.0f", rangemode="tozero")
     return _style(fig, height=380)
+
+
+def what_if_chart(before, after) -> go.Figure:
+    """Income, spending and end balance: forecast (grey) next to the scenario (blue), one shared axis."""
+    labels = ["Income", "Spending", "Balance at month end"]
+
+    def values(f):
+        s = f.series.set_index("series")["predicted"]
+        return [s["income"], s["expenses"], f.balance["predicted"]]
+
+    fig = go.Figure()
+    for name, forecast, color in (("Forecast", before, BEFORE_COLOR), ("Your scenario", after, INCOME_COLOR)):
+        v = values(forecast)
+        fig.add_trace(go.Bar(
+            x=labels, y=v, name=name, marker=dict(color=color, cornerradius=4, line=dict(width=0)),
+            text=[f"€{x:,.0f}" for x in v], textposition="outside", textfont=dict(color=INK_MUTED),
+            cliponaxis=False, hovertemplate=f"{name} · %{{x}}: €%{{y:,.2f}}<extra></extra>"))
+    fig.add_hline(y=0, line_width=1, line_color=INK_MUTED)
+    fig.update_layout(barmode="group", bargap=0.35, bargroupgap=0.08)
+    fig.update_yaxes(tickprefix="€", tickformat=",.0f")
+    fig.update_xaxes(showgrid=False)
+    return _style(fig, height=360)
