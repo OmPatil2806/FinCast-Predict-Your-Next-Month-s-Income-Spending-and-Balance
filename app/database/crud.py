@@ -200,3 +200,48 @@ def update_categories(user_id: int, updates: pd.DataFrame, db_path: str | Path |
             return conn.total_changes - before
     finally:
         conn.close()
+
+
+# ---------- forecasts (step 8.4) ----------
+
+def save_forecast(user_id: int, forecast, db_path: str | Path | None = None) -> dict:
+    """Store a predictor Forecast: one row per metric (income, expenses, expenses:<Category>, balance).
+
+    Only the FIRST forecast per user, target month and metric is kept (INSERT OR IGNORE on the
+    UNIQUE key): that is the honest one, made before the month was known, and it is what Phase 9
+    compares with the actual values. Returns {"saved": n, "already_saved": m}.
+    """
+    target = str(forecast.target_month)
+    version = None if forecast.model_version is None else str(forecast.model_version)
+    rows = [(user_id, target, r["series"], round(float(r["predicted"]), 2), round(float(r["lower"]), 2),
+             round(float(r["upper"]), 2), version) for r in forecast.series.to_dict("records")]
+    b = forecast.balance
+    rows.append((user_id, target, "balance", round(float(b["predicted"]), 2), round(float(b["lower"]), 2),
+                 round(float(b["upper"]), 2), version))
+    conn = get_connection(db_path)
+    try:
+        with conn:
+            before = conn.total_changes
+            conn.executemany(
+                """INSERT OR IGNORE INTO forecasts (user_id, target_month, metric, predicted, lower, upper, model_version)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)""", rows)
+            saved = conn.total_changes - before
+    finally:
+        conn.close()
+    return {"saved": saved, "already_saved": len(rows) - saved}
+
+
+def get_forecasts(user_id: int, target_month=None, db_path: str | Path | None = None) -> pd.DataFrame:
+    """The user's stored forecasts (optionally one target month 'YYYY-MM'), oldest month first."""
+    query = ("SELECT target_month, metric, predicted, lower, upper, model_version, created_at, actual "
+             "FROM forecasts WHERE user_id = ?")
+    params: list = [user_id]
+    if target_month is not None:
+        query += " AND target_month = ?"
+        params.append(str(target_month))
+    query += " ORDER BY target_month, metric"
+    conn = get_connection(db_path)
+    try:
+        return pd.read_sql_query(query, conn, params=params)
+    finally:
+        conn.close()

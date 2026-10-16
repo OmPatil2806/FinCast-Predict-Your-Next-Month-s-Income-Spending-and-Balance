@@ -15,7 +15,7 @@ from app.components.cards import format_euro  # noqa: E402
 from app.components.charts import forecast_fan_chart  # noqa: E402
 from app.components.forecast_view import balance_risk, category_table, range_text  # noqa: E402
 from app.components.layout import setup_database, show_footer, show_sidebar  # noqa: E402
-from app.database.crud import get_transactions  # noqa: E402
+from app.database.crud import get_transactions, save_forecast  # noqa: E402
 from src.forecasting.predictor import (  # noqa: E402
     NotEnoughHistory, complete_history, forecast_user, load_forecasters,
 )
@@ -100,9 +100,13 @@ def main() -> None:
         st.error("The forecasting models are missing. Run `python pipelines/run_training.py` once.")
         return
 
+    saved = save_forecast(user_id, forecast)      # first forecast per month is kept (step 8.4)
     st.caption(f"Hello, {current_username()} — your forecast for **{forecast.target_month.strftime("%B %Y")}**, based on "
                f"{forecast.history_months} complete months up to {forecast.origin_month.strftime("%B %Y")} "
                f"(model version {forecast.model_version}).")
+    if saved["already_saved"] and not saved["saved"]:
+        st.caption(f"Your first {forecast.target_month.strftime('%B %Y')} forecast is already stored; FinCast will "
+                   "compare that one with what really happens once the month is over.")
     for note in forecast.notes:
         (st.info if forecast.cold_start else st.caption)(note)
 
