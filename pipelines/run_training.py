@@ -36,10 +36,13 @@ from src.preprocessing.aggregate_monthly import (  # noqa: E402
 )
 from src.preprocessing.categorizer import categorize, load_categorizer  # noqa: E402
 from src.utils.helpers import display_path, load_config, resolve_path  # noqa: E402
+from src.utils.logger import get_logger  # noqa: E402
+
+log = get_logger(__name__)
 
 
 def _step(number: int, total: int, label: str, message: str, seconds: float) -> None:
-    print(f"[{number}/{total}] {label:.<24} {message}  ({seconds:.1f}s)")
+    log.info(f"[{number}/{total}] {label:.<24} {message}  ({seconds:.1f}s)")
 
 
 def load_transactions(config: dict) -> pd.DataFrame:
@@ -125,7 +128,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         transactions = load_transactions(config)
     except FileNotFoundError as err:
-        print(err)
+        log.info(err)
         return 1
     transactions, report = categorize_transactions(transactions)
     sources = ", ".join(f"{k}: {v:,}" for k, v in report["by_source"].items())
@@ -145,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         check = reconcile(monthly, transactions)
     except ReconciliationError as err:
-        print(f"[{step}/{total}] Reconcile FAILED - {err}")
+        log.error(f"[{step}/{total}] Reconcile FAILED - {err}")
         return 1
     path = save_monthly(monthly, config)
     _step(step, total, "Reconcile + save ", f"€{check['monthly_total']:,.2f} = raw €{check['raw_total']:,.2f} ✓ "
@@ -163,12 +166,12 @@ def main(argv: list[str] | None = None) -> int:
 
     for label, produces, run in steps:
         step += 1
-        print(f"\n[{step}/{total}] {label}{'-' * (24 - len(label))}")
+        log.info(f"\n[{step}/{total}] {label}{'-' * (24 - len(label))}")
         t = time.perf_counter()
         run()
         _step(step, total, label, f"done → {produces}", time.perf_counter() - t)
 
-    print(f"\nDone in {time.perf_counter() - began:.1f}s.")
+    log.info(f"\nDone in {time.perf_counter() - began:.1f}s.")
     return 0
 
 

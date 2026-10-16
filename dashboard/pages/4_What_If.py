@@ -16,6 +16,7 @@ from app.components.cards import format_euro  # noqa: E402
 from app.components.charts import what_if_chart  # noqa: E402
 from app.components.forecast_view import balance_risk  # noqa: E402
 from app.components.layout import empty_state, setup_database, show_footer, show_sidebar  # noqa: E402
+from src.utils.logger import get_logger  # noqa: E402
 from src.forecasting.predictor import NotEnoughHistory  # noqa: E402
 from src.forecasting.simulator import CATEGORY_PREFIX, Scenario, compare, simulate  # noqa: E402
 
@@ -106,7 +107,8 @@ def main() -> None:
     except NotEnoughHistory as err:
         empty_state(str(err))
         return
-    except FileNotFoundError:
+    except FileNotFoundError as err:
+        get_logger("app.what_if").error("Forecast models missing: %s", err)
         st.error("The forecasting models are missing. Run `python pipelines/run_training.py` once.")
         return
 

@@ -34,6 +34,9 @@ from src.forecasting.model import ChampionForecaster
 from src.training.train_forecaster import FAMILIES, QUANTILES, ForecastModel, family_rows, saved_params
 from src.utils.helpers import load_config, resolve_path
 from src.utils.mlflow_utils import setup_experiment
+from src.utils.logger import get_logger
+
+log = get_logger(__name__)
 
 
 class ForecasterPyfunc(mlflow.pyfunc.PythonModel):
@@ -155,15 +158,15 @@ def main() -> None:
     monthly = pd.read_parquet(resolve_path(config["paths"]["data_processed"]) / config["processed"]["monthly_file"])
     table, info = build_features(monthly)
     meta = export(table, info["feature_columns"], load_champions(), saved_params())
-    print(f"Exported champion version {meta['version']} (trained on {meta['training_data']['rows']:,} rows, "
-          f"{meta['training_data']['target_months']})")
+    log.info(f"Exported champion version {meta['version']} (trained on {meta['training_data']['rows']:,} rows, "
+             f"{meta['training_data']['target_months']})")
     for family, m in meta["families"].items():
         lightgbm_series = [s for s, c in m["champions"].items() if c == "lightgbm"]
         registry = m.get("registry", {})
-        print(f"  {family}: models/{m['file']} ({m['size_kb']} KB) · LightGBM for {len(lightgbm_series)}/"
-              f"{len(m['champions'])} series · width x{m['width_factor']:.2f} · registry "
-              f"{registry.get('name')} v{registry.get('version')} @{registry.get('alias')}")
-    print(f"Saved models/{config['forecast']['meta_file']}")
+        log.info(f"  {family}: models/{m['file']} ({m['size_kb']} KB) · LightGBM for {len(lightgbm_series)}/"
+                 f"{len(m['champions'])} series · width x{m['width_factor']:.2f} · registry "
+                 f"{registry.get('name')} v{registry.get('version')} @{registry.get('alias')}")
+    log.info(f"Saved models/{config['forecast']['meta_file']}")
 
 
 if __name__ == "__main__":

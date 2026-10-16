@@ -18,18 +18,21 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from pipelines import run_ingestion, run_training  # noqa: E402
+from src.utils.logger import get_logger  # noqa: E402
+
+log = get_logger(__name__)
 
 
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     began = time.perf_counter()
-    print("=== Stage 1: ingestion ===")
+    log.info("=== Stage 1: ingestion ===")
     if run_ingestion.main() != 0:
         return 1
-    print("\n=== Stage 2: training ===")
+    log.info("\n=== Stage 2: training ===")
     if run_training.main(argv) != 0:
         return 1
-    print(f"\nrun_all finished in {time.perf_counter() - began:.0f}s.")
+    log.info(f"\nrun_all finished in {time.perf_counter() - began:.0f}s.")
     return 0
 
 

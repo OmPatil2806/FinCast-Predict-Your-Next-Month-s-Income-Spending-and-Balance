@@ -18,6 +18,7 @@ from app.components.forecast_view import (  # noqa: E402
 )
 from app.components.layout import empty_state, setup_database, show_footer, show_sidebar  # noqa: E402
 from app.database.crud import get_transactions, save_forecast  # noqa: E402
+from src.utils.logger import get_logger  # noqa: E402
 from src.forecasting.predictor import NotEnoughHistory, complete_history  # noqa: E402
 from src.monitoring.drift import check_drift  # noqa: E402
 from src.monitoring.forecast_vs_actual import accuracy, summary, update_actuals  # noqa: E402
@@ -119,7 +120,8 @@ def main() -> None:
     except NotEnoughHistory as err:
         empty_state(str(err))
         return
-    except FileNotFoundError:
+    except FileNotFoundError as err:
+        get_logger("app.forecast").error("Forecast models missing: %s", err)
         st.error("The forecasting models are missing. Run `python pipelines/run_training.py` once.")
         return
 

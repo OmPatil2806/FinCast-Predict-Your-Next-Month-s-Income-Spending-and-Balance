@@ -9,7 +9,6 @@
 A missing ECB connection is not fatal: the step reports it and the pipeline continues.
 """
 
-import logging
 import sys
 import time
 from pathlib import Path
@@ -24,12 +23,13 @@ from src.ingestion.macro_api import MacroDataUnavailable, load_macro  # noqa: E4
 from src.ingestion.synthetic_generator import generate_dataset, save_dataset  # noqa: E402
 from src.preprocessing.cleaning import DataValidationError, validate_transactions  # noqa: E402
 from src.utils.helpers import display_path, holidays_per_month, load_config, resolve_path, set_seed  # noqa: E402
+from src.utils.logger import get_logger  # noqa: E402
 
-logger = logging.getLogger("run_ingestion")
+logger = get_logger(__name__)
 
 
 def _step(number: int, total: int, label: str, message: str, seconds: float) -> None:
-    print(f"[{number}/{total}] {label:.<24} {message}  ({seconds:.1f}s)")
+    logger.info(f"[{number}/{total}] {label:.<24} {message}  ({seconds:.1f}s)")
 
 
 def run_synthetic(config: dict, raw_dir: Path) -> pd.DataFrame:
@@ -58,7 +58,6 @@ def run_calendar(config: dict, raw_dir: Path, transactions: pd.DataFrame) -> pd.
 
 
 def main() -> int:
-    logging.basicConfig(level=logging.WARNING, format="  %(levelname)s %(message)s")
     config = load_config()
     set_seed(config["project"]["seed"])
     raw_dir = resolve_path(config["paths"]["data_raw"])
@@ -69,7 +68,7 @@ def main() -> int:
     try:
         transactions = run_synthetic(config, raw_dir)
     except DataValidationError as err:
-        print(f"[1/3] Synthetic users FAILED\n{err}")
+        logger.error(f"[1/3] Synthetic users FAILED\n{err}")
         return 1
     _step(1, 3, "Synthetic users ",
           f"{len(transactions):,} transactions · {transactions['user_id'].nunique()} users · "
@@ -86,10 +85,10 @@ def main() -> int:
           time.perf_counter() - t)
 
     files = ", ".join(sorted(p.name for p in raw_dir.glob("*.csv")))
-    print(f"Done in {time.perf_counter() - began:.1f}s. Files in {display_path(raw_dir)}/: {files}")
+    logger.info(f"Done in {time.perf_counter() - began:.1f}s. Files in {display_path(raw_dir)}/: {files}")
     if macro is None:
-        print("Note: macro data is missing. Run `python -m src.ingestion.macro_api` with internet access "
-              "before Phase 6 (features).")
+        logger.warning("Note: macro data is missing. Run `python -m src.ingestion.macro_api` with internet "
+                       "access before Phase 6 (features).")
     return 0
 
 

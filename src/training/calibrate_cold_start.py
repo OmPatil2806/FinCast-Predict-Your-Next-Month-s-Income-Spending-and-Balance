@@ -28,6 +28,9 @@ from src.training.train_forecaster import (
     FAMILY_MODE, QUANTILES, TARGET_COVERAGE, ForecastModel, family_rows, saved_params,
 )
 from src.utils.helpers import display_path, load_config, resolve_path
+from src.utils.logger import get_logger
+
+log = get_logger(__name__)
 
 HISTORIES = (3, 4, 5, 6, 12)
 FACTORS = np.round(np.arange(1.0, 4.01, 0.05), 2)
@@ -131,14 +134,14 @@ def main() -> None:
     predictions = holdout_predictions(monthly, info["feature_columns"], load_champions(),
                                       forecast["cold_start_origins"], saved_params(), config["project"]["seed"])
     result = calibrate(predictions, forecast["cold_start_months"])
-    print(f"Users never seen by the models, history cut to N months; factor picked on {result['pick_origins']}, "
-          f"checked on {result['check_origins']}\n")
-    print(result["by_history"].to_string(index=False, formatters={
-        "mae": "€{:,.2f}".format, "coverage": "{:.1%}".format, "check_coverage_raw": "{:.1%}".format,
-        "check_coverage_widened": "{:.1%}".format, "mae_vs_12_months": "x{:.2f}".format, "factor": "{:.2f}".format}))
+    log.info(f"Users never seen by the models, history cut to N months; factor picked on {result['pick_origins']}, "
+             f"checked on {result['check_origins']}\n")
+    log.info(result["by_history"].to_string(index=False, formatters={
+           "mae": "€{:,.2f}".format, "coverage": "{:.1%}".format, "check_coverage_raw": "{:.1%}".format,
+           "check_coverage_widened": "{:.1%}".format, "mae_vs_12_months": "x{:.2f}".format, "factor": "{:.2f}".format}))
     path = save(result, forecast["cold_start_months"])
-    print(f"\nWidening for fewer than {forecast['cold_start_months']} months: {result['factors']} · "
-          f"saved {display_path(path)}")
+    log.info(f"\nWidening for fewer than {forecast['cold_start_months']} months: {result['factors']} · "
+             f"saved {display_path(path)}")
 
 
 if __name__ == "__main__":

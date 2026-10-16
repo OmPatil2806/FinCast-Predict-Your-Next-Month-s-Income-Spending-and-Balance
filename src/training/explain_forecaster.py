@@ -38,6 +38,9 @@ from src.training.train_forecaster import (  # noqa: E402
 )
 from src.utils.helpers import display_path, load_config, resolve_path  # noqa: E402
 from src.utils.mlflow_utils import setup_experiment  # noqa: E402
+from src.utils.logger import get_logger  # noqa: E402
+
+log = get_logger(__name__)
 
 EXAMPLE_SERIES = {"income": "income", "spend": "expenses"}
 UNITS = {"raw": "€", "relative": "log-points vs recent level, ≈ %"}
@@ -140,11 +143,11 @@ def main() -> None:
         result["importance"].round(5).to_csv(table_path, index=False)
         log_to_mlflow(result, paths, table_path)
         top = result["importance"].head(8)
-        print(f"\n=== {family} ({result['mode']}, SHAP in {UNITS[result['mode']]}), forecasts for "
-              f"{result['test_month']}: MAE €{result['metrics']['mae']:,.2f}, "
-              f"SHAP additivity error {result['additivity_error']:.1e}")
-        print(top.to_string(index=False, formatters={"mean_abs_shap": "{:,.4f}".format, "share": "{:.1%}".format}))
-        print("saved:", ", ".join(display_path(p) for p in paths))
+        log.info(f"\n=== {family} ({result['mode']}, SHAP in {UNITS[result['mode']]}), forecasts for "
+                 f"{result['test_month']}: MAE €{result['metrics']['mae']:,.2f}, "
+                 f"SHAP additivity error {result['additivity_error']:.1e}")
+        log.info(top.to_string(index=False, formatters={"mean_abs_shap": "{:,.4f}".format, "share": "{:.1%}".format}))
+        log.info("%s %s", "saved:", ", ".join(display_path(p) for p in paths))
 
 
 if __name__ == "__main__":

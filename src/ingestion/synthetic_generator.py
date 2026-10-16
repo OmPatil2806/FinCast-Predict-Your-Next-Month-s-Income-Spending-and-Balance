@@ -18,6 +18,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from src.utils.logger import get_logger
+
+log = get_logger(__name__)
 
 # ---------- archetypes ----------
 # Every range is (low, high); a user draws one value uniformly inside it.
@@ -529,10 +532,10 @@ def main() -> None:
         transactions, users, resolve_path(config["paths"]["data_raw"]),
         settings["transactions_file"], settings["users_file"],
     )
-    print(f"{len(transactions):,} transactions for {len(users)} users "
-          f"({transactions['date'].min():%Y-%m} to {transactions['date'].max():%Y-%m}) "
-          f"in {time.perf_counter() - began:.1f}s")
-    print(f"-> {tx_path}\n-> {users_path}")
+    log.info(f"{len(transactions):,} transactions for {len(users)} users "
+             f"({transactions['date'].min():%Y-%m} to {transactions['date'].max():%Y-%m}) "
+             f"in {time.perf_counter() - began:.1f}s")
+    log.info(f"-> {tx_path}\n-> {users_path}")
 
 
 if __name__ == "__main__":

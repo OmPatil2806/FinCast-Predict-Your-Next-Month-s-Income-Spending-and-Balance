@@ -35,6 +35,9 @@ from src.features.anomaly_features import AnomalyDetector, build_anomaly_feature
 from src.ingestion.synthetic_generator import SHOCKS
 from src.utils.helpers import display_path, load_config, resolve_path
 from src.utils.mlflow_utils import setup_experiment
+from src.utils.logger import get_logger
+
+log = get_logger(__name__)
 
 KINDS = ("shock", "duplicate", "price_rise")
 FOREST = {"n_estimators": 200, "max_samples": 1024, "random_state": 42, "n_jobs": -1}
@@ -198,22 +201,22 @@ def log_to_mlflow(results: dict, model_path: Path, meta_path: Path) -> None:
 
 def _print(results: dict) -> None:
     p = results["periods"]
-    print(f"train {p['train']} · choose flag rate {p['validation']} · test {p['test']}\n")
-    print("Validation (choosing the flag rate):")
-    print(results["grid"][["contamination", "flag_rate", "precision", "recall", "f1"]].to_string(
-        index=False, formatters={c: "{:.1%}".format for c in ("contamination", "flag_rate", "precision", "recall", "f1")}))
+    log.info(f"train {p['train']} · choose flag rate {p['validation']} · test {p['test']}\n")
+    log.info("Validation (choosing the flag rate):")
+    log.info(results["grid"][["contamination", "flag_rate", "precision", "recall", "f1"]].to_string(
+           index=False, formatters={c: "{:.1%}".format for c in ("contamination", "flag_rate", "precision", "recall", "f1")}))
     rows = []
     for name, r in (("isolation forest", results["test"]), ("simple rule", results["rule"])):
         rows.append({"model": name, "flagged": f"{r['flag_rate']:.2%}", "precision": f"{r['precision']:.1%}",
                      "recall": f"{r['recall']:.1%}", **{k: f"{r[f'recall_{k}']:.1%}" for k in KINDS},
                      "false alarms": f"{r['false_alarm_rate']:.2%}"})
     t = results["test"]
-    print(f"\nTest (flag rate {results['contamination']:.1%}; known anomalies: {t['n_shock']} shocks, "
-          f"{t['n_duplicate']} duplicates, {t['n_price_rise']} price rises; average precision {t['average_precision']:.3f}):")
-    print(pd.DataFrame(rows).to_string(index=False))
+    log.info(f"\nTest (flag rate {results['contamination']:.1%}; known anomalies: {t['n_shock']} shocks, "
+             f"{t['n_duplicate']} duplicates, {t['n_price_rise']} price rises; average precision {t['average_precision']:.3f}):")
+    log.info(pd.DataFrame(rows).to_string(index=False))
     v = results["validation_f1"]
-    print(f"\nFlags in the exported detector: {results['method']} (validation F1 rule {v['rule']:.1%} "
-          f"vs forest {v['forest']:.1%})")
+    log.info(f"\nFlags in the exported detector: {results['method']} (validation F1 rule {v['rule']:.1%} "
+             f"vs forest {v['forest']:.1%})")
 
 
 def main() -> None:
@@ -224,7 +227,7 @@ def main() -> None:
     detector = train_final(transactions, results["contamination"], results["method"])
     model_path, meta_path = export(detector, results)
     log_to_mlflow(results, model_path, meta_path)
-    print(f"\nSaved {display_path(model_path)} (version {detector.version}) and {display_path(meta_path)}")
+    log.info(f"\nSaved {display_path(model_path)} (version {detector.version}) and {display_path(meta_path)}")
 
 
 if __name__ == "__main__":

@@ -16,6 +16,7 @@ from app.components.cards import format_euro  # noqa: E402
 from app.components.layout import empty_state, setup_database, show_footer, show_sidebar  # noqa: E402
 from app.database.crud import get_transactions, set_anomaly_status  # noqa: E402
 from src.forecasting.anomalies import history_note  # noqa: E402
+from src.utils.logger import get_logger  # noqa: E402
 
 PERIODS = {"Last 3 months": 3, "Last 6 months": 6, "Last 12 months": 12, "All time": None}
 
@@ -71,7 +72,8 @@ def main() -> None:
     try:
         with st.spinner("Checking your transactions…"):
             flags = anomaly_flags(user_id, since=since, include_dismissed=show_dismissed)
-    except FileNotFoundError:
+    except FileNotFoundError as err:
+        get_logger("app.anomalies").error("Anomaly model missing: %s", err)
         st.error("The anomaly model is missing. Run `python pipelines/run_training.py` once.")
         return
 

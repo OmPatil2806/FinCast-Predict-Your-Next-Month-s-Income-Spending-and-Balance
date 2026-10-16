@@ -38,6 +38,9 @@ from src.ingestion.bank_csv_parser import parse_bank_csv
 from src.preprocessing.categorizer import categorize, categorizer_path, merchant_key, model_inputs
 from src.utils.helpers import display_path, load_config, resolve_path
 from src.utils.mlflow_utils import setup_experiment
+from src.utils.logger import get_logger
+
+log = get_logger(__name__)
 
 matplotlib.use("Agg")   # draw figures without a screen
 
@@ -256,16 +259,16 @@ def main() -> None:
     transactions = pd.read_csv(path)
     model, metrics = train_categorizer(transactions, seed=config["project"]["seed"])
 
-    print(f"Distinct training examples: {metrics['distinct_examples']}")
+    log.info(f"Distinct training examples: {metrics['distinct_examples']}")
     for key in ("A_new_spellings", "B_unseen_merchants", "C_rules_plus_model_heldout_users", "sample_file"):
-        print(f"{key}: {metrics[key]}")
-    print("F1 per category (C):", metrics["C_f1_per_category"])
+        log.info(f"{key}: {metrics[key]}")
+    log.info("%s %s", "F1 per category (C):", metrics["C_f1_per_category"])
 
     model_path, meta_path = save_model(model, metrics, threshold)
-    print(f"Saved {display_path(model_path)} ({model_path.stat().st_size / 1024:.0f} KB) "
-          f"and {meta_path.name}")
+    log.info(f"Saved {display_path(model_path)} ({model_path.stat().st_size / 1024:.0f} KB) "
+             f"and {meta_path.name}")
     run_id = log_to_mlflow(metrics, threshold, model_path, meta_path)
-    print(f"MLflow run {run_id} in experiment '{config['mlflow']['experiments']['categorizer']}'")
+    log.info(f"MLflow run {run_id} in experiment '{config['mlflow']['experiments']['categorizer']}'")
 
 
 if __name__ == "__main__":

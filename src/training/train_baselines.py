@@ -26,6 +26,9 @@ from src.features.build_features import build_features
 from src.forecasting.model import BASELINES
 from src.utils.helpers import display_path, load_config, resolve_path
 from src.utils.mlflow_utils import setup_experiment
+from src.utils.logger import get_logger
+
+log = get_logger(__name__)
 
 
 def series_group(series: pd.Series) -> pd.Series:
@@ -120,16 +123,16 @@ def log_to_mlflow(results: dict) -> list[str]:
 
 def _print(results: dict) -> None:
     fmt = {"mae": "{:,.2f}".format, "rmse": "{:,.2f}".format, "smape": "{:.1f}".format}
-    print(f"Baselines over {results['test_months']} test months\n")
-    print(results["by_group"].to_string(index=False, formatters=fmt), "\n")
+    log.info(f"Baselines over {results['test_months']} test months\n")
+    log.info("%s %s", results["by_group"].to_string(index=False, formatters=fmt), "\n")
     if "by_archetype" in results:
         pivot = results["by_archetype"].pivot_table(index=["series_group", "archetype"], columns="baseline", values="mae")
-        print("MAE (€) by user type:\n" + pivot.round(2).to_string(), "\n")
+        log.info("%s %s", "MAE (€) by user type:\n" + pivot.round(2).to_string(), "\n")
     if "new_users" in results:
         pivot = results["new_users"].pivot_table(index="history_months", columns="baseline", values="mae")
-        print("MAE (€) for unseen users by months of history:\n" + pivot.round(2).to_string(), "\n")
-    print("Best baseline per series (the bar to beat):\n"
-          + results["best_by_series"].to_string(index=False, formatters=fmt))
+        log.info("%s %s", "MAE (€) for unseen users by months of history:\n" + pivot.round(2).to_string(), "\n")
+    log.info("Best baseline per series (the bar to beat):\n"
+             + results["best_by_series"].to_string(index=False, formatters=fmt))
 
 
 def main() -> None:
@@ -141,8 +144,8 @@ def main() -> None:
     _print(results)
     path = save_scores(results)
     run_ids = log_to_mlflow(results)
-    print(f"\nSaved {display_path(path)} · logged {len(run_ids)} runs to MLflow experiment "
-          f"'{config['mlflow']['experiments']['baselines']}'")
+    log.info(f"\nSaved {display_path(path)} · logged {len(run_ids)} runs to MLflow experiment "
+             f"'{config['mlflow']['experiments']['baselines']}'")
 
 
 if __name__ == "__main__":

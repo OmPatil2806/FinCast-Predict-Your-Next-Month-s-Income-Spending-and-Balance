@@ -42,6 +42,9 @@ from src.training.train_forecaster import (
 )
 from src.utils.helpers import display_path, load_config, resolve_path
 from src.utils.mlflow_utils import setup_experiment
+from src.utils.logger import get_logger
+
+log = get_logger(__name__)
 
 def choose_champions(per_series: pd.DataFrame, threshold: float) -> pd.DataFrame:
     """per_series from compare_with_baselines -> one champion per series, with the reason."""
@@ -177,20 +180,20 @@ def log_to_mlflow(results: dict, threshold: float, champions_path: Path) -> None
 def _print(results: dict) -> None:
     for family, r in results.items():
         s = r["system"]
-        print(f"\n=== {family} ({r['mode']}), {r['test_months']}")
+        log.info(f"\n=== {family} ({r['mode']}), {r['test_months']}")
         table = r["champions"][["series", "champion", "model_mae", "best_baseline", "baseline_mae", "improvement"]]
-        print(table.to_string(index=False, formatters={"model_mae": "€{:,.2f}".format, "baseline_mae": "€{:,.2f}".format,
-                                                       "improvement": "{:+.1%}".format}))
-        print(f"range: {r['width_reason']}")
-        print(f"system MAE €{s['mae']:,.2f} (best baseline everywhere €{s['baseline_only_mae']:,.2f}, LightGBM "
-              f"everywhere €{s['lightgbm_only_mae']:,.2f}) · coverage {s['coverage']:.1%} · mean width €{s['mean_width']:,.0f}")
+        log.info(table.to_string(index=False, formatters={"model_mae": "€{:,.2f}".format, "baseline_mae": "€{:,.2f}".format,
+                                                          "improvement": "{:+.1%}".format}))
+        log.info(f"range: {r['width_reason']}")
+        log.info(f"system MAE €{s['mae']:,.2f} (best baseline everywhere €{s['baseline_only_mae']:,.2f}, LightGBM "
+                 f"everywhere €{s['lightgbm_only_mae']:,.2f}) · coverage {s['coverage']:.1%} · mean width €{s['mean_width']:,.0f}")
         c = r["check"]
-        print(f"check: picked on {c['pick_months']}, scored on {c['check_months']}: MAE €{c['check_mae_champions']:,.2f} "
-              f"(best baseline €{c['check_mae_best_baseline']:,.2f}, LightGBM €{c['check_mae_lightgbm']:,.2f}); "
-              f"{c['agree']}/{c['series']} series pick the same champion as the full period")
-        print(r["by_group"].to_string(index=False, formatters={
-            "champion_mae": "€{:,.2f}".format, "baseline_only_mae": "€{:,.2f}".format,
-            "lightgbm_only_mae": "€{:,.2f}".format, "coverage": "{:.1%}".format}))
+        log.info(f"check: picked on {c['pick_months']}, scored on {c['check_months']}: MAE €{c['check_mae_champions']:,.2f} "
+                 f"(best baseline €{c['check_mae_best_baseline']:,.2f}, LightGBM €{c['check_mae_lightgbm']:,.2f}); "
+                 f"{c['agree']}/{c['series']} series pick the same champion as the full period")
+        log.info(r["by_group"].to_string(index=False, formatters={
+               "champion_mae": "€{:,.2f}".format, "baseline_only_mae": "€{:,.2f}".format,
+               "lightgbm_only_mae": "€{:,.2f}".format, "coverage": "{:.1%}".format}))
 
 
 def main() -> None:
@@ -205,7 +208,7 @@ def main() -> None:
     _print(results)
     path = save_champions(results, threshold)
     log_to_mlflow(results, threshold, path)
-    print(f"\nSaved {display_path(path)}")
+    log.info(f"\nSaved {display_path(path)}")
 
 
 if __name__ == "__main__":

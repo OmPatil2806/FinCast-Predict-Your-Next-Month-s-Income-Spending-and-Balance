@@ -27,6 +27,9 @@ from src.training.train_baselines import BASELINES
 from src.training.train_forecaster import FAMILY_MODE, backtest_family
 from src.utils.helpers import load_config, resolve_path
 from src.utils.mlflow_utils import setup_experiment
+from src.utils.logger import get_logger
+
+log = get_logger(__name__)
 
 SERIES = {"income": "income", "expenses": "spend"}          # series -> LightGBM family
 EXPERIMENT = {"income": "forecast_income", "expenses": "forecast_spend"}
@@ -161,13 +164,13 @@ def log_to_mlflow(results: dict) -> None:
 
 def _print(results: dict) -> None:
     for series, r in results.items():
-        print(f"\n=== {series}: {r['n']} forecasts, test months {r['test_months']} "
-              f"(fallbacks: {', '.join(f'{m} {n}' for m, n in r['fallbacks'].items())})")
-        print(r["overall"][["model", "mae", "rmse", "smape", "vs_best_baseline"]].to_string(index=False, formatters={
-            "mae": "€{:,.2f}".format, "rmse": "€{:,.2f}".format, "smape": "{:.1f}".format,
-            "vs_best_baseline": "{:+.1%}".format}))
+        log.info(f"\n=== {series}: {r['n']} forecasts, test months {r['test_months']} "
+                 f"(fallbacks: {', '.join(f'{m} {n}' for m, n in r['fallbacks'].items())})")
+        log.info(r["overall"][["model", "mae", "rmse", "smape", "vs_best_baseline"]].to_string(index=False, formatters={
+               "mae": "€{:,.2f}".format, "rmse": "€{:,.2f}".format, "smape": "{:.1f}".format,
+               "vs_best_baseline": "{:+.1%}".format}))
         if "by_archetype" in r:
-            print("MAE (€) by user type:\n" + r["by_archetype"].round(2).to_string())
+            log.info("MAE (€) by user type:\n" + r["by_archetype"].round(2).to_string())
 
 
 def main() -> None:

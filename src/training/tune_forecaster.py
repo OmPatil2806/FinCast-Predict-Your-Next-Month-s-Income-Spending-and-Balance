@@ -33,6 +33,9 @@ from src.features.build_features import build_features
 from src.training.train_forecaster import DEFAULT_PARAMS, FAMILIES, FAMILY_MODE, ForecastModel, family_rows
 from src.utils.helpers import display_path, load_config, resolve_path
 from src.utils.mlflow_utils import setup_experiment
+from src.utils.logger import get_logger
+
+log = get_logger(__name__)
 
 
 def search_space(trial: optuna.Trial) -> dict:
@@ -163,12 +166,12 @@ def save_params(results: dict, path: Path | None = None) -> Path:
 
 def _print(results: dict) -> None:
     for family, r in results.items():
-        print(f"\n=== {family} ({r['mode']}): {r['trials']} trials ({r['pruned']} pruned), "
-              f"tuned on {r['tune_months']}, checked on {r['holdout_months']}")
-        print(f"    tune months   MAE default €{r['default_tune_mae']:,.2f} -> best €{r['best_tune_mae']:,.2f}")
-        print(f"    hold-out      MAE default €{r['default_holdout_mae']:,.2f} -> tuned €{r['tuned_holdout_mae']:,.2f} "
-              f"({r['holdout_improvement']:+.1%}) -> using {'tuned' if r['use_tuned'] else 'default'} settings")
-        print("    best params:", {k: round(v, 4) if isinstance(v, float) else v for k, v in r["best_params"].items()})
+        log.info(f"\n=== {family} ({r['mode']}): {r['trials']} trials ({r['pruned']} pruned), "
+                 f"tuned on {r['tune_months']}, checked on {r['holdout_months']}")
+        log.info(f"    tune months   MAE default €{r['default_tune_mae']:,.2f} -> best €{r['best_tune_mae']:,.2f}")
+        log.info(f"    hold-out      MAE default €{r['default_holdout_mae']:,.2f} -> tuned €{r['tuned_holdout_mae']:,.2f} "
+                 f"({r['holdout_improvement']:+.1%}) -> using {'tuned' if r['use_tuned'] else 'default'} settings")
+        log.info("%s %s", "    best params:", {k: round(v, 4) if isinstance(v, float) else v for k, v in r["best_params"].items()})
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -187,7 +190,7 @@ def main(argv: list[str] | None = None) -> None:
                for family in FAMILIES}
     _print(results)
     path = save_params(results)
-    print(f"\nSaved {display_path(path)}")
+    log.info(f"\nSaved {display_path(path)}")
 
 
 if __name__ == "__main__":

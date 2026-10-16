@@ -13,6 +13,9 @@ from pathlib import Path
 import mlflow
 
 from src.utils.helpers import load_config, mlflow_tracking_uri, resolve_path
+from src.utils.logger import get_logger
+
+log = get_logger(__name__)
 
 
 def setup_experiment(key: str, tracking_uri: str | None = None, artifact_root: Path | None = None) -> str:
@@ -40,5 +43,5 @@ def create_all_experiments(tracking_uri: str | None = None, artifact_root: Path 
 
 if __name__ == "__main__":
     for name, experiment_id in create_all_experiments().items():
-        print(f"{name:<16} id {experiment_id}")
-    print(f"Tracking store: {mlflow_tracking_uri()}\nOpen the UI with:  mlflow ui --backend-store-uri sqlite:///mlflow.db")
+        log.info(f"{name:<16} id {experiment_id}")
+    log.info(f"Tracking store: {mlflow_tracking_uri()}\nOpen the UI with:  mlflow ui --backend-store-uri sqlite:///mlflow.db")

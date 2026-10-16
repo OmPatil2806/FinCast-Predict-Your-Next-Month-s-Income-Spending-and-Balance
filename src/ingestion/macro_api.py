@@ -9,15 +9,15 @@ Run on its own with:  python -m src.ingestion.macro_api
 """
 
 import io
-import logging
 from pathlib import Path
 
 import pandas as pd
 import requests
 
 from src.utils.helpers import load_config, resolve_path
+from src.utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 MACRO_COLUMNS = ["month", "inflation_de", "ecb_rate"]
 
@@ -115,14 +115,13 @@ def load_macro(refresh: bool = False, cache_paths: tuple[Path, Path] | None = No
 
 
 def main() -> None:
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     try:
         macro = load_macro(refresh=True)
     except MacroDataUnavailable as err:
-        print(err)
+        logger.info(err)
         raise SystemExit(1)
-    print(f"{len(macro)} months of macro data ({macro['month'].min()} to {macro['month'].max()})")
-    print(macro.tail(6).to_string(index=False))
+    logger.info(f"{len(macro)} months of macro data ({macro['month'].min()} to {macro['month'].max()})")
+    logger.info(macro.tail(6).to_string(index=False))
 
 
 if __name__ == "__main__":

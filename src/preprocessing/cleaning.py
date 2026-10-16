@@ -10,11 +10,12 @@ check when saving (date + description + amount + occurrence) ignores a re-upload
 but still stores both coffees.
 """
 
-import logging
 
 import pandas as pd
 
-logger = logging.getLogger(__name__)
+from src.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 REQUIRED_COLUMNS = ["date", "description", "amount"]
 

@@ -36,6 +36,9 @@ from src.forecasting.model import (  # noqa: F401  (re-exported: training code a
 from src.training.train_baselines import BASELINES, series_group
 from src.utils.helpers import load_config, resolve_path
 from src.utils.mlflow_utils import setup_experiment
+from src.utils.logger import get_logger
+
+log = get_logger(__name__)
 
 FAMILIES = {"income": "forecast_income", "spend": "forecast_spend"}
 MODES = ("raw", "relative")
@@ -230,24 +233,24 @@ def run_ranges(table: pd.DataFrame, feature_columns: list[str], users: pd.DataFr
 def _print_ranges(results: dict) -> None:
     for family, r in results.items():
         m, c = r["metrics"], r["calibration"]
-        print(f"\n=== {family} ({r['mode']}): coverage raw {m['coverage_raw']:.1%} -> calibrated "
-              f"{m['coverage_calibrated']:.1%} (width factor {r['factor']:.2f})")
-        print(f"    factor chosen on {c['calibration_months']}, checked on {c['check_months']}: "
-              f"{c['coverage_raw_check']:.1%} -> {c['coverage_calibrated_check']:.1%}")
-        print(f"    pinball q10 {m['pinball_q10']:.2f} · q50 {m['pinball_q50']:.2f} · q90 {m['pinball_q90']:.2f} · "
-              f"mean range width €{m['mean_width_calibrated']:,.0f}")
+        log.info(f"\n=== {family} ({r['mode']}): coverage raw {m['coverage_raw']:.1%} -> calibrated "
+                 f"{m['coverage_calibrated']:.1%} (width factor {r['factor']:.2f})")
+        log.info(f"    factor chosen on {c['calibration_months']}, checked on {c['check_months']}: "
+                 f"{c['coverage_raw_check']:.1%} -> {c['coverage_calibrated_check']:.1%}")
+        log.info(f"    pinball q10 {m['pinball_q10']:.2f} · q50 {m['pinball_q50']:.2f} · q90 {m['pinball_q90']:.2f} · "
+                 f"mean range width €{m['mean_width_calibrated']:,.0f}")
         table = r["by_group"][[c for c in r["by_group"].columns if c in ("series_group", "archetype", "mae", "coverage", "n")]]
-        print(table.to_string(index=False, formatters={"mae": "€{:,.2f}".format, "coverage": "{:.1%}".format}))
+        log.info(table.to_string(index=False, formatters={"mae": "€{:,.2f}".format, "coverage": "{:.1%}".format}))
 
 
 def _print(results: dict) -> None:
     for (family, mode), r in results.items():
         o = r["overall"]
-        print(f"\n=== {family} · {mode}: MAE €{o['mae']:,.2f} · RMSE €{o['rmse']:,.2f} · sMAPE {o['smape']:.1f}% · n={o['n']:,}")
+        log.info(f"\n=== {family} · {mode}: MAE €{o['mae']:,.2f} · RMSE €{o['rmse']:,.2f} · sMAPE {o['smape']:.1f}% · n={o['n']:,}")
         table = r["per_series"].assign(improvement=lambda d: (d["improvement"] * 100).round(1).astype(str) + " %")
-        print(table.to_string(index=False, formatters={"model_mae": "€{:,.2f}".format, "baseline_mae": "€{:,.2f}".format}))
+        log.info(table.to_string(index=False, formatters={"model_mae": "€{:,.2f}".format, "baseline_mae": "€{:,.2f}".format}))
         if "by_archetype" in r:
-            print(r["by_archetype"].round(2).to_string(index=False))
+            log.info(r["by_archetype"].round(2).to_string(index=False))
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -265,7 +268,7 @@ def main(argv: list[str] | None = None) -> None:
     _print(results)
     for family in FAMILIES:
         best = min(MODES, key=lambda m: results[(family, m)]["overall"]["mae"])
-        print(f"\n{family}: better target mode = {best}")
+        log.info(f"\n{family}: better target mode = {best}")
 
 
 if __name__ == "__main__":
