@@ -80,6 +80,7 @@ CREATE TABLE IF NOT EXISTS goals (
     user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name          TEXT    NOT NULL,
     target_amount REAL    NOT NULL CHECK (target_amount > 0),
+    saved_amount  REAL    NOT NULL DEFAULT 0,      -- already put aside for this goal (step 8.7)
     target_date   TEXT,
     created_at    TEXT    NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -100,4 +101,10 @@ ALL_TABLES = [
     CREATE_FORECASTS,
     CREATE_GOALS,
     CREATE_INDEXES,
+]
+
+# Columns added after a table was first released: (table, column, definition). init_db adds any that
+# an existing database file is missing, so older app.db files keep working.
+ADDED_COLUMNS = [
+    ("goals", "saved_amount", "REAL NOT NULL DEFAULT 0"),
 ]

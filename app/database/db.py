@@ -3,7 +3,7 @@
 import sqlite3
 from pathlib import Path
 
-from app.database.models import ALL_TABLES
+from app.database.models import ADDED_COLUMNS, ALL_TABLES
 from src.utils.helpers import load_config, resolve_path
 
 
@@ -33,6 +33,10 @@ def init_db(db_path: str | Path | None = None) -> Path:
     try:
         for statement in ALL_TABLES:
             conn.executescript(statement)
+        for table, column, definition in ADDED_COLUMNS:
+            existing = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})")}
+            if column not in existing:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
         conn.commit()
     finally:
         conn.close()

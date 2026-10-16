@@ -260,3 +260,81 @@ def set_anomaly_status(user_id: int, transaction_id: int, status: str | None,
             return cursor.rowcount == 1
     finally:
         conn.close()
+
+
+# ---------- savings goals (step 8.7) ----------
+
+GOAL_COLUMNS = ["id", "name", "target_amount", "saved_amount", "target_date", "created_at"]
+
+
+def create_goal(user_id: int, name: str, target_amount: float, saved_amount: float = 0.0, target_date=None,
+                db_path: str | Path | None = None) -> int:
+    """Add a goal; returns its id. target_date is optional (YYYY-MM-DD)."""
+    name = (name or "").strip()
+    if not name:
+        raise ValueError("Give the goal a name.")
+    if target_amount is None or float(target_amount) <= 0:
+        raise ValueError("The target amount must be more than €0.")
+    if float(saved_amount) < 0:
+        raise ValueError("The amount already saved cannot be negative.")
+    date = None if target_date in (None, "") else f"{pd.Timestamp(target_date):%Y-%m-%d}"
+    conn = get_connection(db_path)
+    try:
+        with conn:
+            cursor = conn.execute(
+                "INSERT INTO goals (user_id, name, target_amount, saved_amount, target_date) VALUES (?, ?, ?, ?, ?)",
+                (user_id, name, round(float(target_amount), 2), round(float(saved_amount), 2), date))
+            return int(cursor.lastrowid)
+    finally:
+        conn.close()
+
+
+def get_goals(user_id: int, db_path: str | Path | None = None) -> pd.DataFrame:
+    """The user's goals, earliest target date first (goals without a date last)."""
+    conn = get_connection(db_path)
+    try:
+        goals = pd.read_sql_query(
+            f"SELECT {', '.join(GOAL_COLUMNS)} FROM goals WHERE user_id = ? "
+            "ORDER BY target_date IS NULL, target_date, id", conn, params=[user_id])
+    finally:
+        conn.close()
+    goals["target_date"] = goals["target_date"].astype(object).where(goals["target_date"].notna(), None)
+    return goals
+
+
+def update_goal(user_id: int, goal_id: int, db_path: str | Path | None = None, **changes) -> bool:
+    """Change name, target_amount, saved_amount and/or target_date of one of the user's goals."""
+    allowed = {"name", "target_amount", "saved_amount", "target_date"}
+    unknown = set(changes) - allowed
+    if unknown:
+        raise ValueError(f"cannot change {', '.join(sorted(unknown))}")
+    if "name" in changes and not str(changes["name"]).strip():
+        raise ValueError("Give the goal a name.")
+    if "target_amount" in changes and float(changes["target_amount"]) <= 0:
+        raise ValueError("The target amount must be more than €0.")
+    if "saved_amount" in changes and float(changes["saved_amount"]) < 0:
+        raise ValueError("The amount already saved cannot be negative.")
+    if "target_date" in changes:
+        value = changes["target_date"]
+        changes["target_date"] = None if value in (None, "") else f"{pd.Timestamp(value):%Y-%m-%d}"
+    if not changes:
+        return False
+    sets = ", ".join(f"{column} = ?" for column in changes)
+    conn = get_connection(db_path)
+    try:
+        with conn:
+            cursor = conn.execute(f"UPDATE goals SET {sets} WHERE id = ? AND user_id = ?",
+                                  (*changes.values(), int(goal_id), user_id))
+            return cursor.rowcount == 1
+    finally:
+        conn.close()
+
+
+def delete_goal(user_id: int, goal_id: int, db_path: str | Path | None = None) -> bool:
+    conn = get_connection(db_path)
+    try:
+        with conn:
+            return conn.execute("DELETE FROM goals WHERE id = ? AND user_id = ?",
+                                (int(goal_id), user_id)).rowcount == 1
+    finally:
+        conn.close()
