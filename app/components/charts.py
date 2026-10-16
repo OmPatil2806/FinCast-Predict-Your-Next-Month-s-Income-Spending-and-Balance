@@ -107,3 +107,45 @@ def category_bar_chart(by_category: pd.DataFrame, top_n: int = 8) -> go.Figure |
     fig.update_xaxes(visible=False, range=[0, data["expenses"].max() * 1.18])
     fig.update_yaxes(showgrid=False, ticklabelstandoff=10)
     return _style(fig, height=max(160, 44 * len(data) + 40))
+
+
+def forecast_fan_chart(monthly: pd.DataFrame, forecast) -> go.Figure | None:
+    """Past income and spending as lines, then next month's forecast fanning out to its 10-90 % range.
+
+    monthly: complete past months (aggregate_monthly); forecast: a predictor Forecast.
+    """
+    if monthly.empty:
+        return None
+    x = _month_axis(monthly)
+    target = forecast.target_month.to_timestamp()
+    fig = go.Figure()
+    for name, column, series, color, fill in (
+            ("Income", "income", "income", INCOME_COLOR, "rgba(42,120,214,0.16)"),
+            ("Spending", "expenses", "expenses", SPENDING_COLOR, "rgba(235,104,52,0.16)")):
+        f = forecast.get(series)
+        last_x, last_y = x.iloc[-1], monthly[column].iloc[-1]
+        # the fan: from the last real value out to the range of next month
+        fig.add_trace(go.Scatter(
+            x=[last_x, target, target, last_x], y=[last_y, f["upper"], f["lower"], last_y],
+            fill="toself", fillcolor=fill, line=dict(width=0), mode="lines", hoverinfo="skip",
+            showlegend=False, legendgroup=name))
+        fig.add_trace(go.Scatter(
+            x=x, y=monthly[column], name=name, mode="lines+markers", legendgroup=name,
+            line=dict(color=color, width=2),
+            marker=dict(size=8, color=color, line=dict(width=2, color="rgba(252,252,251,0.9)")),
+            hovertemplate=f"{name}: €%{{y:,.2f}}<extra></extra>"))
+        fig.add_trace(go.Scatter(
+            x=[last_x, target], y=[last_y, f["predicted"]], mode="lines+markers", legendgroup=name,
+            showlegend=False, line=dict(color=color, width=2, dash="dot"),
+            marker=dict(size=[0, 10], color=color, symbol="diamond", line=dict(width=2, color="rgba(252,252,251,0.9)")),
+            customdata=[[last_y, last_y], [f["lower"], f["upper"]]],
+            hovertemplate=(f"{name} forecast: €%{{y:,.2f}}<br>likely €%{{customdata[0]:,.0f}} – "
+                           f"€%{{customdata[1]:,.0f}}<extra></extra>")))
+        fig.add_annotation(x=target, y=f["predicted"], text=name, showarrow=False,
+                           xanchor="left", xshift=12, font=dict(color=INK_MUTED, size=12))
+    fig.add_vline(x=x.iloc[-1], line_width=1, line_dash="dot", line_color=INK_MUTED)
+    fig.update_layout(hovermode="closest")
+    fig.update_xaxes(tickvals=list(x) + [target], tickformat="%b %Y", hoverformat="%B %Y",
+                     range=[x.iloc[0] - pd.Timedelta(days=12), target + pd.Timedelta(days=55)])
+    fig.update_yaxes(tickprefix="€", tickformat=",.0f", rangemode="tozero")
+    return _style(fig, height=380)
