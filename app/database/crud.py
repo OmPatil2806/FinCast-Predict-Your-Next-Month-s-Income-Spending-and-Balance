@@ -338,3 +338,91 @@ def delete_goal(user_id: int, goal_id: int, db_path: str | Path | None = None) -
                                 (int(goal_id), user_id)).rowcount == 1
     finally:
         conn.close()
+
+
+# ---------- profile and account (step 8.8) ----------
+
+USER_TABLES = ["profiles", "transactions", "monthly_summary", "forecasts", "goals"]   # all carry user_id
+
+
+def get_user_by_id(user_id: int, db_path: str | Path | None = None) -> dict | None:
+    conn = get_connection(db_path)
+    try:
+        return _row_to_dict(conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone())
+    finally:
+        conn.close()
+
+
+def update_profile(user_id: int, income_type: str | None = None, opening_balance: float | None = None,
+                   db_path: str | Path | None = None) -> bool:
+    """Change the income type ('salary' / 'freelance') and/or the opening balance. Currency stays EUR."""
+    changes = {}
+    if income_type is not None:
+        if income_type not in ("salary", "freelance"):
+            raise ValueError("Income type must be 'salary' or 'freelance'.")
+        changes["income_type"] = income_type
+    if opening_balance is not None:
+        changes["opening_balance"] = round(float(opening_balance), 2)
+    if not changes:
+        return False
+    sets = ", ".join(f"{column} = ?" for column in changes)
+    conn = get_connection(db_path)
+    try:
+        with conn:
+            return conn.execute(f"UPDATE profiles SET {sets} WHERE user_id = ?",
+                                (*changes.values(), user_id)).rowcount == 1
+    finally:
+        conn.close()
+
+
+def update_password_hash(user_id: int, password_hash: str, db_path: str | Path | None = None) -> bool:
+    conn = get_connection(db_path)
+    try:
+        with conn:
+            return conn.execute("UPDATE users SET password_hash = ? WHERE id = ?",
+                                (password_hash, user_id)).rowcount == 1
+    finally:
+        conn.close()
+
+
+def export_user_data(user_id: int, db_path: str | Path | None = None) -> dict[str, pd.DataFrame]:
+    """Everything stored about the user, one DataFrame per table (never the password hash)."""
+    conn = get_connection(db_path)
+    try:
+        data = {"account": pd.read_sql_query("SELECT id, username, email, created_at FROM users WHERE id = ?",
+                                             conn, params=[user_id])}
+        for table in USER_TABLES:
+            data[table] = pd.read_sql_query(f"SELECT * FROM {table} WHERE user_id = ?", conn, params=[user_id])
+        return data
+    finally:
+        conn.close()
+
+
+def count_user_rows(user_id: int, db_path: str | Path | None = None) -> dict[str, int]:
+    """Rows per table that belong to the user (the users row included)."""
+    conn = get_connection(db_path)
+    try:
+        counts = {"users": conn.execute("SELECT COUNT(*) FROM users WHERE id = ?", (user_id,)).fetchone()[0]}
+        for table in USER_TABLES:
+            counts[table] = conn.execute(f"SELECT COUNT(*) FROM {table} WHERE user_id = ?", (user_id,)).fetchone()[0]
+        return counts
+    finally:
+        conn.close()
+
+
+def delete_user(user_id: int, db_path: str | Path | None = None) -> dict[str, int]:
+    """Delete the account and, through ON DELETE CASCADE, every row of the user in every table.
+
+    Returns the rows that existed before, per table. Raises if anything is left afterwards.
+    """
+    before = count_user_rows(user_id, db_path)
+    conn = get_connection(db_path)
+    try:
+        with conn:
+            conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    finally:
+        conn.close()
+    left = {table: n for table, n in count_user_rows(user_id, db_path).items() if n}
+    if left:
+        raise RuntimeError(f"rows left after deleting user {user_id}: {left}")
+    return before

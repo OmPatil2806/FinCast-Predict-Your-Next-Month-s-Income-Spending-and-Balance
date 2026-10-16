@@ -6,7 +6,9 @@ from pathlib import Path
 
 import bcrypt
 
-from app.database.crud import create_user, get_user_by_email, get_user_by_username
+from app.database.crud import (
+    create_user, get_user_by_email, get_user_by_id, get_user_by_username, update_password_hash,
+)
 
 USERNAME_PATTERN = re.compile(r"^[A-Za-z0-9_]{3,30}$")
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -28,16 +30,20 @@ def verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
 
 
+def validate_password(password: str) -> None:
+    if len(password) < MIN_PASSWORD_LENGTH:
+        raise AuthError(f"Password must be at least {MIN_PASSWORD_LENGTH} characters.")
+    if len(password.encode("utf-8")) > MAX_PASSWORD_BYTES:
+        raise AuthError("Password is too long (maximum 72 bytes).")
+
+
 def validate_registration(username: str, email: str, password: str) -> None:
     """Raise AuthError with a clear message if any field is invalid."""
     if not USERNAME_PATTERN.match(username.strip()):
         raise AuthError("Username must be 3-30 characters: letters, numbers or _.")
     if not EMAIL_PATTERN.match(email.strip()):
         raise AuthError("Please enter a valid email address.")
-    if len(password) < MIN_PASSWORD_LENGTH:
-        raise AuthError(f"Password must be at least {MIN_PASSWORD_LENGTH} characters.")
-    if len(password.encode("utf-8")) > MAX_PASSWORD_BYTES:
-        raise AuthError("Password is too long (maximum 72 bytes).")
+    validate_password(password)
 
 
 def register(username: str, email: str, password: str,
@@ -73,3 +79,15 @@ def login(username_or_email: str, password: str,
         return None
     user.pop("password_hash")
     return user
+
+
+def change_password(user_id: int, current_password: str, new_password: str,
+                    db_path: str | Path | None = None) -> None:
+    """Check the current password, validate the new one and store its hash. Raises AuthError."""
+    user = get_user_by_id(user_id, db_path)
+    if user is None or not verify_password(current_password or "", user["password_hash"]):
+        raise AuthError("Your current password is not correct.")
+    validate_password(new_password)
+    if verify_password(new_password, user["password_hash"]):
+        raise AuthError("The new password must be different from the current one.")
+    update_password_hash(user_id, hash_password(new_password), db_path)
