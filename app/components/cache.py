@@ -34,6 +34,12 @@ def detector():
 
 
 @st.cache_resource(show_spinner=False)
+def drift_reference():
+    from src.monitoring.drift import load_reference
+    return load_reference()
+
+
+@st.cache_resource(show_spinner=False)
 def categorizer():
     from src.preprocessing.categorizer import load_categorizer
     return load_categorizer()

@@ -8,8 +8,8 @@ def labels(**flags):
 
 
 def test_default_order():
-    assert labels() == ["Baselines", "Champion rule", "Export + registry", "Short histories", "SHAP explanations",
-                        "Anomaly model"]
+    assert labels() == ["Baselines", "Champion rule", "Export + registry", "Short histories", "Drift reference",
+                        "SHAP explanations", "Anomaly model"]
 
 
 def test_tuning_runs_before_the_champion_is_chosen():

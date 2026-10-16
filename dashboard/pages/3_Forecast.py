@@ -10,7 +10,7 @@ if str(ROOT) not in sys.path:
 import streamlit as st  # noqa: E402
 
 from app.auth.session import current_username, require_login  # noqa: E402
-from app.components.cache import bump_cache, forecast as cached_forecast  # noqa: E402
+from app.components.cache import bump_cache, drift_reference, forecast as cached_forecast  # noqa: E402
 from app.components.cards import format_euro  # noqa: E402
 from app.components.charts import INCOME_COLOR, SPENDING_COLOR, accuracy_chart, forecast_fan_chart  # noqa: E402
 from app.components.forecast_view import (  # noqa: E402
@@ -19,6 +19,7 @@ from app.components.forecast_view import (  # noqa: E402
 from app.components.layout import empty_state, setup_database, show_footer, show_sidebar  # noqa: E402
 from app.database.crud import get_transactions, save_forecast  # noqa: E402
 from src.forecasting.predictor import NotEnoughHistory, complete_history  # noqa: E402
+from src.monitoring.drift import check_drift  # noqa: E402
 from src.monitoring.forecast_vs_actual import accuracy, summary, update_actuals  # noqa: E402
 from src.preprocessing.aggregate_monthly import aggregate_monthly  # noqa: E402
 
@@ -133,6 +134,9 @@ def main() -> None:
                    "compare that one with what really happens once the month is over.")
     for note in forecast.notes:
         (st.info if forecast.cold_start else st.caption)(note)
+    drift = check_drift(transactions, drift_reference())          # step 9.3
+    if drift and drift["drifted"]:
+        st.info(drift["message"], icon="🧭")
 
     show_cards(forecast)
     risk = balance_risk(forecast)

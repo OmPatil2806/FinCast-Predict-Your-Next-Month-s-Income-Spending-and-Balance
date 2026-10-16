@@ -14,7 +14,7 @@ Data steps:
   build the model features (src/features/build_features.py), save data/processed/features.parquet
 Model steps (each one is also runnable on its own with python -m src.training.<module>):
   baselines (6.9) -> [tuning 7.6] -> [comparisons 7.3-7.5] -> champion rule (7.8)
-  -> export + registry (7.9) -> short-history calibration (8.2) -> SHAP explanations (7.7)
+  -> export + registry (7.9) -> short-history calibration (8.2) -> drift reference (9.3) -> SHAP explanations (7.7)
   -> anomaly model (7.10)
 Without --tune the settings already in models/forecast_params.json are used.
 """
@@ -82,6 +82,7 @@ def model_steps(tune: bool = False, experiments: bool = False) -> list[tuple[str
         calibrate_cold_start, explain_forecaster, export_champion, select_champion, train_anomaly, train_baselines,
         train_forecaster, train_statistical, tune_forecaster,
     )
+    from src.monitoring import drift
     steps = [("Baselines ", "models/baseline_scores.json", train_baselines.main)]
     if tune:
         steps.append(("Tuning (Optuna) ", "models/forecast_params.json", lambda: tune_forecaster.main([])))
@@ -92,6 +93,7 @@ def model_steps(tune: bool = False, experiments: bool = False) -> list[tuple[str
     steps += [("Champion rule ", "models/champions.json", select_champion.main),
               ("Export + registry ", "models/forecaster_*.joblib, model_meta.json", export_champion.main),
               ("Short histories ", "models/cold_start.json", calibrate_cold_start.main),
+              ("Drift reference ", "models/drift_reference.json", drift.main),
               ("SHAP explanations ", "reports/figures/", explain_forecaster.main),
               ("Anomaly model ", "models/anomaly.joblib, anomaly_meta.json", train_anomaly.main)]
     return steps

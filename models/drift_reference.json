@@ -1,0 +1,65 @@
+{
+  "created_at": "2026-10-16T14:49:42+00:00",
+  "window_months": 3,
+  "reference_mix": {
+    "Dining": 0.0582,
+    "Groceries": 0.1354,
+    "Health": 0.0187,
+    "Leisure": 0.0635,
+    "Other": 0.0565,
+    "Rent": 0.4095,
+    "Shopping": 0.0677,
+    "Subscriptions": 0.0283,
+    "Transport": 0.1011,
+    "Utilities": 0.0611
+  },
+  "usual_range": {
+    "Dining": [
+      0.0285,
+      0.0947
+    ],
+    "Groceries": [
+      0.0854,
+      0.2041
+    ],
+    "Health": [
+      0.0035,
+      0.0402
+    ],
+    "Leisure": [
+      0.0241,
+      0.1471
+    ],
+    "Other": [
+      0.0,
+      0.2059
+    ],
+    "Rent": [
+      0.3041,
+      0.5066
+    ],
+    "Shopping": [
+      0.0308,
+      0.114
+    ],
+    "Subscriptions": [
+      0.0103,
+      0.0486
+    ],
+    "Transport": [
+      0.0418,
+      0.1719
+    ],
+    "Utilities": [
+      0.0444,
+      0.0789
+    ]
+  },
+  "threshold": 0.2659,
+  "threshold_quantile": 0.95,
+  "check": {
+    "windows": 5100,
+    "alarm_rate": 0.0682,
+    "users": 150
+  }
+}
