@@ -52,6 +52,16 @@ def get_user_by_username(username: str, db_path: str | Path | None = None) -> di
         conn.close()
 
 
+def get_profile(user_id: int, db_path: str | Path | None = None) -> dict | None:
+    """Return the user's profile (income_type, currency, opening_balance, ...) or None."""
+    conn = get_connection(db_path)
+    try:
+        row = conn.execute("SELECT * FROM profiles WHERE user_id = ?", (user_id,)).fetchone()
+        return _row_to_dict(row)
+    finally:
+        conn.close()
+
+
 def get_user_by_email(email: str, db_path: str | Path | None = None) -> dict | None:
     """Return the user as a dict, or None if no such email (case-insensitive)."""
     conn = get_connection(db_path)
