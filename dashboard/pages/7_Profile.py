@@ -12,9 +12,9 @@ import streamlit as st  # noqa: E402
 
 from app.auth.auth_service import AuthError, change_password  # noqa: E402
 from app.auth.session import current_username, logout_user, require_login  # noqa: E402
+from app.components.cache import bump_cache, data_zip  # noqa: E402
 from app.components.layout import setup_database, show_footer, show_sidebar  # noqa: E402
 from app.database.crud import count_user_rows, delete_user, get_profile, get_user_by_id, update_profile  # noqa: E402
-from app.database.export import user_data_zip  # noqa: E402
 
 INCOME_TYPES = {"salary": "Salary (regular pay)", "freelance": "Freelance / self-employed"}
 
@@ -35,7 +35,7 @@ def show_settings(user_id: int) -> None:
                       help="FinCast works in euro (Germany).")
         if st.form_submit_button("Save settings"):
             update_profile(user_id, income_type=income_type, opening_balance=opening)
-            st.cache_data.clear()                      # forecasts on other pages use the opening balance
+            bump_cache()                               # forecasts on other pages use the opening balance
             st.success("Settings saved.")
 
 
@@ -61,7 +61,7 @@ def show_download(user_id: int) -> None:
     counts = count_user_rows(user_id)
     st.caption(f"Stored for you: {counts['transactions']:,} transactions, {counts['forecasts']:,} forecast values, "
                f"{counts['goals']:,} goals.")
-    st.download_button("Download all my data (ZIP of CSV files)", data=user_data_zip(user_id),
+    st.download_button("Download all my data (ZIP of CSV files)", data=data_zip(user_id),
                        file_name=f"fincast_{current_username()}_{pd.Timestamp.today():%Y-%m-%d}.zip",
                        mime="application/zip", icon="⬇️")
 
@@ -76,7 +76,7 @@ def show_delete(user_id: int) -> None:
         if st.button("Delete my account and all data", type="primary", disabled=typed.strip() != username):
             delete_user(user_id)
             logout_user()
-            st.cache_data.clear()
+            bump_cache()
             st.session_state["account_deleted"] = True
             st.rerun()
 

@@ -426,3 +426,19 @@ def delete_user(user_id: int, db_path: str | Path | None = None) -> dict[str, in
     if left:
         raise RuntimeError(f"rows left after deleting user {user_id}: {left}")
     return before
+
+
+def data_version(user_id: int, db_path: str | Path | None = None) -> tuple:
+    """A cheap fingerprint of everything a forecast or anomaly check depends on (step 8.9 cache key):
+    transaction count, last id, total amount, anomaly verdicts, opening balance and income type."""
+    conn = get_connection(db_path)
+    try:
+        row = conn.execute(
+            """SELECT COUNT(*), COALESCE(MAX(id), 0), ROUND(COALESCE(SUM(amount), 0), 2),
+                      COALESCE(SUM(anomaly_status = 'confirmed'), 0), COALESCE(SUM(anomaly_status = 'dismissed'), 0),
+                      (SELECT opening_balance FROM profiles WHERE user_id = ?),
+                      (SELECT income_type FROM profiles WHERE user_id = ?)
+               FROM transactions WHERE user_id = ?""", (user_id, user_id, user_id)).fetchone()
+        return tuple(row)
+    finally:
+        conn.close()

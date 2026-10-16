@@ -12,29 +12,18 @@ import streamlit as st  # noqa: E402
 from streamlit.errors import StreamlitPageNotFoundError  # noqa: E402
 
 from app.auth.session import require_login  # noqa: E402
+from app.components.cache import forecast as cached_forecast  # noqa: E402
 from app.components.cards import format_euro  # noqa: E402
 from app.components.charts import what_if_chart  # noqa: E402
 from app.components.forecast_view import balance_risk  # noqa: E402
 from app.components.layout import setup_database, show_footer, show_sidebar  # noqa: E402
-from app.database.crud import get_transactions  # noqa: E402
-from src.forecasting.predictor import NotEnoughHistory, forecast_user, load_forecasters  # noqa: E402
+from src.forecasting.predictor import NotEnoughHistory  # noqa: E402
 from src.forecasting.simulator import CATEGORY_PREFIX, Scenario, compare, simulate  # noqa: E402
 
 MAIN_SLIDERS = 6          # the largest categories get a slider up front, the rest sit in an expander
 
 st.set_page_config(page_title="What-If · FinCast", page_icon="💶", layout="wide")
 setup_database()
-
-
-@st.cache_resource
-def forecasters():
-    return load_forecasters()
-
-
-@st.cache_data(ttl=600, show_spinner=False)
-def cached_forecast(user_id: int, n_transactions: int):
-    """Forecast once per user and data state; sliders then only re-run the cheap simulation."""
-    return forecast_user(user_id, forecasters=forecasters())
 
 
 def reset() -> None:
@@ -114,7 +103,7 @@ def main() -> None:
     st.caption("Try changes to next month and see your end balance move. Nothing here is saved.")
     try:
         with st.spinner("Forecasting next month…"):
-            forecast = cached_forecast(user_id, len(get_transactions(user_id)))
+            forecast = cached_forecast(user_id)        # cached: sliders only re-run the cheap simulation
     except NotEnoughHistory as err:
         st.info(str(err))
         try:

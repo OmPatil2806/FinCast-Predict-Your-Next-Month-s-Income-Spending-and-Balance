@@ -11,28 +11,23 @@ import pandas as pd  # noqa: E402
 import streamlit as st  # noqa: E402
 
 from app.auth.session import require_login  # noqa: E402
+from app.components.cache import bump_cache, forecast as cached_forecast  # noqa: E402
 from app.components.cards import format_euro  # noqa: E402
 from app.components.goal_view import goal_summary, status_label  # noqa: E402
 from app.components.layout import setup_database, show_footer, show_sidebar  # noqa: E402
 from app.database.crud import create_goal, delete_goal, get_goals, get_transactions, update_goal  # noqa: E402
 from src.forecasting.goals import HISTORY_MONTHS, project_goal, savings_pace  # noqa: E402
-from src.forecasting.predictor import NotEnoughHistory, complete_history, forecast_user, load_forecasters  # noqa: E402
+from src.forecasting.predictor import NotEnoughHistory, complete_history  # noqa: E402
 from src.preprocessing.aggregate_monthly import aggregate_monthly  # noqa: E402
 
 st.set_page_config(page_title="Goals · FinCast", page_icon="💶", layout="wide")
 setup_database()
 
 
-@st.cache_resource
-def forecasters():
-    return load_forecasters()
-
-
-@st.cache_data(ttl=600, show_spinner=False)
-def forecast_savings(user_id: int, n_transactions: int) -> float | None:
+def forecast_savings(user_id: int) -> float | None:
     """Next month's forecast income - spending, or None when there is too little history."""
     try:
-        forecast = forecast_user(user_id, forecasters=forecasters())
+        forecast = cached_forecast(user_id)
     except (NotEnoughHistory, FileNotFoundError):
         return None
     return forecast.get("income")["predicted"] - forecast.get("expenses")["predicted"]
@@ -49,6 +44,7 @@ def add_goal_form(user_id: int, expanded: bool) -> None:
             if st.form_submit_button("Add goal"):
                 try:
                     create_goal(user_id, name, target, saved, date)
+                    bump_cache()
                     st.rerun()
                 except ValueError as err:
                     st.error(str(err))
@@ -77,12 +73,14 @@ def show_goal(user_id: int, goal: dict, pace: float) -> None:
                     try:
                         update_goal(user_id, goal["id"], name=name, target_amount=target, saved_amount=saved,
                                     target_date=date)
+                        bump_cache()
                         st.rerun()
                     except ValueError as err:
                         st.error(str(err))
             sure = st.checkbox("Yes, delete this goal", key=f"sure_{goal['id']}")
             if st.button("Delete goal", key=f"delete_{goal['id']}", disabled=not sure):
                 delete_goal(user_id, goal["id"])
+                bump_cache()
                 st.rerun()
 
 
@@ -94,7 +92,7 @@ def main() -> None:
 
     transactions = get_transactions(user_id)
     monthly = aggregate_monthly(complete_history(transactions)) if not transactions.empty else pd.DataFrame()
-    pace = savings_pace(monthly, forecast_savings(user_id, len(transactions)))
+    pace = savings_pace(monthly, forecast_savings(user_id))
     st.metric("Your savings pace", f"{format_euro(pace, 0)} / month", border=True,
               help=f"Average of your last {HISTORY_MONTHS} complete months' savings (income − spending) and next "
                    "month's forecast savings.")

@@ -11,25 +11,19 @@ import streamlit as st  # noqa: E402
 from streamlit.errors import StreamlitPageNotFoundError  # noqa: E402
 
 from app.auth.session import current_username, require_login  # noqa: E402
+from app.components.cache import bump_cache, forecast as cached_forecast  # noqa: E402
 from app.components.cards import format_euro  # noqa: E402
 from app.components.charts import forecast_fan_chart  # noqa: E402
 from app.components.forecast_view import balance_risk, category_table, range_text  # noqa: E402
 from app.components.layout import setup_database, show_footer, show_sidebar  # noqa: E402
 from app.database.crud import get_transactions, save_forecast  # noqa: E402
-from src.forecasting.predictor import (  # noqa: E402
-    NotEnoughHistory, complete_history, forecast_user, load_forecasters,
-)
+from src.forecasting.predictor import NotEnoughHistory, complete_history  # noqa: E402
 from src.preprocessing.aggregate_monthly import aggregate_monthly  # noqa: E402
 
 TREND_MONTHS = 12
 
 st.set_page_config(page_title="Forecast · FinCast", page_icon="💶", layout="wide")
 setup_database()
-
-
-@st.cache_resource
-def forecasters():
-    return load_forecasters()
 
 
 def link_to_import() -> None:
@@ -91,7 +85,7 @@ def main() -> None:
     transactions = get_transactions(user_id)
     try:
         with st.spinner("Forecasting next month…"):
-            forecast = forecast_user(user_id, forecasters=forecasters())
+            forecast = cached_forecast(user_id)
     except NotEnoughHistory as err:
         st.info(str(err))
         link_to_import()
@@ -101,6 +95,8 @@ def main() -> None:
         return
 
     saved = save_forecast(user_id, forecast)      # first forecast per month is kept (step 8.4)
+    if saved["saved"]:
+        bump_cache()
     st.caption(f"Hello, {current_username()} — your forecast for **{forecast.target_month.strftime("%B %Y")}**, based on "
                f"{forecast.history_months} complete months up to {forecast.origin_month.strftime("%B %Y")} "
                f"(model version {forecast.model_version}).")
