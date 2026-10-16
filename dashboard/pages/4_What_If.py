@@ -9,14 +9,13 @@ if str(ROOT) not in sys.path:
 
 import pandas as pd  # noqa: E402
 import streamlit as st  # noqa: E402
-from streamlit.errors import StreamlitPageNotFoundError  # noqa: E402
 
 from app.auth.session import require_login  # noqa: E402
 from app.components.cache import forecast as cached_forecast  # noqa: E402
 from app.components.cards import format_euro  # noqa: E402
 from app.components.charts import what_if_chart  # noqa: E402
 from app.components.forecast_view import balance_risk  # noqa: E402
-from app.components.layout import setup_database, show_footer, show_sidebar  # noqa: E402
+from app.components.layout import empty_state, setup_database, show_footer, show_sidebar  # noqa: E402
 from src.forecasting.predictor import NotEnoughHistory  # noqa: E402
 from src.forecasting.simulator import CATEGORY_PREFIX, Scenario, compare, simulate  # noqa: E402
 
@@ -105,11 +104,7 @@ def main() -> None:
         with st.spinner("Forecasting next month…"):
             forecast = cached_forecast(user_id)        # cached: sliders only re-run the cheap simulation
     except NotEnoughHistory as err:
-        st.info(str(err))
-        try:
-            st.page_link("pages/2_Import_Transactions.py", label="Go to Import transactions", icon="📥")
-        except StreamlitPageNotFoundError:
-            st.markdown("Open **Import Transactions** in the sidebar.")
+        empty_state(str(err))
         return
     except FileNotFoundError:
         st.error("The forecasting models are missing. Run `python pipelines/run_training.py` once.")

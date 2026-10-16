@@ -50,11 +50,16 @@ def kpi_row(monthly: pd.DataFrame) -> None:
         d = values[f"{key}_delta"]
         return None if d is None else _delta_euro(d)
 
-    income.metric("Income", format_euro(values["income"]), delta("income"), border=True)
+    def colour(key: str, normal: str = "normal") -> str:
+        d = values[f"{key}_delta"]
+        return "off" if d is not None and round(d, 2) == 0 else normal   # no arrow colour for "no change"
+
+    income.metric("Income", format_euro(values["income"]), delta("income"), delta_color=colour("income"), border=True)
     # less spending is good, so the colour of the arrow is inverted
     spending.metric("Spending", format_euro(values["expenses"]), delta("expenses"),
-                    delta_color="inverse", border=True)
-    savings.metric("Savings", format_euro(values["savings"]), delta("savings"), border=True)
+                    delta_color=colour("expenses", "inverse"), border=True)
+    savings.metric("Savings", format_euro(values["savings"]), delta("savings"), delta_color=colour("savings"),
+                   border=True)
 
     rate_value = "–" if pd.isna(values["savings_rate"]) else f"{values['savings_rate']:.1%}"
     rate_delta = values["savings_rate_delta"]

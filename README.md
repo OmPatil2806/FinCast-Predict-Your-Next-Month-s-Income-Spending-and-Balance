@@ -504,7 +504,7 @@ flowchart LR
 | 5 | Categoriser and Aggregation | Rules + TF-IDF model, monthly tables | 2 days | ✅ Done |
 | 6 | Features and Baselines | Feature table, backtest, baseline scores | 2-3 days | ✅ Done (macro features switch on once the ECB cache exists) |
 | 7 | Models and MLflow | LightGBM, ETS, quantiles, champion export | 4-5 days | ✅ Done (open the MLflow UI on your PC, step 7.1) |
-| 8 | Forecast Pages | Forecast, What-If, Anomalies, Goals, Profile | 4-5 days | ⬜ To do |
+| 8 | Forecast Pages | Forecast, What-If, Anomalies, Goals, Profile | 4-5 days | ✅ Done |
 | 9 | Monitoring, Tests, Docs | Accuracy tracking, pytest, README | 2-3 days | ⬜ To do |
 | 10 | Deployment | GitHub, Streamlit Community Cloud, go live | 1 day | ⬜ To do |
 

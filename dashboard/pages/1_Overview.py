@@ -10,14 +10,13 @@ if str(ROOT) not in sys.path:
 
 import pandas as pd  # noqa: E402
 import streamlit as st  # noqa: E402
-from streamlit.errors import StreamlitPageNotFoundError  # noqa: E402
 
 from app.auth.session import current_username, require_login  # noqa: E402
 from app.components.cards import kpi_row  # noqa: E402
 from app.components.charts import (  # noqa: E402
     category_bar_chart, income_vs_spending_chart, monthly_savings_bar_chart,
 )
-from app.components.layout import setup_database, show_footer, show_sidebar  # noqa: E402
+from app.components.layout import empty_state, setup_database, show_footer, show_sidebar  # noqa: E402
 from app.database.crud import get_transactions  # noqa: E402
 from src.preprocessing.aggregate_monthly import (  # noqa: E402
     UNCATEGORISED, aggregate_by_category, aggregate_monthly,
@@ -28,14 +27,6 @@ RECENT_ROWS = 10
 
 st.set_page_config(page_title="Overview · FinCast", page_icon="💶", layout="wide")
 setup_database()
-
-
-def show_empty_state() -> None:
-    st.info("No transactions yet. Import a bank CSV (or the sample data) to see your overview.")
-    try:
-        st.page_link("pages/2_Import_Transactions.py", label="Go to Import transactions", icon="📥")
-    except StreamlitPageNotFoundError:  # page run on its own, outside the multipage app
-        st.markdown("Open **Import Transactions** in the sidebar.")
 
 
 def show_category_section(window: pd.DataFrame) -> None:
@@ -75,7 +66,7 @@ def main() -> None:
 
     transactions = get_transactions(user_id)
     if transactions.empty:
-        show_empty_state()
+        empty_state("No transactions yet. Import a bank CSV (or the sample data) to see your overview.")
         return
 
     monthly = aggregate_monthly(transactions).tail(TREND_MONTHS)

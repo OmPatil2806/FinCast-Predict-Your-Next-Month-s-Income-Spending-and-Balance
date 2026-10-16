@@ -8,14 +8,13 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import streamlit as st  # noqa: E402
-from streamlit.errors import StreamlitPageNotFoundError  # noqa: E402
 
 from app.auth.session import current_username, require_login  # noqa: E402
 from app.components.cache import bump_cache, forecast as cached_forecast  # noqa: E402
 from app.components.cards import format_euro  # noqa: E402
 from app.components.charts import forecast_fan_chart  # noqa: E402
 from app.components.forecast_view import balance_risk, category_table, range_text  # noqa: E402
-from app.components.layout import setup_database, show_footer, show_sidebar  # noqa: E402
+from app.components.layout import empty_state, setup_database, show_footer, show_sidebar  # noqa: E402
 from app.database.crud import get_transactions, save_forecast  # noqa: E402
 from src.forecasting.predictor import NotEnoughHistory, complete_history  # noqa: E402
 from src.preprocessing.aggregate_monthly import aggregate_monthly  # noqa: E402
@@ -24,13 +23,6 @@ TREND_MONTHS = 12
 
 st.set_page_config(page_title="Forecast · FinCast", page_icon="💶", layout="wide")
 setup_database()
-
-
-def link_to_import() -> None:
-    try:
-        st.page_link("pages/2_Import_Transactions.py", label="Go to Import transactions", icon="📥")
-    except StreamlitPageNotFoundError:   # page run on its own, outside the multipage app
-        st.markdown("Open **Import Transactions** in the sidebar.")
 
 
 def show_cards(forecast) -> None:
@@ -87,8 +79,7 @@ def main() -> None:
         with st.spinner("Forecasting next month…"):
             forecast = cached_forecast(user_id)
     except NotEnoughHistory as err:
-        st.info(str(err))
-        link_to_import()
+        empty_state(str(err))
         return
     except FileNotFoundError:
         st.error("The forecasting models are missing. Run `python pipelines/run_training.py` once.")

@@ -35,6 +35,9 @@ def require_login() -> int:
     Call this at the top of every page except Home.
     """
     if not is_logged_in():
+        from app.components.layout import page_link, show_footer   # here, to avoid a circular import
         st.warning("Please log in first.")
+        page_link("Home.py", "Go to the login page", "🔑")
+        show_footer()
         st.stop()
     return current_user_id()

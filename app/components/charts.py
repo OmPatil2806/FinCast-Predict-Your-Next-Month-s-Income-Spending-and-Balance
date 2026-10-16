@@ -20,6 +20,13 @@ MAGNITUDE_COLOR = "#2a78d6"   # single-hue bars (spending by category)
 BEFORE_COLOR = "#a8a6a0"      # neutral grey: the forecast before a what-if change
 INK_MUTED = "#898781"         # axis labels and direct labels (readable on light and dark)
 GRID_COLOR = "rgba(137, 135, 129, 0.22)"
+SURFACE_RING = "rgba(252,252,251,0.9)"   # 2px ring around markers so overlapping points stay readable
+
+
+def tint(hex_color: str, alpha: float) -> str:
+    """'#2a78d6', 0.16 -> 'rgba(42,120,214,0.16)' (fills derived from the series colour)."""
+    r, g, b = (int(hex_color[i:i + 2], 16) for i in (1, 3, 5))
+    return f"rgba({r},{g},{b},{alpha})"
 FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif'
 
 
@@ -52,7 +59,7 @@ def income_vs_spending_chart(monthly: pd.DataFrame) -> go.Figure | None:
         fig.add_trace(go.Scatter(
             x=x, y=monthly[column], name=name, mode="lines+markers",
             line=dict(color=color, width=2),
-            marker=dict(size=8, color=color, line=dict(width=2, color="rgba(252,252,251,0.9)")),
+            marker=dict(size=8, color=color, line=dict(width=2, color=SURFACE_RING)),
             hovertemplate=f"{name}: €%{{y:,.2f}}<extra></extra>",
         ))
         # direct label at the last point, in neutral ink
@@ -121,8 +128,8 @@ def forecast_fan_chart(monthly: pd.DataFrame, forecast) -> go.Figure | None:
     target = forecast.target_month.to_timestamp()
     fig = go.Figure()
     for name, column, series, color, fill in (
-            ("Income", "income", "income", INCOME_COLOR, "rgba(42,120,214,0.16)"),
-            ("Spending", "expenses", "expenses", SPENDING_COLOR, "rgba(235,104,52,0.16)")):
+            ("Income", "income", "income", INCOME_COLOR, tint(INCOME_COLOR, 0.16)),
+            ("Spending", "expenses", "expenses", SPENDING_COLOR, tint(SPENDING_COLOR, 0.16))):
         f = forecast.get(series)
         last_x, last_y = x.iloc[-1], monthly[column].iloc[-1]
         # the fan: from the last real value out to the range of next month
@@ -133,12 +140,12 @@ def forecast_fan_chart(monthly: pd.DataFrame, forecast) -> go.Figure | None:
         fig.add_trace(go.Scatter(
             x=x, y=monthly[column], name=name, mode="lines+markers", legendgroup=name,
             line=dict(color=color, width=2),
-            marker=dict(size=8, color=color, line=dict(width=2, color="rgba(252,252,251,0.9)")),
+            marker=dict(size=8, color=color, line=dict(width=2, color=SURFACE_RING)),
             hovertemplate=f"{name}: €%{{y:,.2f}}<extra></extra>"))
         fig.add_trace(go.Scatter(
             x=[last_x, target], y=[last_y, f["predicted"]], mode="lines+markers", legendgroup=name,
             showlegend=False, line=dict(color=color, width=2, dash="dot"),
-            marker=dict(size=[0, 10], color=color, symbol="diamond", line=dict(width=2, color="rgba(252,252,251,0.9)")),
+            marker=dict(size=[0, 10], color=color, symbol="diamond", line=dict(width=2, color=SURFACE_RING)),
             customdata=[[last_y, last_y], [f["lower"], f["upper"]]],
             hovertemplate=(f"{name} forecast: €%{{y:,.2f}}<br>likely €%{{customdata[0]:,.0f}} – "
                            f"€%{{customdata[1]:,.0f}}<extra></extra>")))

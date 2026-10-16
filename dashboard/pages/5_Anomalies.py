@@ -9,12 +9,11 @@ if str(ROOT) not in sys.path:
 
 import pandas as pd  # noqa: E402
 import streamlit as st  # noqa: E402
-from streamlit.errors import StreamlitPageNotFoundError  # noqa: E402
 
 from app.auth.session import require_login  # noqa: E402
 from app.components.cache import anomaly_flags, bump_cache  # noqa: E402
 from app.components.cards import format_euro  # noqa: E402
-from app.components.layout import setup_database, show_footer, show_sidebar  # noqa: E402
+from app.components.layout import empty_state, setup_database, show_footer, show_sidebar  # noqa: E402
 from app.database.crud import get_transactions, set_anomaly_status  # noqa: E402
 from src.forecasting.anomalies import history_note  # noqa: E402
 
@@ -57,11 +56,7 @@ def main() -> None:
 
     transactions = get_transactions(user_id)
     if transactions.empty:
-        st.info("No transactions yet. Import a bank CSV to check it for unusual spending.")
-        try:
-            st.page_link("pages/2_Import_Transactions.py", label="Go to Import transactions", icon="📥")
-        except StreamlitPageNotFoundError:
-            st.markdown("Open **Import Transactions** in the sidebar.")
+        empty_state("No transactions yet. Import a bank CSV to check it for unusual spending.")
         return
     note = history_note(transactions)
     if note:
@@ -74,7 +69,8 @@ def main() -> None:
     since = None if months is None else (pd.Timestamp.today().to_period("M") - (months - 1)).to_timestamp()
 
     try:
-        flags = anomaly_flags(user_id, since=since, include_dismissed=show_dismissed)
+        with st.spinner("Checking your transactions…"):
+            flags = anomaly_flags(user_id, since=since, include_dismissed=show_dismissed)
     except FileNotFoundError:
         st.error("The anomaly model is missing. Run `python pipelines/run_training.py` once.")
         return

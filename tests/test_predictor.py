@@ -104,7 +104,7 @@ def test_forecast_from_the_app_database(data, forecasters, tmp_path):
     assert from_db.balance == direct.balance and from_db.model_version == forecasters["income"].version
 
     empty_user = register("new_user", "new@example.com", "secret123", db_path=db)
-    with pytest.raises(NotEnoughHistory, match="Import 3 more months"):
+    with pytest.raises(NotEnoughHistory, match="No complete month of transactions yet"):
         forecast_user(empty_user, db_path=db, forecasters=forecasters)
 
 

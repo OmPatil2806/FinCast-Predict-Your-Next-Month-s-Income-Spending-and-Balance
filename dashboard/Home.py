@@ -11,8 +11,9 @@ if str(ROOT) not in sys.path:
 import streamlit as st  # noqa: E402
 
 from app.auth.auth_service import LOGIN_FAILED, AuthError, login, register  # noqa: E402
-from app.auth.session import current_username, is_logged_in, login_user  # noqa: E402
-from app.components.layout import setup_database, show_footer, show_sidebar  # noqa: E402
+from app.auth.session import current_user_id, current_username, is_logged_in, login_user  # noqa: E402
+from app.components.layout import PAGES, page_link, setup_database, show_footer, show_sidebar  # noqa: E402
+from app.database.crud import get_transactions  # noqa: E402
 
 st.set_page_config(page_title="FinCast", page_icon="💶", layout="centered")
 setup_database()
@@ -58,10 +59,18 @@ st.caption("Predict your next month's income, spending and balance.")
 if is_logged_in():
     show_sidebar()
     st.success(f"Welcome, {current_username()}!")
-    st.markdown(
-        "Use the pages in the sidebar to see your **Overview**. "
-        "Import, forecasts, what-if scenarios and goals arrive in the next phases."
-    )
+    transactions = get_transactions(current_user_id())
+    if transactions.empty:
+        st.markdown("Start by importing a bank CSV, or try the app with the sample data.")
+    else:
+        months = transactions["date"].dt.to_period("M").nunique()
+        st.caption(f"{len(transactions):,} transactions over {months} months, up to "
+                   f"{transactions['date'].max():%d.%m.%Y}.")
+    left, right = st.columns(2)
+    for i, (page, label, icon, about) in enumerate(PAGES):
+        with (left if i % 2 == 0 else right).container(border=True):
+            page_link(page, label, icon)
+            st.caption(about)
 else:
     login_tab, register_tab = st.tabs(["Login", "Register"])
     with login_tab:

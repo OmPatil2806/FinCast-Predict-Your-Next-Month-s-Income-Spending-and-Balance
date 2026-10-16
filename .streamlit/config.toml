@@ -1,0 +1,7 @@
+# FinCast theme (step 8.10): widgets use the same blue as the charts (app/components/charts.py INCOME_COLOR),
+# so sliders and radio buttons no longer show Streamlit's default red, which reads like a warning.
+[theme]
+primaryColor = "#2a78d6"
+
+[browser]
+gatherUsageStats = false

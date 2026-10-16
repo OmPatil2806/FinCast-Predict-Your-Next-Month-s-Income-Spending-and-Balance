@@ -61,7 +61,9 @@ def show_download(user_id: int) -> None:
     counts = count_user_rows(user_id)
     st.caption(f"Stored for you: {counts['transactions']:,} transactions, {counts['forecasts']:,} forecast values, "
                f"{counts['goals']:,} goals.")
-    st.download_button("Download all my data (ZIP of CSV files)", data=data_zip(user_id),
+    with st.spinner("Preparing your data…"):
+        archive = data_zip(user_id)
+    st.download_button("Download all my data (ZIP of CSV files)", data=archive,
                        file_name=f"fincast_{current_username()}_{pd.Timestamp.today():%Y-%m-%d}.zip",
                        mime="application/zip", icon="⬇️")
 

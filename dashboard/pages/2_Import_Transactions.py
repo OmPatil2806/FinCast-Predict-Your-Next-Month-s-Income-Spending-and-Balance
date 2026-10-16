@@ -129,7 +129,8 @@ def import_section(user_id: int) -> None:
         return
 
     show_summary(clean, report)
-    predicted = categorize(clean, categorizer())
+    with st.spinner("Categorising…"):
+        predicted = categorize(clean, categorizer())
     clean = clean.join(predicted)
     counts = clean["category_source"].value_counts()
     review = int(clean["needs_review"].sum())
@@ -155,7 +156,8 @@ def import_section(user_id: int) -> None:
         changed = edited["category"] != clean["category"]
         clean["category"] = edited["category"]
         clean.loc[changed, "category_source"] = "user"     # the user's correction, kept for retraining
-        result = add_transactions(user_id, clean, source=st.session_state.get("import_source", "csv"))
+        with st.spinner("Saving…"):
+            result = add_transactions(user_id, clean, source=st.session_state.get("import_source", "csv"))
         bump_cache()
         st.success(f"✅ {result['added']} added, {result['skipped']} already existed"
                    + (f" ({int(changed.sum())} {'category' if changed.sum() == 1 else 'categories'} corrected by you)."

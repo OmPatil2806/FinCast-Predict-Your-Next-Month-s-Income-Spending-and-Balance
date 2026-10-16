@@ -51,9 +51,14 @@ class NotEnoughHistory(ValueError):
     def __init__(self, months: int, needed: int):
         self.months, self.needed = months, needed
         more = needed - months
-        super().__init__(f"FinCast needs at least {needed} complete months of transactions to forecast; "
-                         f"you have {months}. Import {more} more month{'s' if more != 1 else ''} "
-                         f"(or wait until the current month is over).")
+        if months == 0:
+            message = (f"No complete month of transactions yet. Import at least {needed} months of bank data "
+                       "to get a forecast.")
+        else:
+            message = (f"FinCast needs at least {needed} complete months of transactions to forecast; you have "
+                       f"{months}. Import {more} more month{'s' if more != 1 else ''} (or wait until the current "
+                       "month is over).")
+        super().__init__(message)
 
 
 def load_cold_start(models_dir: str | Path | None = None) -> dict:
