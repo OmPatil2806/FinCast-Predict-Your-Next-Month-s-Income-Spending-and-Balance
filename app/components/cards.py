@@ -16,7 +16,7 @@ def format_euro(value: float, decimals: int = 2) -> str:
 
 def _delta_euro(value: float) -> str:
     # st.metric reads the leading '-' to choose the arrow, so use an ASCII minus here
-    return f"{'-' if value < 0 else '+'}€{abs(value):,.2f} vs last month"
+    return f"{'-' if value < 0 else '+'}€{abs(value):,.0f} vs last month"
 
 
 def kpi_values(monthly: pd.DataFrame) -> dict | None:
@@ -52,13 +52,13 @@ def kpi_row(monthly: pd.DataFrame) -> None:
 
     def colour(key: str, normal: str = "normal") -> str:
         d = values[f"{key}_delta"]
-        return "off" if d is not None and round(d, 2) == 0 else normal   # no arrow colour for "no change"
+        return "off" if d is not None and round(d) == 0 else normal      # no arrow colour for "no change"
 
-    income.metric("Income", format_euro(values["income"]), delta("income"), delta_color=colour("income"), border=True)
+    income.metric("Income", format_euro(values["income"], 0), delta("income"), delta_color=colour("income"), border=True)
     # less spending is good, so the colour of the arrow is inverted
-    spending.metric("Spending", format_euro(values["expenses"]), delta("expenses"),
+    spending.metric("Spending", format_euro(values["expenses"], 0), delta("expenses"),
                     delta_color=colour("expenses", "inverse"), border=True)
-    savings.metric("Savings", format_euro(values["savings"]), delta("savings"), delta_color=colour("savings"),
+    savings.metric("Savings", format_euro(values["savings"], 0), delta("savings"), delta_color=colour("savings"),
                    border=True)
 
     rate_value = "–" if pd.isna(values["savings_rate"]) else f"{values['savings_rate']:.1%}"

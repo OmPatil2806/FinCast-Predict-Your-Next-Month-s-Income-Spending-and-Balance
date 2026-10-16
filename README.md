@@ -10,15 +10,65 @@ Instead of only showing the past, **FinCast predicts next month's income, spendi
 | **Stack** | Python, Streamlit, SQLite, scikit-learn, LightGBM, MLflow, Plotly |
 | **Editor** | VS Code (Python only) |
 | **Delivery** | Deployed on Streamlit Community Cloud from GitHub |
-| **Status** | Planning complete - implementation in progress (see [Roadmap](#10-implementation-roadmap)) |
+| **Status** | Phases 1–9 built and tested; deployment (Phase 10) next - see [Roadmap](#10-implementation-roadmap) |
+| **Tests** | 289 automated tests, 92 % line coverage, including an end-to-end pipeline run |
 | **Live demo** | _Coming in Phase 10_ |
 
 > **Disclaimer:** FinCast is a learning and portfolio project. Forecasts are statistical estimates based on past behaviour and are **not financial advice**.
 
 ---
 
+## At a Glance
+
+<table>
+<tr>
+<td width="50%"><img src="docs/images/forecast.png" alt="Forecast page: next month's income, spending and balance with ranges and a fan chart"><br><sub><b>Forecast</b> - next month with a 10-90 % range</sub></td>
+<td width="50%"><img src="docs/images/accuracy.png" alt="How accurate was I? panel comparing past forecasts with what happened"><br><sub><b>How accurate was I?</b> - stored forecasts vs reality</sub></td>
+</tr>
+<tr>
+<td><img src="docs/images/what_if.png" alt="What-If page with sliders and a before/after chart"><br><sub><b>What-If</b> - change next month, see the balance move</sub></td>
+<td><img src="docs/images/overview.png" alt="Overview page with KPI cards and income vs spending chart"><br><sub><b>Overview</b> - where the money stands</sub></td>
+</tr>
+<tr>
+<td><img src="docs/images/anomalies.png" alt="Anomalies page listing unusual charges with Confirm and Dismiss"><br><sub><b>Anomalies</b> - unusual or duplicate charges</sub></td>
+<td><img src="docs/images/goals.png" alt="Goals page with progress bars and projected dates"><br><sub><b>Goals</b> - when will I get there?</sub></td>
+</tr>
+</table>
+
+### Quick start
+
+```bash
+git clone https://github.com/OmPatil2806/FinCast-Predict-Your-Next-Month-s-Income-Spending-and-Balance.git
+cd FinCast-Predict-Your-Next-Month-s-Income-Spending-and-Balance
+python -m venv .venv
+.venv\Scripts\activate            # Windows (macOS / Linux: source .venv/bin/activate)
+pip install -r requirements.txt
+streamlit run dashboard/Home.py    # the trained models are committed, so the app works right away
+```
+
+Register, open **Import transactions**, click **Use sample data** and save - then open **Forecast**.
+To rebuild all data and models yourself: `python pipelines/run_all.py` (about 9 minutes). All commands: [Quick Start](#12-quick-start).
+
+### Results in numbers
+
+Measured on a rolling backtest over 23 months (Nov 2024 - Sep 2026), always training on the past only.
+
+| What | Result |
+|---|---|
+| **Spending forecast** (total + 10 categories) | Champion system MAE **€55.23** vs **€59.33** for the best simple baseline everywhere (6.9 % lower); also lower on the later months it was not chosen on (€51.71 vs €58.81) |
+| **Where the ML model wins** | Health **+23 %**, Leisure **+19 %**, Transport **+15 %**, Income **+11 %** vs the best baseline; everywhere else (rent, utilities, total spending, …) a baseline stays champion |
+| **Forecast ranges** (10-90 %) | Real value inside the range **85 %** of the time for spending, **78 %** for income (target ≈ 80 %) |
+| **Categoriser** | 100 % on held-out users and the sample file; on merchants it never saw, 42 % raw - the 22 % of guesses it is confident about are 91 % right, the rest go to review |
+| **Anomaly flags** | 88 % of planted big costs, duplicates and price rises caught at 49 % precision; the Isolation Forest lost to a simple rule and only ranks |
+| **Reproducibility** | A fresh clone + `run_all.py` reproduces every model and metric exactly |
+
+> **Data honesty:** every number above comes from **synthetic** data (300 generated users, 36 months). Real users' accuracy is measured live by the *How accurate was I?* panel. See [Limitations](#13-limitations-and-risks).
+
+---
+
 ## Table of Contents
 
+0. [At a Glance](#at-a-glance) - screenshots, quick start, results
 1. [The Problem](#1-the-problem)
 2. [What FinCast Solves](#2-what-fincast-solves)
 3. [What You Will Have at the End](#3-what-you-will-have-at-the-end)
@@ -31,7 +81,7 @@ Instead of only showing the past, **FinCast predicts next month's income, spendi
 10. [Implementation Roadmap](#10-implementation-roadmap)
 11. [Implementation Phases, Step by Step](#11-implementation-phases-step-by-step)
 12. [Quick Start](#12-quick-start)
-13. [Risks and How to Handle Them](#13-risks-and-how-to-handle-them)
+13. [Limitations and Risks](#13-limitations-and-risks)
 14. [Design Notes and Planned Improvements](#14-design-notes-and-planned-improvements)
 15. [Final Launch Checklist](#15-final-launch-checklist)
 
@@ -63,7 +113,7 @@ A logged-in user uploads past bank transactions (or types them in). The app clea
 | **Next-month forecast** | Predicts income, total spending and spending per category with a lower/upper range. |
 | **End-of-month balance** | Combines the forecasts into an expected balance and the risk of going below zero. |
 | **Auto-categorisation** | Keyword rules first, then a text classifier (TF-IDF + logistic regression) for the rest. |
-| **Anomaly detection** | Isolation Forest flags unusual or duplicated transactions for review. |
+| **Anomaly detection** | Flags unusual or duplicated charges for review (a rule decides the flags, an Isolation Forest score ranks them - the rule won the comparison). |
 | **What-if simulator** | Sliders such as "cut dining out by 20%" or "income drops 15%" recompute the forecast. |
 | **Savings goals** | Projects the date a goal will be reached and whether the current pace is enough. |
 | **Forecast accuracy** | Stores each forecast, fills in the real value later, and shows how accurate the app was. |
@@ -71,11 +121,12 @@ A logged-in user uploads past bank transactions (or types them in). The app clea
 
 ### What the Forecast page shows
 
-- Forecast spend for next month with a lower and upper range
-- Expected end-of-month balance and the chance it drops below zero
-- Category split of the forecast (donut chart)
-- Biggest expected changes versus last month
-- A short "accuracy so far" panel using stored past forecasts
+- Next month's income, spending and end-of-month balance, each with a 10-90 % range
+- A warning when the balance is expected (or could, in a weak month) to go below zero
+- A fan chart: the last 12 months and next month's range
+- Every spending category with its forecast, range and the method that forecasts it best
+- **How accurate was I?** - past forecasts against what really happened
+- Notes for short histories (fewer than 6 or 12 months) and when the spending mix is far from the training data
 
 ---
 
@@ -89,14 +140,14 @@ A logged-in user uploads past bank transactions (or types them in). The app clea
 
 ### How we will know it works
 
-| Measure | Target |
-|---|---|
-| **Forecast quality** | The champion model beats the best naive baseline on MAE for variable-spending categories (target: at least 10% lower). |
-| **Interval quality** | The 80% prediction range contains the real value in roughly 75-85% of backtest cases. |
-| **Categoriser** | At least 90% accuracy on a held-out set of labelled merchant descriptions. |
-| **App behaviour** | A new user can register, upload a CSV and see a forecast in under 2 minutes. |
-| **Reliability** | No crash on empty history, bad CSV formats or missing months; clear messages instead. |
-| **Reproducibility** | `python pipelines/run_all.py` rebuilds data, models and the exported champion from scratch. |
+| Measure | Target | Result |
+|---|---|---|
+| **Forecast quality** | The champion model beats the best naive baseline on MAE for variable-spending categories (target: at least 10% lower). | ✅ Health +23 %, Leisure +19 %, Transport +15 %; Dining (+8 %) and Shopping (+5 %) fall short, so a baseline stays champion there |
+| **Interval quality** | The 80% prediction range contains the real value in roughly 75-85% of backtest cases. | ✅ Spending 85 %, income 78 % (freelancer income alone: 68 %) |
+| **Categoriser** | At least 90% accuracy on a held-out set of labelled merchant descriptions. | ✅ 100 % on held-out users; unseen merchants are the weak spot (see Results) |
+| **App behaviour** | A new user can register, upload a CSV and see a forecast in under 2 minutes. | ✅ Register → *Use sample data* → Forecast, with a short-history note |
+| **Reliability** | No crash on empty history, bad CSV formats or missing months; clear messages instead. | ✅ Every page tested logged out, empty and with data |
+| **Reproducibility** | `python pipelines/run_all.py` rebuilds data, models and the exported champion from scratch. | ✅ Identical models and metrics from a fresh clone |
 
 ---
 
@@ -112,7 +163,7 @@ The forecasting models need many users with long histories, but real personal ba
 | **Inflation and rates** | ECB Data Portal / Eurostat HICP inflation, key interest rate (FRED for US data) | `src/ingestion/macro_api.py` | Macro context for price drift; cached locally so the app also works offline. |
 | **Calendar** | Public holidays, paydays, month length, month-end effects | Python `holidays` package | Explains seasonality such as December gifts or summer travel. |
 
-> **Data honesty note:** all training data is **synthetic**. `synthetic_generator.py` creates **300 users × 36 months (Oct 2023 – Sep 2026), about 381,000 transactions**, across 4 archetypes (salaried single, salaried family, freelancer, student), each transaction with its true category. It is fully reproducible from the fixed seed: `python -m src.ingestion.synthetic_generator`. No public or real bank datasets are used for training; the only real personal data is what a logged-in user uploads, and it never leaves their account.
+> **Data honesty note:** all training data is **synthetic**. `synthetic_generator.py` creates **300 users × 36 months (Oct 2023 – Sep 2026), about 381,000 transactions**, across 4 archetypes (salaried single, salaried family, freelancer, student), each transaction with its true category. It is fully reproducible from the fixed seed: `python -m src.ingestion.synthetic_generator`. No public or real bank datasets are used for training; the only real personal data is what a logged-in user uploads, and it never leaves their account. The ECB macro features (inflation, key rate) switch on automatically once `python -m src.ingestion.macro_api` has cached the data on a machine with internet access; the committed models were trained without them.
 
 > **Key design decision:** Train a **global model** on many synthetic users, then personalise it with each user's own history. Until a user has about six months of data, the app uses the global model and says so.
 
@@ -127,21 +178,32 @@ The system has two flows that meet in the `models/` folder:
 
 ```mermaid
 flowchart TB
-    UI["<b>STREAMLIT UI</b> (dashboard/)<br/>Login · Overview · Import · Forecast · What-if · Anomalies · Goals"]
-    SVC["<b>Service layer</b> (app/)<br/>auth · CRUD · categorizer"]
-    FC["<b>Forecast layer</b> (src/forecasting)<br/>load champion model · predict · simulate"]
-    DB[("<b>SQLite app database</b><br/>users · transactions · forecasts · goals")]
-    MODELS[("<b>models/</b> (champion)<br/>exported from MLflow registry")]
-    PIPE["<b>ML PIPELINE</b> (src/ + pipelines/)<br/>ingest → clean → categorize → aggregate → features → train → backtest → MLflow"]
-    INPUTS["Inputs: synthetic users · ECB/Eurostat APIs · holiday calendar · user bank CSV"]
+    subgraph ONLINE["Online flow - the Streamlit app"]
+        UI["<b>STREAMLIT UI</b> (dashboard/)<br/>Home · Overview · Import · Forecast · What-If · Anomalies · Goals · Profile"]
+        SVC["<b>Service layer</b> (app/)<br/>auth · CRUD · cache · export · page components"]
+        FC["<b>Forecast layer</b> (src/forecasting)<br/>predictor · simulator · goals · anomaly review"]
+        MON["<b>Monitoring</b> (src/monitoring)<br/>forecast vs actual · drift check"]
+        DB[("<b>SQLite app database</b><br/>users · profiles · transactions · forecasts · goals")]
+    end
+    MODELS[("<b>models/</b> - committed<br/>forecaster_income/spend · anomaly · categorizer<br/>champions · cold start · drift reference")]
+    subgraph OFFLINE["Offline flow - pipelines/run_all.py"]
+        PIPE["<b>ML PIPELINE</b> (src/)<br/>ingest → clean → categorise → aggregate → features → baselines →<br/>LightGBM + quantiles → champion rule → export"]
+        MLF[("<b>MLflow</b><br/>runs · metrics · registry")]
+    end
+    INPUTS["Inputs: synthetic users · ECB API (cached) · holiday calendar"]
+    CSV["User bank CSV / sample data"]
 
-    UI --> SVC
+    CSV --> UI
+    UI --> SVC --> DB
     UI --> FC
-    SVC --> FC
-    SVC --> DB
+    UI --> MON
+    MON --> DB
+    FC --> DB
     MODELS --> FC
-    PIPE --> MODELS
+    MODELS --> MON
     INPUTS --> PIPE
+    PIPE --> MLF
+    PIPE --> MODELS
 ```
 
 ```
@@ -170,7 +232,8 @@ flowchart TB
 |---|---|---|
 | **Streamlit UI** | Pages, forms, charts, navigation, session handling | `dashboard/`, `app/components/` |
 | **Service layer** | Registration, login, queries, categorisation | `app/`, `src/preprocessing/` |
-| **Forecast layer** | Load champion model, build features, predict, simulate | `src/forecasting/` |
+| **Forecast layer** | Load champion model, build features, predict, simulate, goals, anomaly review | `src/forecasting/` |
+| **Monitoring** | Score stored forecasts against actual months, spending-mix drift check | `src/monitoring/` |
 | **App database** | Users, transactions, forecasts, goals (SQLite) | `data/app.db` |
 | **Model store** | Exported champion models and metadata | `models/` |
 | **ML pipeline** | Ingest, clean, categorise, aggregate, features, train, backtest, track | `src/`, `pipelines/`, MLflow |
@@ -184,12 +247,12 @@ flowchart TB
 | **Language** | Python 3.10 - 3.12 | Single language for data, ML, backend and UI. |
 | **Web app** | Streamlit, Plotly | Multi-page dashboard, forms, file upload, interactive charts. |
 | **Data** | pandas, numpy, pyarrow | Cleaning, aggregation, feature tables (parquet). |
-| **Machine learning** | scikit-learn, LightGBM, statsmodels, SHAP | Baselines, global forecaster, ETS/SARIMAX, classifier, anomaly model, explanations. |
+| **Machine learning** | scikit-learn, LightGBM, statsmodels, Optuna, SHAP | Baselines, global forecaster, ETS/SARIMAX, tuning, classifier, anomaly model, explanations. |
 | **Experiment tracking** | MLflow | Runs, metrics, artifacts, model registry (SQLite backend). |
 | **Database** | SQLite (sqlite3 or SQLAlchemy) | Users, transactions, forecasts, goals. Upgrade path to Postgres. |
 | **Security** | bcrypt | Password hashing; never store plain text. |
 | **Config and utils** | PyYAML, python-dotenv, requests, holidays, joblib | Config files, API calls, calendar features, model saving. |
-| **Quality** | pytest | Unit tests for parser, auth, features, backtest. |
+| **Quality** | pytest, pytest-cov, Playwright (manual checks) | 289 tests: unit tests, leakage test, page smoke tests and an end-to-end pipeline run. |
 | **Dev tools** | VS Code, Git, GitHub | Editor, version control, deployment source. |
 | **Hosting** | Streamlit Community Cloud | Free deployment straight from a GitHub repository. |
 
@@ -220,32 +283,47 @@ fincast/
 │   │   └── anomaly_features.py
 │   ├── training/
 │   │   ├── train_baselines.py
-│   │   ├── train_forecaster.py
+│   │   ├── train_forecaster.py      (LightGBM median + quantile ranges)
+│   │   ├── train_statistical.py     (ETS / SARIMAX comparison)
+│   │   ├── tune_forecaster.py       (Optuna)
+│   │   ├── explain_forecaster.py    (SHAP)
+│   │   ├── select_champion.py       (champion rule per series)
+│   │   ├── export_champion.py       (registry + export to models/)
+│   │   ├── calibrate_cold_start.py  (short-history ranges)
 │   │   ├── train_categorizer.py
 │   │   └── train_anomaly.py
 │   ├── evaluation/
 │   │   ├── backtest.py
 │   │   └── metrics.py
 │   ├── forecasting/
+│   │   ├── model.py                 (exported model classes, no MLflow)
 │   │   ├── predictor.py
 │   │   ├── simulator.py
-│   │   └── goals.py
+│   │   ├── goals.py
+│   │   └── anomalies.py
 │   ├── monitoring/
-│   │   └── forecast_vs_actual.py
+│   │   ├── forecast_vs_actual.py
+│   │   └── drift.py
 │   └── utils/
 │       ├── logger.py
-│       └── helpers.py
+│       ├── helpers.py
+│       └── mlflow_utils.py
 ├── app/
 │   ├── database/
 │   │   ├── db.py
 │   │   ├── models.py
-│   │   └── crud.py
+│   │   ├── crud.py
+│   │   └── export.py
 │   ├── auth/
 │   │   ├── auth_service.py
 │   │   └── session.py
 │   └── components/
+│       ├── cache.py
+│       ├── cards.py
 │       ├── charts.py
-│       └── cards.py
+│       ├── forecast_view.py
+│       ├── goal_view.py
+│       └── layout.py
 ├── dashboard/
 │   ├── Home.py
 │   └── pages/
@@ -260,11 +338,13 @@ fincast/
 │   ├── run_ingestion.py
 │   ├── run_training.py
 │   └── run_all.py
-├── models/                (exported champion models)
-├── notebooks/             (EDA and experiments)
-├── tests/
+├── models/                (exported champion models + JSON results, committed)
+├── reports/               (SHAP plots and tables)
+├── notebooks/             (01 EDA · 02 features · 03 model experiments)
+├── docs/images/           (README screenshots)
+├── tests/                 (289 tests)
+├── logs/                  (fincast.log, git-ignored)
 ├── .streamlit/config.toml
-├── MLproject
 ├── requirements.txt
 ├── .gitignore
 └── README.md
@@ -328,7 +408,7 @@ All feature logic lives here so training and the live app compute features in ex
 | File | What it is | What we build in it |
 |---|---|---|
 | `build_features.py` | Forecasting features. | Lags (1, 2, 3, 12 months), rolling mean and std, month as sine/cosine, holiday count, lagged inflation, fixed-vs-variable spending share; builds the target `next_month_value`. |
-| `anomaly_features.py` | Features for anomaly detection. | Amount z-score per category, day of month, weekday, merchant frequency, days since last similar charge. |
+| `anomaly_features.py` | Features for anomaly detection. | Amount z-score per category and per merchant, new-merchant flag, days since the last charge and since the same amount (duplicates); the `AnomalyDetector` the app loads. |
 </details>
 
 <details>
@@ -339,9 +419,15 @@ Each script trains one thing and logs everything to MLflow.
 | File | What it is | What we build in it |
 |---|---|---|
 | `train_baselines.py` | The bar to beat. | Last-month, same-month-last-year and 3-month-average predictors; logs their error metrics. |
-| `train_forecaster.py` | Main forecasting models. | LightGBM (median and 10th/90th percentile quantiles) plus ETS/SARIMAX for long single-user histories; nested MLflow runs; picks and registers the champion. |
+| `train_forecaster.py` | Main forecasting models. | One global LightGBM per family (income, spending): median and 10th/90th percentile models, backtested with nested MLflow runs. |
+| `train_statistical.py` | Classic models. | ETS and SARIMAX per user, compared with LightGBM and the baselines on the same rows. |
+| `tune_forecaster.py` | Hyper-parameter search. | Optuna on earlier test months, checked on 6 unseen months (the defaults won and were kept). |
+| `explain_forecaster.py` | Explanations. | SHAP summary, beeswarm and example plots in `reports/`, logged to MLflow. |
+| `select_champion.py` | The champion rule. | Per series: LightGBM only if its MAE is ≥ 10 % below the best baseline; writes `models/champions.json`. |
+| `export_champion.py` | Release. | Trains the final models, registers them in the MLflow registry (alias `champion`) and exports them with `model_meta.json`. |
+| `calibrate_cold_start.py` | Short histories. | Measures how much wider ranges must be for users with 3-5 months; writes `models/cold_start.json`. |
 | `train_categorizer.py` | Text classifier training. | Fits TF-IDF + logistic regression, logs accuracy and F1 per category, saves the model. |
-| `train_anomaly.py` | Anomaly model training. | Fits Isolation Forest, tunes the contamination rate, saves the model. |
+| `train_anomaly.py` | Anomaly model training. | Isolation Forest vs a simple rule on planted anomalies; the better one (the rule) decides the flags; saves the detector. |
 </details>
 
 <details>
@@ -362,9 +448,11 @@ The bridge between the trained model and the Streamlit pages.
 
 | File | What it is | What we build in it |
 |---|---|---|
-| `predictor.py` | Live inference. | Loads the champion from `models/`, builds features from the user's SQLite history, returns forecast with lower and upper bound; cold-start fallback. |
-| `simulator.py` | What-if engine. | Applies changes (reduce a category by x%, change income) and recomputes the forecast and balance. |
-| `goals.py` | Savings goal maths. | Projects the date a goal is reached from forecast savings; reports on-track or behind. |
+| `model.py` | The exported model classes. | `ForecastModel`, `ChampionForecaster`, baselines and the champion logic - everything the app needs, without MLflow. |
+| `predictor.py` | Live inference. | Loads the champion from `models/`, builds features from the user's SQLite history with the training code, returns forecast with lower and upper bound; short-history rules. |
+| `simulator.py` | What-if engine. | Applies changes (reduce a category by x%, change income, one-off cost) and recomputes the forecast and balance. |
+| `goals.py` | Savings goal maths. | Projects the date a goal is reached from the savings pace; reports on-track or behind. |
+| `anomalies.py` | Anomaly review. | Loads the detector and lists the user's flagged expenses with the Confirm / Dismiss status. |
 </details>
 
 <details>
@@ -372,9 +460,10 @@ The bridge between the trained model and the Streamlit pages.
 
 | File | What it is | What we build in it |
 |---|---|---|
-| `forecast_vs_actual.py` | Accuracy tracking. | When a month ends, writes the real value into the `forecasts` table, computes error, flags drift in category mix. |
-| `logger.py` | Logging setup. | Console and file logging with a consistent format. |
-| `helpers.py` | Small shared tools. | `load_config()`, project-root resolver, seed setter, date helpers. |
+| `forecast_vs_actual.py` | Accuracy tracking. | When a month ends, writes the real value into the `forecasts` table and computes error and range hits. |
+| `drift.py` | Drift check. | Compares the user's spending mix with the training data; reference and threshold in `models/drift_reference.json`. |
+| `logger.py` | Logging setup. | Console output plus a rotating `logs/fincast.log`. |
+| `helpers.py` | Small shared tools. | `load_config()` (with `FINCAST_CONFIG` override), project-root resolver, seed setter, holiday calendar. |
 </details>
 
 <details>
@@ -386,11 +475,15 @@ Database, authentication and reusable UI parts. No Streamlit page logic lives in
 |---|---|---|
 | `database/db.py` | SQLite connection. | `get_connection()`, `init_db()` that creates tables on first run, foreign keys on. |
 | `database/models.py` | Table definitions. | SQL `CREATE TABLE` statements (or SQLAlchemy models) for users, profiles, transactions, monthly_summary, forecasts, goals. |
-| `database/crud.py` | All queries. | `create_user`, `add_transactions` (with duplicate check), `get_transactions(user_id, start, end)`, `save_forecast`, `update_actual`, `delete_user_data`. Every query filters by `user_id`. |
+| `database/crud.py` | All queries. | Users, profiles, transactions (duplicate check), forecasts and actuals, goals, anomaly status, export and account deletion. Every query filters by `user_id`. |
+| `database/export.py` | Data download. | All of a user's tables as CSV files in one ZIP. |
 | `auth/auth_service.py` | Register and login logic. | Validates input, hashes passwords with bcrypt, verifies logins, enforces unique username and email. |
 | `auth/session.py` | Login state. | Wraps `st.session_state`: `login_user()`, `logout_user()`, and `require_login()` that stops any page when nobody is logged in. |
-| `components/charts.py` | Plotly chart builders. | Income vs spending, category stacked bars, forecast fan chart, anomaly scatter, goal progress. |
-| `components/cards.py` | KPI cards. | Small functions that render metric cards (income, spend, savings rate, forecast balance). |
+| `components/charts.py` | Plotly chart builders. | Income vs spending, savings bars, category bars, forecast fan chart, what-if bars, accuracy chart; all colours in one place. |
+| `components/cards.py` | KPI cards. | Metric cards for income, spending, savings and savings rate. |
+| `components/cache.py` | Caching. | Models loaded once; forecasts and anomaly checks cached per user and data version. |
+| `components/layout.py` | Shared page parts. | Sidebar, empty states, page list and the disclaimer footer. |
+| `components/forecast_view.py`, `goal_view.py` | Text and tables for pages. | Plain-language model names, category and accuracy tables, goal summaries. |
 </details>
 
 <details>
@@ -422,10 +515,9 @@ Pipelines are the one-command entry points; root files describe and configure th
 | `run_all.py` | Everything. | Calls ingestion then training; used for a clean rebuild. |
 | `models/` | Exported champion models. | `forecaster_*.joblib`, `categorizer.joblib`, `anomaly.joblib`, and `model_meta.json` (version, features, metrics). Committed to Git so the deployed app can load them. |
 | `notebooks/` | Exploration. | `01_eda.ipynb`, `02_features.ipynb`, `03_model_experiments.ipynb`. |
-| `tests/` | Automated tests. | `test_parser.py`, `test_auth.py`, `test_features.py`, `test_backtest.py`. |
+| `tests/` | Automated tests. | 289 tests: parser, auth, leakage, backtest, metrics, models, simulator, goals, monitoring, every page, and an end-to-end pipeline run. |
 | `.streamlit/config.toml` | App theme. | Colours, font and page settings so the app looks consistent. |
-| `MLproject` | MLflow project file. | Defines named entry points (ingest, train) so runs are reproducible. |
-| `requirements.txt` | Dependencies. | Packages needed to run the app on Streamlit Cloud (a heavier `requirements-dev.txt` holds training-only tools). |
+| `requirements.txt` | Dependencies. | All packages for the app, the pipeline and the tests (Phase 10 splits off a slim runtime list). |
 | `.gitignore` | Keeps Git clean. | Ignores `.venv/`, `mlruns/`, `mlflow.db`, `data/raw/`, `*.db`, `.env`, `secrets.toml`. |
 | `README.md` | Front page of the repo. | What it is, screenshots, architecture, how to run, data honesty note, live link. |
 </details>
@@ -439,11 +531,11 @@ SQLite ships with Python, needs no server and stores everything in one file. Eve
 | Table | Key columns | Purpose |
 |---|---|---|
 | `users` | id, username, email, password_hash, created_at | One row per account. Passwords are only stored as bcrypt hashes. |
-| `profiles` | user_id, income_type (salary / freelance), currency, savings_goal, goal_date | Personal settings that change how forecasts are produced. |
-| `transactions` | id, user_id, date, description, amount, category, is_income, source, dedupe_hash | Core data. `dedupe_hash` of date + description + amount prevents duplicate uploads. |
+| `profiles` | user_id, income_type (salary / freelance), currency, opening_balance | Personal settings; the opening balance anchors the balance forecast. |
+| `transactions` | id, user_id, date, description, amount, category, category_source, is_income, source, dedupe_hash, anomaly_status | Core data. `dedupe_hash` of date + description + amount + occurrence prevents duplicate uploads without dropping two genuine coffees on one day. |
 | `monthly_summary` | user_id, month, income, expenses, savings, balance_end | Cached monthly aggregates for fast charts. |
 | `forecasts` | id, user_id, target_month, metric, predicted, lower, upper, model_version, created_at, actual | Every forecast is stored. `actual` is filled after the month ends, which powers the accuracy page. |
-| `goals` | id, user_id, name, target_amount, target_date | Savings goals per user. |
+| `goals` | id, user_id, name, target_amount, saved_amount, target_date | Savings goals per user. |
 
 **Design rules**
 
@@ -467,11 +559,11 @@ flowchart LR
 | **1. Aggregate** | Transactions become monthly series per user and per category. |
 | **2. Features** | Lag 1/2/3/12, rolling mean and std, month sin/cos, holiday count, lagged inflation, fixed vs variable share. |
 | **3. Baselines** | Last month, same month last year, 3-month average. The champion must beat the best one. |
-| **4. Models** | LightGBM global model (point and quantile), ETS/SARIMAX for users with 24+ months of history. |
+| **4. Models** | One global LightGBM per family (income; spending incl. categories), median and quantile; ETS/SARIMAX and Optuna tuning as comparisons. |
 | **5. Intervals** | Quantile regression gives a 10th / 50th / 90th percentile range instead of a single number. |
 | **6. Backtest** | Rolling-origin time series validation. Random train/test splits are never used. |
 | **7. Track** | MLflow logs parameters, metrics, plots and artifacts; nested runs per fold. |
-| **8. Promote** | Champion is registered in the MLflow registry and exported to `models/`. |
+| **8. Promote** | Per series the champion rule picks LightGBM (≥ 10 % better than the best baseline) or the baseline; registered in MLflow and exported to `models/`. |
 | **9. Monitor** | Forecasts are compared with actuals in the database; drift is checked. |
 
 > **Realistic expectations:** Salaried income is nearly constant, so a naive baseline is hard to beat there. The real forecasting value is in **variable spending** and **freelance income**. Both user types are included in the data and results are reported per type. If the model does not beat the baseline, we say so and keep the baseline: that is a valid, honest result.
@@ -505,7 +597,7 @@ flowchart LR
 | 6 | Features and Baselines | Feature table, backtest, baseline scores | 2-3 days | ✅ Done (macro features switch on once the ECB cache exists) |
 | 7 | Models and MLflow | LightGBM, ETS, quantiles, champion export | 4-5 days | ✅ Done (open the MLflow UI on your PC, step 7.1) |
 | 8 | Forecast Pages | Forecast, What-If, Anomalies, Goals, Profile | 4-5 days | ✅ Done |
-| 9 | Monitoring, Tests, Docs | Accuracy tracking, pytest, README | 2-3 days | ⬜ To do |
+| 9 | Monitoring, Tests, Docs | Accuracy tracking, pytest, README | 2-3 days | 🟡 9.1-9.6 done (fresh-clone check 9.7 next) |
 | 10 | Deployment | GitHub, Streamlit Community Cloud, go live | 1 day | ⬜ To do |
 
 _Estimates assume part-time work for one person. Total: about 5 to 7 weeks._
@@ -903,7 +995,9 @@ joblib
 
 ## 12. Quick Start
 
-> The commands below become usable as the phases are implemented.
+Python 3.10 or newer. All commands run from the project folder.
+
+**Set up and run the app** (the trained models are committed, so no training is needed to try it):
 
 | Task | Command |
 |---|---|
@@ -911,17 +1005,51 @@ joblib
 | Activate (Windows) | `.venv\Scripts\activate` |
 | Activate (macOS / Linux) | `source .venv/bin/activate` |
 | Install packages | `pip install -r requirements.txt` |
-| Generate data | `python pipelines/run_ingestion.py` |
-| Train everything | `python pipelines/run_training.py` |
-| Full rebuild | `python pipelines/run_all.py` |
-| MLflow UI | `mlflow ui --backend-store-uri sqlite:///mlflow.db` |
-| Run the app | `streamlit run dashboard/Home.py` |
-| Run tests | `pytest -q` |
-| Commit and push | `git add . && git commit -m "message" && git push origin main` |
+| Run the app | `streamlit run dashboard/Home.py` → register → *Import transactions* → *Use sample data* |
+
+**Rebuild data and models** (synthetic data, seeded, so results are reproducible):
+
+| Task | Command | Time |
+|---|---|---|
+| Everything from scratch | `python pipelines/run_all.py` | ~9 min |
+| Only the data (synthetic users, calendar, ECB if reachable) | `python pipelines/run_ingestion.py` | ~15 s |
+| Data tables + all models | `python pipelines/run_training.py` | ~8 min |
+| Only the data tables | `python pipelines/run_training.py --data-only` | ~20 s |
+| Also retrain the categoriser | `python pipelines/run_training.py --train-categorizer` | +30 s |
+| Also re-run the Optuna search | `python pipelines/run_training.py --tune` | +10 min |
+| Also the model comparisons (7.3-7.5) | `python pipelines/run_training.py --experiments` | +10 min |
+| Fetch and cache ECB inflation / rates (needs internet) | `python -m src.ingestion.macro_api` | seconds |
+
+Single steps run on their own too, e.g. `python -m src.training.select_champion`, `python -m src.training.train_anomaly`, `python -m src.monitoring.drift`.
+
+**Check and inspect:**
+
+| Task | Command |
+|---|---|
+| Run the tests | `pytest -q` (~2 min) |
+| Coverage report | `pytest --cov=src --cov=app --cov=pipelines` |
+| MLflow UI (runs, metrics, registry) | `mlflow ui --backend-store-uri sqlite:///mlflow.db` → http://127.0.0.1:5000 |
+| Logs | `logs/fincast.log` (more detail: set `FINCAST_LOG_LEVEL=DEBUG`) |
+| Use another settings file (e.g. a test folder) | set `FINCAST_CONFIG=path/to/config.yaml` |
+| Notebooks | `notebooks/01_eda.ipynb`, `02_features.ipynb`, `03_model_experiments.ipynb` |
 
 ---
 
-## 13. Risks and How to Handle Them
+## 13. Limitations and Risks
+
+### Known limitations (measured, not guessed)
+
+- **Synthetic data only.** All models are trained and evaluated on 300 generated users. Real people will differ; the *How accurate was I?* panel and the drift note are there to show it when they do.
+- **Freelancer income is hard.** Typical error about €1,600 a month, and the 10-90 % range holds the real value only 68 % of the time for freelancers (78 % for income overall).
+- **Steady salaries:** "last month" is exact most months; LightGBM wins income overall because of freelancers, so salaried users get a few euros of extra error. A simple "unchanged income → last month" rule was tested and did not hold on later months, so it was not added.
+- **Short histories.** With 3-5 months, income errors are ~14 % higher (ranges widened ×1.3 to compensate); spending errors roughly double until a full year exists, because "same month last year" is missing.
+- **Categories do not add up to the total.** Total spending and each category have their own best method.
+- **Anomalies:** the rule cannot judge a large first payment in a category the user never paid in before, and about 1 in 5 planted subscription price rises (15-60 %) was missed.
+- **Drift note** fires for ~7 % of normal 3-month windows (14 % for freelancers, whose quarterly tax payment swings the mix).
+- **No ECB macro features yet** in the committed models (the API is cached from a machine with internet access, then retrain).
+- **SQLite on Streamlit Cloud is temporary** (see Phase 10): accounts can disappear on a restart.
+
+### Risks and how they are handled
 
 | Risk | Why it matters | What to do |
 |---|---|---|
@@ -939,29 +1067,29 @@ joblib
 
 Points found while reviewing the blueprint, to be handled during the matching phase:
 
-| # | Topic | Note | Phase |
-|---|---|---|---|
-| 1 | Macro data on the cloud | `data/raw/` is git-ignored, so the deployed app has no `macro.csv` to build the lagged-inflation feature. Commit a small cached copy (e.g. in `data/sample/` or `models/`). | 4, 10 |
-| 2 | Duplicate detection | A `dedupe_hash` of date + description + amount drops genuine identical transactions (two coffees on one day) and hides real duplicate charges from the Anomalies page. Include `user_id` and an occurrence counter in the hash; detect duplicate charges with a rule. | 3, 8 |
-| 3 | Starting balance | The end-of-month balance needs a current/opening balance; add it to `profiles` (or ask on the Forecast page). The negative-balance risk is end-of-month only, not intra-month. | 2, 8 |
-| 4 | Cold-start realism | Training users have 36 months, new users have 3-6. Truncate held-out users' histories in the backtest so short-history performance is measured. | 6, 7 |
-| 5 | Quantile crossing | Separately trained 10th/50th/90th percentile models can cross; sort the predictions. | 7 |
-| 6 | Categoriser evaluation | If synthetic descriptions came from the same keyword lists as the rules, 90% would be easy. The generator therefore uses several spellings per merchant (and more merchants than the keyword lists); report rule coverage and model accuracy separately. | 5 |
-| 7 | Table gaps | `monthly_summary` needs a `category` column; add storage for category corrections and anomaly Confirm/Dismiss status; `UNIQUE(user_id, target_month, metric)` on `forecasts`; `ON DELETE CASCADE` on foreign keys. | 2 |
-| 8 | Postgres upgrade path | Use SQLAlchemy from the start so switching from SQLite only changes the connection string. | 2 |
-| 9 | Phase ordering | The Overview category donut (Phase 3) depends on the categoriser (Phase 5) - show manual categories until then. Start the MLflow UI in Phase 5. | 3, 5 |
-| 10 | Missing setup steps | Create `MLproject` and `.streamlit/config.toml`; configure pytest (`pythonpath = .`) so tests can import `src` and `app`. | 1, 9 |
+| # | Topic | Note | Phase | Status |
+|---|---|---|---|---|
+| 1 | Macro data on the cloud | `data/raw/` is git-ignored, so the deployed app has no `macro.csv` to build the lagged-inflation feature. Commit a small cached copy (e.g. in `data/sample/` or `models/`). | 4, 10 | 🟡 Cache loader done; the cache file still has to be fetched on a PC with internet |
+| 2 | Duplicate detection | A `dedupe_hash` of date + description + amount drops genuine identical transactions (two coffees on one day) and hides real duplicate charges from the Anomalies page. Include `user_id` and an occurrence counter in the hash; detect duplicate charges with a rule. | 3, 8 | ✅ Occurrence counter in the hash; duplicate charges flagged on the Anomalies page |
+| 3 | Starting balance | The end-of-month balance needs a current/opening balance; add it to `profiles` (or ask on the Forecast page). The negative-balance risk is end-of-month only, not intra-month. | 2, 8 | ✅ `profiles.opening_balance`, editable on the Profile page |
+| 4 | Cold-start realism | Training users have 36 months, new users have 3-6. Truncate held-out users' histories in the backtest so short-history performance is measured. | 6, 7 | ✅ Held-out users with 3-12 months measured; ranges calibrated (`cold_start.json`) |
+| 5 | Quantile crossing | Separately trained 10th/50th/90th percentile models can cross; sort the predictions. | 7 | ✅ Predictions sorted per row |
+| 6 | Categoriser evaluation | If synthetic descriptions came from the same keyword lists as the rules, 90% would be easy. The generator therefore uses several spellings per merchant (and more merchants than the keyword lists); report rule coverage and model accuracy separately. | 5 | ✅ Rule coverage and unseen-merchant accuracy reported separately |
+| 7 | Table gaps | `monthly_summary` needs a `category` column; add storage for category corrections and anomaly Confirm/Dismiss status; `UNIQUE(user_id, target_month, metric)` on `forecasts`; `ON DELETE CASCADE` on foreign keys. | 2 | ✅ All added (category column, anomaly status, UNIQUE forecasts, cascades) |
+| 8 | Postgres upgrade path | Use SQLAlchemy from the start so switching from SQLite only changes the connection string. | 2 | ⬜ Plain sqlite3 kept for simplicity; all SQL lives in `crud.py`, so a switch stays local |
+| 9 | Phase ordering | The Overview category donut (Phase 3) depends on the categoriser (Phase 5) - show manual categories until then. Start the MLflow UI in Phase 5. | 3, 5 | ✅ Handled |
+| 10 | Missing setup steps | Create `MLproject` and `.streamlit/config.toml`; configure pytest (`pythonpath = .`) so tests can import `src` and `app`. | 1, 9 | ✅ `.streamlit/config.toml` and pytest set up; `MLproject` dropped (pipelines + `run_all.py` cover reproducibility) |
 
 ---
 
 ## 15. Final Launch Checklist
 
 - [ ] All 10 phases marked done and committed to Git.
-- [ ] `pytest` passes and a fresh clone runs the app.
-- [ ] Champion model beats the baseline (or the README explains honestly why not).
-- [ ] No secrets, databases or virtual environments in the repository.
+- [ ] `pytest` passes and a fresh clone runs the app. _(pytest ✅ 289 passing; fresh clone: step 9.7)_
+- [x] Champion model beats the baseline (or the README explains honestly why not).
+- [x] No secrets, databases or virtual environments in the repository.
 - [ ] Deployed app tested by registering a brand-new account.
-- [ ] README has screenshots, architecture diagram, live link and the disclaimer.
+- [ ] README has screenshots, architecture diagram, live link and the disclaimer. _(all but the live link, Phase 10)_
 - [ ] MLflow screenshots (runs comparison) saved for the portfolio.
 
 ---
