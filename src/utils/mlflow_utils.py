@@ -23,7 +23,8 @@ def setup_experiment(key: str, tracking_uri: str | None = None, artifact_root: P
     mlflow.set_tracking_uri(tracking_uri or mlflow_tracking_uri())
     experiment = mlflow.get_experiment_by_name(name)
     if experiment is None:
-        location = Path(artifact_root or resolve_path("mlruns")) / name
+        default_root = resolve_path(load_config()["mlflow"].get("artifact_root", "mlruns"))
+        location = Path(artifact_root or default_root) / name
         experiment_id = mlflow.create_experiment(name, artifact_location=location.as_uri())
     else:
         experiment_id = experiment.experiment_id

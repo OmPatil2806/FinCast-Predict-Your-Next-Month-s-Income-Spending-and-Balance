@@ -35,7 +35,7 @@ from src.preprocessing.aggregate_monthly import (  # noqa: E402
     ReconciliationError, aggregate_user_month_category, reconcile,
 )
 from src.preprocessing.categorizer import categorize, load_categorizer  # noqa: E402
-from src.utils.helpers import load_config, resolve_path  # noqa: E402
+from src.utils.helpers import display_path, load_config, resolve_path  # noqa: E402
 
 
 def _step(number: int, total: int, label: str, message: str, seconds: float) -> None:
@@ -149,7 +149,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     path = save_monthly(monthly, config)
     _step(step, total, "Reconcile + save ", f"€{check['monthly_total']:,.2f} = raw €{check['raw_total']:,.2f} ✓ "
-          f"→ {path.relative_to(ROOT)} ({path.stat().st_size / 1024:.0f} KB)", time.perf_counter() - t)
+          f"→ {display_path(path)} ({path.stat().st_size / 1024:.0f} KB)", time.perf_counter() - t)
 
     step += 1
     t = time.perf_counter()
@@ -158,7 +158,7 @@ def main(argv: list[str] | None = None) -> int:
     usable = int(features["target"].notna().sum())
     macro = "with" if info["macro"] else "WITHOUT (no ECB cache yet)"
     _step(step, total, "Features ", f"{len(features):,} rows ({usable:,} with a target) × "
-          f"{len(info['feature_columns'])} features, {macro} macro → {path.relative_to(ROOT)} "
+          f"{len(info['feature_columns'])} features, {macro} macro → {display_path(path)} "
           f"({path.stat().st_size / 1024:.0f} KB)", time.perf_counter() - t)
 
     for label, produces, run in steps:

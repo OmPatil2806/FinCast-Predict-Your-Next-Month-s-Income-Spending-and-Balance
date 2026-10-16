@@ -12,6 +12,7 @@ paths:
   data_sample: data/sample
   models: models
   logs: logs
+  reports: reports                # SHAP plots and tables (step 7.7)
 
 categories_file: config/categories.yaml   # category names + keyword rules
 categorizer:
@@ -24,6 +25,7 @@ database:
 
 mlflow:
   tracking_uri: sqlite:///mlflow.db
+  artifact_root: mlruns           # run artifacts, one folder per experiment
   experiments:
     forecast_income: forecast_income
     forecast_spend: forecast_spend

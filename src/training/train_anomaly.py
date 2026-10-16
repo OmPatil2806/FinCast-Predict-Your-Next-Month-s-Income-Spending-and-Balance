@@ -33,7 +33,7 @@ from sklearn.metrics import average_precision_score
 from src.features.anomaly_features import MODEL_FEATURES as FEATURES
 from src.features.anomaly_features import AnomalyDetector, build_anomaly_features, rule_flags
 from src.ingestion.synthetic_generator import SHOCKS
-from src.utils.helpers import load_config, resolve_path
+from src.utils.helpers import display_path, load_config, resolve_path
 from src.utils.mlflow_utils import setup_experiment
 
 KINDS = ("shock", "duplicate", "price_rise")
@@ -224,8 +224,7 @@ def main() -> None:
     detector = train_final(transactions, results["contamination"], results["method"])
     model_path, meta_path = export(detector, results)
     log_to_mlflow(results, model_path, meta_path)
-    root = resolve_path(".")
-    print(f"\nSaved {model_path.relative_to(root)} (version {detector.version}) and {meta_path.relative_to(root)}")
+    print(f"\nSaved {display_path(model_path)} (version {detector.version}) and {display_path(meta_path)}")
 
 
 if __name__ == "__main__":

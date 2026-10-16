@@ -23,7 +23,7 @@ import pandas as pd  # noqa: E402
 from src.ingestion.macro_api import MacroDataUnavailable, load_macro  # noqa: E402
 from src.ingestion.synthetic_generator import generate_dataset, save_dataset  # noqa: E402
 from src.preprocessing.cleaning import DataValidationError, validate_transactions  # noqa: E402
-from src.utils.helpers import holidays_per_month, load_config, resolve_path, set_seed  # noqa: E402
+from src.utils.helpers import display_path, holidays_per_month, load_config, resolve_path, set_seed  # noqa: E402
 
 logger = logging.getLogger("run_ingestion")
 
@@ -86,7 +86,7 @@ def main() -> int:
           time.perf_counter() - t)
 
     files = ", ".join(sorted(p.name for p in raw_dir.glob("*.csv")))
-    print(f"Done in {time.perf_counter() - began:.1f}s. Files in {raw_dir.relative_to(ROOT)}/: {files}")
+    print(f"Done in {time.perf_counter() - began:.1f}s. Files in {display_path(raw_dir)}/: {files}")
     if macro is None:
         print("Note: macro data is missing. Run `python -m src.ingestion.macro_api` with internet access "
               "before Phase 6 (features).")

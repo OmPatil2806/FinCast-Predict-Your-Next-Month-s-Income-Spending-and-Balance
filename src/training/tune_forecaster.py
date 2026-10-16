@@ -31,7 +31,7 @@ from src.evaluation.backtest import backtest_folds
 from src.evaluation.metrics import mae
 from src.features.build_features import build_features
 from src.training.train_forecaster import DEFAULT_PARAMS, FAMILIES, FAMILY_MODE, ForecastModel, family_rows
-from src.utils.helpers import load_config, resolve_path
+from src.utils.helpers import display_path, load_config, resolve_path
 from src.utils.mlflow_utils import setup_experiment
 
 
@@ -187,7 +187,7 @@ def main(argv: list[str] | None = None) -> None:
                for family in FAMILIES}
     _print(results)
     path = save_params(results)
-    print(f"\nSaved {path.relative_to(resolve_path('.'))}")
+    print(f"\nSaved {display_path(path)}")
 
 
 if __name__ == "__main__":

@@ -91,7 +91,9 @@ def test_old_database_gets_the_new_column(tmp_path):
     conn.close()
     init_db(path)
     init_db(path)                                                              # safe to run twice
-    columns = [row[1] for row in sqlite3.connect(path).execute("PRAGMA table_info(goals)")]
+    conn = sqlite3.connect(path)
+    columns = [row[1] for row in conn.execute("PRAGMA table_info(goals)")]
+    conn.close()
     assert "saved_amount" in columns
 
 

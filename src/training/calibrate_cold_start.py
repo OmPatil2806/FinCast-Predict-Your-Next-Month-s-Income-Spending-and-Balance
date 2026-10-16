@@ -27,7 +27,7 @@ from src.training.export_champion import load_champions
 from src.training.train_forecaster import (
     FAMILY_MODE, QUANTILES, TARGET_COVERAGE, ForecastModel, family_rows, saved_params,
 )
-from src.utils.helpers import load_config, resolve_path
+from src.utils.helpers import display_path, load_config, resolve_path
 
 HISTORIES = (3, 4, 5, 6, 12)
 FACTORS = np.round(np.arange(1.0, 4.01, 0.05), 2)
@@ -138,7 +138,7 @@ def main() -> None:
         "check_coverage_widened": "{:.1%}".format, "mae_vs_12_months": "x{:.2f}".format, "factor": "{:.2f}".format}))
     path = save(result, forecast["cold_start_months"])
     print(f"\nWidening for fewer than {forecast['cold_start_months']} months: {result['factors']} · "
-          f"saved {path.relative_to(resolve_path('.'))}")
+          f"saved {display_path(path)}")
 
 
 if __name__ == "__main__":

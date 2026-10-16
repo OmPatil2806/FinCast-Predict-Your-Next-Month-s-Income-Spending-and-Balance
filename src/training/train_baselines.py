@@ -24,7 +24,7 @@ from src.evaluation.backtest import backtest_folds, holdout_user_folds
 from src.evaluation.metrics import point_metrics, summarize
 from src.features.build_features import build_features
 from src.forecasting.model import BASELINES
-from src.utils.helpers import load_config, resolve_path
+from src.utils.helpers import display_path, load_config, resolve_path
 from src.utils.mlflow_utils import setup_experiment
 
 
@@ -141,7 +141,7 @@ def main() -> None:
     _print(results)
     path = save_scores(results)
     run_ids = log_to_mlflow(results)
-    print(f"\nSaved {path.relative_to(resolve_path('.'))} · logged {len(run_ids)} runs to MLflow experiment "
+    print(f"\nSaved {display_path(path)} · logged {len(run_ids)} runs to MLflow experiment "
           f"'{config['mlflow']['experiments']['baselines']}'")
 
 

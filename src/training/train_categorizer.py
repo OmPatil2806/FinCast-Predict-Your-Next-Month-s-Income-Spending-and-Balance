@@ -36,7 +36,7 @@ from sklearn.preprocessing import OneHotEncoder
 
 from src.ingestion.bank_csv_parser import parse_bank_csv
 from src.preprocessing.categorizer import categorize, categorizer_path, merchant_key, model_inputs
-from src.utils.helpers import load_config, resolve_path
+from src.utils.helpers import display_path, load_config, resolve_path
 from src.utils.mlflow_utils import setup_experiment
 
 matplotlib.use("Agg")   # draw figures without a screen
@@ -262,7 +262,7 @@ def main() -> None:
     print("F1 per category (C):", metrics["C_f1_per_category"])
 
     model_path, meta_path = save_model(model, metrics, threshold)
-    print(f"Saved {model_path.relative_to(resolve_path('.'))} ({model_path.stat().st_size / 1024:.0f} KB) "
+    print(f"Saved {display_path(model_path)} ({model_path.stat().st_size / 1024:.0f} KB) "
           f"and {meta_path.name}")
     run_id = log_to_mlflow(metrics, threshold, model_path, meta_path)
     print(f"MLflow run {run_id} in experiment '{config['mlflow']['experiments']['categorizer']}'")

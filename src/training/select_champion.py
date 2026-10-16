@@ -40,7 +40,7 @@ from src.training.train_forecaster import (
     FAMILIES, FAMILY_MODE, TARGET_COVERAGE, backtest_family_quantiles, calibrate_width, compare_with_baselines,
     saved_params,
 )
-from src.utils.helpers import load_config, resolve_path
+from src.utils.helpers import display_path, load_config, resolve_path
 from src.utils.mlflow_utils import setup_experiment
 
 def choose_champions(per_series: pd.DataFrame, threshold: float) -> pd.DataFrame:
@@ -205,7 +205,7 @@ def main() -> None:
     _print(results)
     path = save_champions(results, threshold)
     log_to_mlflow(results, threshold, path)
-    print(f"\nSaved {path.relative_to(resolve_path('.'))}")
+    print(f"\nSaved {display_path(path)}")
 
 
 if __name__ == "__main__":

@@ -36,7 +36,7 @@ from src.features.build_features import build_features  # noqa: E402
 from src.training.train_forecaster import (  # noqa: E402
     FAMILIES, FAMILY_MODE, ForecastModel, family_rows, model_inputs, saved_params,
 )
-from src.utils.helpers import load_config, resolve_path  # noqa: E402
+from src.utils.helpers import display_path, load_config, resolve_path  # noqa: E402
 from src.utils.mlflow_utils import setup_experiment  # noqa: E402
 
 EXAMPLE_SERIES = {"income": "income", "spend": "expenses"}
@@ -132,7 +132,7 @@ def main() -> None:
     monthly = pd.read_parquet(resolve_path(config["paths"]["data_processed"]) / config["processed"]["monthly_file"])
     table, info = build_features(monthly)
     params = saved_params()
-    reports = resolve_path("reports")
+    reports = resolve_path(config["paths"].get("reports", "reports"))
     for family in FAMILIES:
         result = explain_family(table, family, info["feature_columns"], params.get(family))
         paths = save_plots(result, reports / "figures")
@@ -144,7 +144,7 @@ def main() -> None:
               f"{result['test_month']}: MAE €{result['metrics']['mae']:,.2f}, "
               f"SHAP additivity error {result['additivity_error']:.1e}")
         print(top.to_string(index=False, formatters={"mean_abs_shap": "{:,.4f}".format, "share": "{:.1%}".format}))
-        print("saved:", ", ".join(str(p.relative_to(resolve_path("."))) for p in paths))
+        print("saved:", ", ".join(display_path(p) for p in paths))
 
 
 if __name__ == "__main__":

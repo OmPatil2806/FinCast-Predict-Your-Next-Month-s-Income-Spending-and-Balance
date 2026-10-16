@@ -1,5 +1,6 @@
 """Small shared helpers: project root, config loading, paths, random seeds and the holiday calendar."""
 
+import os
 import random
 from functools import lru_cache
 from pathlib import Path
@@ -16,16 +17,41 @@ def get_project_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
+CONFIG_ENV = "FINCAST_CONFIG"          # optional: another settings file (tests, fresh-clone checks)
+DEFAULT_CONFIG = "config/config.yaml"
+
+
+def load_config(config_path: str | None = None) -> dict:
+    """Read the YAML settings once and return them as a dictionary.
+
+    The file is config/config.yaml unless the FINCAST_CONFIG environment variable names another one
+    (absolute, or relative to the project root). Paths inside it may be absolute too, so a whole
+    pipeline run can be pointed at a temporary folder.
+    """
+    return _read_config(config_path or os.environ.get(CONFIG_ENV) or DEFAULT_CONFIG)
+
+
 @lru_cache(maxsize=None)
-def load_config(config_path: str = "config/config.yaml") -> dict:
-    """Read the YAML settings once and return them as a dictionary."""
+def _read_config(config_path: str) -> dict:
     with open(get_project_root() / config_path, encoding="utf-8") as f:
         return yaml.safe_load(f)
+
+
+load_config.cache_clear = _read_config.cache_clear      # tests that switch config files call this
 
 
 def resolve_path(relative_path: str) -> Path:
     """Turn a path from config.yaml (relative to the project root) into a full path."""
     return get_project_root() / relative_path
+
+
+def display_path(path: str | Path) -> str:
+    """A path for messages: relative to the project root when inside it, else in full."""
+    path = Path(path)
+    try:
+        return path.resolve().relative_to(get_project_root()).as_posix()
+    except ValueError:
+        return str(path)
 
 
 def mlflow_tracking_uri() -> str:

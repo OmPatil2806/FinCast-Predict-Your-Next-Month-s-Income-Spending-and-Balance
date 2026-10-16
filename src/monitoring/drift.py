@@ -23,7 +23,7 @@ import numpy as np
 import pandas as pd
 
 from src.preprocessing.aggregate_monthly import TOTAL, aggregate_user_month_category
-from src.utils.helpers import load_config, resolve_path
+from src.utils.helpers import display_path, load_config, resolve_path
 
 WINDOW = 3
 QUANTILE = 0.95
@@ -137,7 +137,7 @@ def main() -> None:
     c = reference["check"]
     print(f"Reference mix from {WINDOW}-month windows; alarm threshold {reference['threshold']:.3f} "
           f"(95th percentile on half the users). On the other {c['users']} users it fires for "
-          f"{c['alarm_rate']:.1%} of {c['windows']:,} windows. Saved {path.relative_to(resolve_path('.'))}")
+          f"{c['alarm_rate']:.1%} of {c['windows']:,} windows. Saved {display_path(path)}")
 
 
 if __name__ == "__main__":
