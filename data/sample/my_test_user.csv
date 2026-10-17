@@ -1,0 +1,1366 @@
+date,description,amount
+2023-10-01,Miete Wohnung Oktober,-920.0
+2023-10-01,Adobe Creative Cloud,-66.45
+2023-10-02,Stadtwerke Strom,-68.09
+2023-10-02,Kaufland Berlin,-32.4
+2023-10-03,O2 DSL,-52.5
+2023-10-03,ALDI SUED,-12.9
+2023-10-06,Netto Marken-Discount,-16.58
+2023-10-07,Spotify AB,-10.99
+2023-10-07,Audible,-9.95
+2023-10-09,Otto Versand,-66.68
+2023-10-09,ESSO Station,-54.92
+2023-10-09,DocMorris,-18.07
+2023-10-10,ALDI Nord Filiale 77,-49.01
+2023-10-10,Eventim Tickets,-39.51
+2023-10-12,Rossmann Drogerie,-19.96
+2023-10-15,Vodafone Mobilfunk,-30.0
+2023-10-15,REWE City 0815,-2.9
+2023-10-16,Zeit Online Abo,-19.99
+2023-10-17,Kaufland Berlin,-57.4
+2023-10-19,Pizzeria Roma,-11.8
+2023-10-20,ESSO Station,-71.34
+2023-10-20,Linden Apotheke,-32.49
+2023-10-21,REWE City 0815,-6.14
+2023-10-21,Thalia Buchhandlung,-5.35
+2023-10-21,Thalia Buchhandlung,-33.36
+2023-10-21,dm-drogerie markt,-44.18
+2023-10-22,ALDI Nord Filiale 77,-57.21
+2023-10-23,DB Fernverkehr,-71.36
+2023-10-24,Apple iCloud,-2.99
+2023-10-24,Sushi Bar Kyoto,-17.15
+2023-10-25,Wolt Order,-10.93
+2023-10-25,JET Tankstelle,-54.29
+2023-10-26,H&M Online,-21.21
+2023-10-27,Cafe Einstein,-35.88
+2023-10-29,Edeka Mueller,-9.96
+2023-10-30,LIDL Filiale 1234,-7.35
+2023-10-30,ARAL Station,-77.66
+2023-11-01,Miete Wohnung November,-920.0
+2023-11-01,Adobe Creative Cloud,-66.45
+2023-11-01,EDEKA Center,-42.58
+2023-11-01,Amazon EU Marketplace,-40.01
+2023-11-01,Arztpraxis IGeL Leistung,-78.3
+2023-11-02,Stadtwerke Strom,-69.99
+2023-11-03,O2 DSL,-52.5
+2023-11-04,Physiotherapie Praxis Zuzahlung,-47.3
+2023-11-05,Rechnung RE-202311-48 Weber Consulting,1376.81
+2023-11-05,Lieferando.de,-36.7
+2023-11-05,PlayStation Store,-71.58
+2023-11-07,Spotify AB,-10.99
+2023-11-07,Audible,-9.95
+2023-11-07,Otto Versand,-76.76
+2023-11-08,Kaufland Berlin,-9.93
+2023-11-08,UCI Kinowelt,-9.76
+2023-11-08,ARAL Station,-63.95
+2023-11-09,Thalia Buchhandlung,-38.29
+2023-11-12,LIDL Filiale 1234,-39.02
+2023-11-12,Bäckerei Kamps,-31.46
+2023-11-12,Wolt Order,-20.17
+2023-11-13,REWE Markt Berlin,-9.71
+2023-11-14,ARAL Station,-48.56
+2023-11-15,Vodafone Mobilfunk,-30.0
+2023-11-16,Zeit Online Abo,-19.99
+2023-11-17,ALDI Nord Filiale 77,-44.15
+2023-11-22,Bowling Center,-17.79
+2023-11-23,Rewe Sagt Danke,-7.58
+2023-11-24,Rechnung RE-202311-15 Blau Design Studio,659.3
+2023-11-24,Apple iCloud,-2.99
+2023-11-24,Vapiano,-29.33
+2023-11-24,ARAL Station,-77.02
+2023-11-26,Rechnung RE-202311-52 Mueller GmbH,1531.12
+2023-11-26,Bäckerei Kamps,-27.0
+2023-11-27,LIDL Filiale 1234,-24.01
+2023-11-27,Edeka Mueller,-17.65
+2023-11-29,Rechnung RE-202311-50 Weber Consulting,1504.63
+2023-11-30,PENNY Markt,-12.68
+2023-12-01,Miete Wohnung Dezember,-920.0
+2023-12-01,Adobe Creative Cloud,-66.45
+2023-12-02,Stadtwerke Strom,-66.15
+2023-12-02,Bäckerei Kamps,-37.64
+2023-12-02,Pizzeria Roma,-9.38
+2023-12-03,Rechnung RE-202312-65 Weber Consulting,380.49
+2023-12-03,O2 DSL,-52.5
+2023-12-03,EDEKA Center,-20.25
+2023-12-04,Kino CineStar,-70.88
+2023-12-06,Kaufland Berlin,-47.84
+2023-12-07,Spotify AB,-10.99
+2023-12-07,Audible,-9.95
+2023-12-08,Lidl Dienstleistung,-39.23
+2023-12-10,Finanzamt Einkommensteuer Vorauszahlung,-1620.0
+2023-12-14,EDEKA Center,-21.28
+2023-12-15,Vodafone Mobilfunk,-30.0
+2023-12-15,dm-drogerie markt Geschenke,-71.07
+2023-12-16,Zeit Online Abo,-19.99
+2023-12-16,REWE City 0815,-9.94
+2023-12-16,Kino CineStar,-59.52
+2023-12-17,Rechnung RE-202312-40 Nordlicht Media,1140.3
+2023-12-17,LIDL Filiale 1234,-24.64
+2023-12-17,Lidl Dienstleistung,-30.0
+2023-12-18,Burger King 2231,-28.67
+2023-12-19,Lieferando.de,-16.77
+2023-12-19,Shell Tankstelle,-54.0
+2023-12-20,Doener Kebab Haus,-4.88
+2023-12-20,dm-drogerie markt,-60.34
+2023-12-21,Uber Trip,-65.21
+2023-12-22,Lidl Dienstleistung,-51.12
+2023-12-24,Apple iCloud,-2.99
+2023-12-24,TotalEnergies,-51.19
+2023-12-25,Sushi Bar Kyoto,-38.32
+2023-12-27,ARAL Station,-45.26
+2023-12-27,Decathlon Geschenke,-104.5
+2023-12-29,ALDI Nord Filiale 77,-22.33
+2023-12-29,ALDI Nord Filiale 77,-5.73
+2023-12-29,Zalando Bestellung,-25.78
+2023-12-30,Rossmann Drogerie Geschenke,-28.92
+2024-01-01,Miete Wohnung Januar,-938.4
+2024-01-01,Adobe Creative Cloud,-66.45
+2024-01-02,Stadtwerke Strom,-65.75
+2024-01-02,Netto Marken-Discount,-48.16
+2024-01-02,Burger King 2231,-73.69
+2024-01-03,O2 DSL,-52.5
+2024-01-03,DB Bahn Ticket,-70.58
+2024-01-05,Pizzeria Roma,-13.97
+2024-01-07,Spotify AB,-10.99
+2024-01-07,Audible,-9.95
+2024-01-07,Doener Kebab Haus,-18.39
+2024-01-09,Rechnung RE-202401-75 Weber Consulting,3210.87
+2024-01-09,REWE Markt Berlin,-35.44
+2024-01-09,ARAL Station,-53.8
+2024-01-12,Netto Marken-Discount,-8.57
+2024-01-12,FlixBus,-18.22
+2024-01-13,Wolt Order,-6.96
+2024-01-13,JET Tankstelle,-62.76
+2024-01-15,Vodafone Mobilfunk,-30.0
+2024-01-15,Museum Ticket,-20.67
+2024-01-16,Zeit Online Abo,-19.99
+2024-01-20,ESSO Station,-61.06
+2024-01-21,PENNY Markt,-60.28
+2024-01-22,Stadt-Apotheke,-31.5
+2024-01-23,Rechnung RE-202401-11 Nordlicht Media,465.77
+2024-01-23,Kaufland Berlin,-24.02
+2024-01-24,Apple iCloud,-2.99
+2024-01-24,UCI Kinowelt,-35.02
+2024-01-26,Kaufland Berlin,-2.27
+2024-01-27,ESSO Station,-45.58
+2024-01-28,Rewe Sagt Danke,-28.9
+2024-01-30,EDEKA Center,-22.08
+2024-01-30,PlayStation Store,-17.86
+2024-01-30,Zalando Bestellung,-88.64
+2024-02-01,Miete Wohnung Februar,-938.4
+2024-02-01,Adobe Creative Cloud,-66.45
+2024-02-02,Stadtwerke Strom,-66.66
+2024-02-03,O2 DSL,-52.5
+2024-02-03,Vapiano,-14.05
+2024-02-03,H&M Online,-8.14
+2024-02-03,TotalEnergies,-75.3
+2024-02-03,Allianz Haftpflicht Versicherung,-100.14
+2024-02-04,HUK-Coburg Kfz Versicherung,-448.46
+2024-02-05,ALDI Nord Filiale 77,-26.11
+2024-02-05,Netto Marken-Discount,-19.51
+2024-02-06,UCI Kinowelt,-41.24
+2024-02-06,BVG Einzelticket,-26.3
+2024-02-07,Spotify AB,-10.99
+2024-02-07,Audible,-9.95
+2024-02-07,REWE City 0815,-9.35
+2024-02-08,Burger King 2231,-7.92
+2024-02-08,Kino CineStar,-45.94
+2024-02-09,ALDI Nord Filiale 77,-21.3
+2024-02-10,MediaMarkt,-11.07
+2024-02-11,Wolt Order,-36.18
+2024-02-12,Rechnung RE-202402-83 Tech Solutions AG,378.5
+2024-02-13,REWE City 0815,-43.74
+2024-02-15,Vodafone Mobilfunk,-30.0
+2024-02-16,Zeit Online Abo,-19.99
+2024-02-16,REWE City 0815,-40.21
+2024-02-16,Eventim Tickets,-11.49
+2024-02-18,Restaurant Bella Italia,-18.27
+2024-02-18,MediaMarkt,-3.78
+2024-02-19,Rechnung RE-202402-98 Nordlicht Media,2584.91
+2024-02-20,MediaMarkt,-3.47
+2024-02-20,ARAL Station,-67.64
+2024-02-21,REWE City 0815,-19.07
+2024-02-21,Doener Kebab Haus,-17.1
+2024-02-22,IKEA Deutschland,-9.26
+2024-02-24,Apple iCloud,-2.99
+2024-02-24,Rewe Sagt Danke,-24.53
+2024-02-27,Netto Marken-Discount,-16.74
+2024-02-27,Museum Ticket,-40.79
+2024-02-29,Edeka Mueller,-2.82
+2024-02-29,Lidl Dienstleistung,-5.17
+2024-03-01,Miete Wohnung Maerz,-938.4
+2024-03-01,Adobe Creative Cloud,-66.45
+2024-03-01,Wolt Order,-8.74
+2024-03-01,McDonalds 1180,-10.92
+2024-03-01,Bäckerei Kamps,-9.13
+2024-03-02,Stadtwerke Strom,-66.13
+2024-03-02,ALDI Nord Filiale 77,-30.59
+2024-03-03,O2 DSL,-52.5
+2024-03-03,Lidl Dienstleistung,-3.01
+2024-03-03,REWE Markt Berlin,-12.25
+2024-03-07,Spotify AB,-10.99
+2024-03-07,Audible,-9.95
+2024-03-07,Bäckerei Kamps,-2.51
+2024-03-09,Rechnung RE-202403-75 Blau Design Studio,109.81
+2024-03-09,REWE Markt Berlin,-16.33
+2024-03-09,Restaurant Bella Italia,-25.75
+2024-03-10,Finanzamt Einkommensteuer Vorauszahlung,-1620.0
+2024-03-11,Bowling Center,-13.3
+2024-03-12,REWE Markt Berlin,-28.32
+2024-03-12,BVG Einzelticket,-41.62
+2024-03-13,Netto Marken-Discount,-6.59
+2024-03-15,Vodafone Mobilfunk,-30.0
+2024-03-16,Zeit Online Abo,-19.99
+2024-03-16,Cafe Einstein,-23.12
+2024-03-16,TotalEnergies,-69.08
+2024-03-18,REWE Markt Berlin,-58.52
+2024-03-19,Bäckerei Kamps,-7.41
+2024-03-20,Netto Marken-Discount,-6.43
+2024-03-20,Otto Versand,-108.54
+2024-03-21,Thalia Buchhandlung,-18.92
+2024-03-23,ALDI Nord Filiale 77,-24.83
+2024-03-24,Apple iCloud,-2.99
+2024-03-24,REWE Markt Berlin,-34.08
+2024-03-24,Shell Tankstelle,-57.08
+2024-03-25,Rechnung RE-202403-84 Kraft Agentur,260.71
+2024-03-25,PlayStation Store,-11.67
+2024-03-27,H&M Online,-33.56
+2024-03-28,Starbucks Coffee,-21.49
+2024-03-29,REWE City 0815,-7.46
+2024-03-29,Starbucks Coffee,-27.41
+2024-03-30,Rechnung RE-202403-96 Kraft Agentur,736.36
+2024-03-30,Edeka Mueller,-5.78
+2024-03-31,Kaufland Berlin,-5.47
+2024-04-01,Miete Wohnung April,-938.4
+2024-04-01,Adobe Creative Cloud,-66.45
+2024-04-01,LIDL Filiale 1234,-51.97
+2024-04-02,Stadtwerke Strom,-68.39
+2024-04-02,Sushi Bar Kyoto,-19.0
+2024-04-03,O2 DSL,-52.5
+2024-04-03,Linden Apotheke,-5.56
+2024-04-04,Edeka Mueller,-8.52
+2024-04-05,UCI Kinowelt,-21.76
+2024-04-05,MediaMarkt,-92.74
+2024-04-06,Uber Trip,-39.99
+2024-04-07,Spotify AB,-10.99
+2024-04-07,Audible,-9.95
+2024-04-07,TotalEnergies,-62.56
+2024-04-09,LIDL Filiale 1234,-32.55
+2024-04-10,Burger King 2231,-20.94
+2024-04-11,Lidl Dienstleistung,-7.13
+2024-04-11,Bäckerei Kamps,-12.88
+2024-04-11,IKEA Deutschland,-47.0
+2024-04-12,Rechnung RE-202404-61 Tech Solutions AG,663.69
+2024-04-12,Linden Apotheke,-23.67
+2024-04-14,EDEKA Center,-3.94
+2024-04-14,Restaurant Bella Italia,-27.38
+2024-04-15,Vodafone Mobilfunk,-30.0
+2024-04-15,ALDI SUED,-3.7
+2024-04-15,Lidl Dienstleistung,-25.16
+2024-04-15,REWE City 0815,-27.85
+2024-04-16,Zeit Online Abo,-19.99
+2024-04-17,Bäckerei Kamps,-30.83
+2024-04-19,dm-drogerie markt,-18.99
+2024-04-21,BVG Einzelticket,-10.16
+2024-04-24,Apple iCloud,-2.99
+2024-04-24,Edeka Mueller,-25.68
+2024-04-24,Kaufland Berlin,-17.96
+2024-04-27,Museum Ticket,-93.94
+2024-04-28,Rechnung RE-202404-24 Blau Design Studio,1570.77
+2024-04-28,Kaufland Berlin,-7.67
+2024-04-28,Burger King 2231,-8.83
+2024-04-29,Shell Tankstelle,-56.19
+2024-04-30,ALDI SUED,-15.12
+2024-05-01,Miete Wohnung Mai,-938.4
+2024-05-01,Adobe Creative Cloud,-66.45
+2024-05-01,ALDI SUED,-57.16
+2024-05-02,Stadtwerke Strom,-70.83
+2024-05-02,Rossmann Drogerie,-34.13
+2024-05-03,O2 DSL,-52.5
+2024-05-03,DocMorris,-4.25
+2024-05-04,Restaurant Bella Italia,-40.46
+2024-05-05,Rechnung RE-202405-95 Kraft Agentur,316.48
+2024-05-05,Vapiano,-29.59
+2024-05-05,BVG Einzelticket,-60.99
+2024-05-06,Thalia Buchhandlung,-61.14
+2024-05-06,ARAL Station,-54.95
+2024-05-07,Spotify AB,-10.99
+2024-05-07,Audible,-9.95
+2024-05-07,Eventim Tickets,-32.0
+2024-05-08,Cafe Einstein,-76.75
+2024-05-10,Rewe Sagt Danke,-19.16
+2024-05-10,Pizzeria Roma,-46.57
+2024-05-11,Rechnung RE-202405-32 Weber Consulting,472.77
+2024-05-11,EDEKA Center,-30.25
+2024-05-11,Otto Versand,-8.55
+2024-05-14,JET Tankstelle,-47.34
+2024-05-15,Vodafone Mobilfunk,-30.0
+2024-05-16,Zeit Online Abo,-19.99
+2024-05-17,REWE Markt Berlin,-25.44
+2024-05-17,Pizzeria Roma,-17.74
+2024-05-19,ALDI Nord Filiale 77,-25.37
+2024-05-21,Pizzeria Roma,-56.34
+2024-05-22,Eventim Tickets,-12.34
+2024-05-23,Rechnung RE-202405-30 Weber Consulting,724.87
+2024-05-24,Apple iCloud,-2.99
+2024-05-26,REWE City 0815,-34.25
+2024-05-26,Wolt Order,-40.07
+2024-05-27,LIDL Filiale 1234,-23.37
+2024-05-28,Uber Trip,-43.78
+2024-05-29,Rechnung RE-202405-63 Kraft Agentur,1156.85
+2024-05-29,ALDI SUED,-7.73
+2024-05-29,H&M Online,-13.71
+2024-05-29,TotalEnergies,-78.03
+2024-05-30,Lidl Dienstleistung,-8.42
+2024-05-31,Netto Marken-Discount,-10.45
+2024-06-01,Miete Wohnung Juni,-938.4
+2024-06-01,Adobe Creative Cloud,-66.45
+2024-06-02,Stadtwerke Strom,-68.84
+2024-06-03,O2 DSL,-52.5
+2024-06-03,Pizzeria Roma,-2.79
+2024-06-03,Uber Trip,-14.9
+2024-06-05,Cafe Einstein,-6.34
+2024-06-07,Spotify AB,-10.99
+2024-06-07,Audible,-9.95
+2024-06-07,Lidl Dienstleistung,-56.99
+2024-06-07,Shell Tankstelle,-76.96
+2024-06-09,REWE Markt Berlin,-23.73
+2024-06-10,Finanzamt Einkommensteuer Vorauszahlung,-1620.0
+2024-06-10,Shell Tankstelle,-62.07
+2024-06-12,Wolt Order,-13.4
+2024-06-12,Amazon EU Marketplace,-48.62
+2024-06-12,AMZN Mktp DE,-20.53
+2024-06-13,EDEKA Center,-25.66
+2024-06-15,Vodafone Mobilfunk,-30.0
+2024-06-15,Kino CineStar,-60.98
+2024-06-15,ESSO Station,-63.15
+2024-06-16,Rechnung RE-202406-97 Blau Design Studio,1193.64
+2024-06-16,Zeit Online Abo,-19.99
+2024-06-17,Netto Marken-Discount,-54.07
+2024-06-17,FlixBus,-14.68
+2024-06-18,Rechnung RE-202406-67 Weber Consulting,850.57
+2024-06-18,Pizzeria Roma,-18.11
+2024-06-19,REWE Markt Berlin,-5.57
+2024-06-19,Vapiano,-12.25
+2024-06-19,Burger King 2231,-3.01
+2024-06-21,Decathlon,-56.13
+2024-06-22,Netto Marken-Discount,-29.84
+2024-06-22,UCI Kinowelt,-9.01
+2024-06-24,Apple iCloud,-2.99
+2024-06-24,Lieferando.de,-19.57
+2024-06-26,Rossmann Drogerie,-49.55
+2024-06-27,Rechnung RE-202406-77 Tech Solutions AG,758.92
+2024-06-27,Starbucks Coffee,-27.55
+2024-06-27,Restaurant Bella Italia,-9.29
+2024-06-28,Lidl Dienstleistung,-30.93
+2024-06-28,ESSO Station,-57.1
+2024-06-29,ALDI Nord Filiale 77,-1.5
+2024-06-29,PENNY Markt,-2.02
+2024-06-30,ALDI SUED,-7.94
+2024-07-01,Adobe Creative Cloud,-66.45
+2024-07-01,ARAL Station,-57.43
+2024-07-02,Stadtwerke Strom,-68.97
+2024-07-02,REWE Markt Berlin,-42.44
+2024-07-03,Miete Wohnung Juli,-938.4
+2024-07-03,O2 DSL,-52.5
+2024-07-03,BVG Einzelticket,-20.59
+2024-07-04,ESSO Station,-67.03
+2024-07-06,ESSO Station,-73.77
+2024-07-07,Spotify AB,-10.99
+2024-07-07,Audible,-9.95
+2024-07-07,Lieferando.de,-97.25
+2024-07-09,ALDI Nord Filiale 77,-49.85
+2024-07-10,AMZN Mktp DE,-83.98
+2024-07-12,Rechnung RE-202407-82 Tech Solutions AG,1360.61
+2024-07-15,Vodafone Mobilfunk,-30.0
+2024-07-16,Zeit Online Abo,-19.99
+2024-07-20,Rechnung RE-202407-82 Schmidt & Partner,215.14
+2024-07-20,ALDI SUED,-67.56
+2024-07-22,Doener Kebab Haus,-52.69
+2024-07-24,Apple iCloud,-2.99
+2024-07-25,REWE Markt Berlin,-56.85
+2024-07-26,Museum Ticket,-206.68
+2024-07-30,Rechnung RE-202407-67 Tech Solutions AG,1299.95
+2024-07-30,Kaufland Berlin,-13.23
+2024-07-31,PENNY Markt,-14.24
+2024-08-01,Miete Wohnung August,-938.4
+2024-08-01,Adobe Creative Cloud,-66.45
+2024-08-02,Stadtwerke Strom,-70.28
+2024-08-02,Netto Marken-Discount,-28.26
+2024-08-02,Bowling Center,-45.2
+2024-08-03,O2 DSL,-52.5
+2024-08-03,Edeka Mueller,-23.63
+2024-08-03,Stadt-Apotheke,-21.53
+2024-08-04,Bäckerei Kamps,-7.36
+2024-08-04,Uber Trip,-57.57
+2024-08-06,Netto Marken-Discount,-6.12
+2024-08-06,Lufthansa Flug,-386.24
+2024-08-07,Spotify AB,-10.99
+2024-08-07,Audible,-9.95
+2024-08-10,Starbucks Coffee,-39.38
+2024-08-11,McDonalds 1180,-6.43
+2024-08-11,ESSO Station,-71.35
+2024-08-11,Booking.com Hotel,-350.03
+2024-08-13,Netto Marken-Discount,-72.06
+2024-08-15,Vodafone Mobilfunk,-30.0
+2024-08-15,Edeka Mueller,-34.01
+2024-08-16,Zeit Online Abo,-19.99
+2024-08-19,Rechnung RE-202408-41 Schmidt & Partner,1813.45
+2024-08-19,REWE Markt Berlin,-14.45
+2024-08-21,Edeka Mueller,-13.27
+2024-08-21,Amazon EU Marketplace,-77.97
+2024-08-22,Edeka Mueller,-45.76
+2024-08-23,Cafe Einstein,-20.61
+2024-08-24,Apple iCloud,-2.99
+2024-08-25,Rechnung RE-202408-62 Blau Design Studio,2778.22
+2024-08-25,Burger King 2231,-18.38
+2024-08-25,Doener Kebab Haus,-11.94
+2024-08-26,Rechnung RE-202408-73 Kraft Agentur,1284.91
+2024-08-29,Rewe Sagt Danke,-14.44
+2024-08-29,Kaufland Berlin,-9.54
+2024-08-30,Starbucks Coffee,-12.7
+2024-08-31,Shell Tankstelle,-53.37
+2024-09-01,Miete Wohnung September,-938.4
+2024-09-01,Adobe Creative Cloud,-66.45
+2024-09-02,Stadtwerke Strom,-66.54
+2024-09-02,LIDL Filiale 1234,-28.37
+2024-09-03,Rechnung RE-202409-19 Mueller GmbH,3833.1
+2024-09-03,O2 DSL,-52.5
+2024-09-03,McDonalds 1180,-12.14
+2024-09-03,Apotheke am Markt,-6.96
+2024-09-06,Netto Marken-Discount,-13.37
+2024-09-07,Spotify AB,-10.99
+2024-09-07,Audible,-9.95
+2024-09-08,Museum Ticket,-157.83
+2024-09-09,JET Tankstelle,-60.87
+2024-09-10,Finanzamt Einkommensteuer Vorauszahlung,-1620.0
+2024-09-11,Lidl Dienstleistung,-35.28
+2024-09-11,BVG Einzelticket,-11.49
+2024-09-12,Kaufland Berlin,-11.51
+2024-09-12,Wolt Order,-34.64
+2024-09-15,Vodafone Mobilfunk,-30.0
+2024-09-16,Zeit Online Abo,-19.99
+2024-09-16,Netto Marken-Discount,-65.79
+2024-09-16,Pizzeria Roma,-21.4
+2024-09-18,ARAL Station,-68.54
+2024-09-19,Amazon EU Marketplace,-21.77
+2024-09-24,Apple iCloud,-2.99
+2024-09-24,Kaufland Berlin,-25.41
+2024-09-24,Burger King 2231,-39.86
+2024-09-24,IKEA Deutschland,-43.48
+2024-09-24,JET Tankstelle,-59.07
+2024-09-26,Edeka Mueller,-29.68
+2024-09-27,Pizzeria Roma,-16.66
+2024-09-27,Kino CineStar,-37.26
+2024-09-30,LIDL Filiale 1234,-18.07
+2024-10-01,Miete Wohnung Oktober,-938.4
+2024-10-01,Adobe Creative Cloud,-66.45
+2024-10-02,Stadtwerke Strom,-68.02
+2024-10-03,Rechnung RE-202410-47 Nordlicht Media,5284.45
+2024-10-03,O2 DSL,-52.5
+2024-10-04,Bäckerei Kamps,-2.0
+2024-10-05,REWE Markt Berlin,-9.69
+2024-10-05,Bäckerei Kamps,-28.47
+2024-10-06,Netto Marken-Discount,-28.71
+2024-10-06,REWE Markt Berlin,-9.4
+2024-10-07,Spotify AB,-10.99
+2024-10-07,Audible,-9.95
+2024-10-08,EDEKA Center,-16.9
+2024-10-10,ALDI SUED,-24.22
+2024-10-10,Burger King 2231,-12.52
+2024-10-10,Zalando Bestellung,-46.04
+2024-10-11,Starbucks Coffee,-7.73
+2024-10-13,IKEA Deutschland,-51.12
+2024-10-13,Apotheke am Markt,-4.3
+2024-10-14,PENNY Markt,-15.07
+2024-10-14,Lieferando.de,-10.14
+2024-10-14,Shell Tankstelle,-73.75
+2024-10-15,Vodafone Mobilfunk,-30.0
+2024-10-15,Museum Ticket,-73.33
+2024-10-16,Zeit Online Abo,-19.99
+2024-10-16,PENNY Markt,-57.27
+2024-10-17,Shell Tankstelle,-47.4
+2024-10-17,Uber Trip,-84.36
+2024-10-20,Vapiano,-17.98
+2024-10-20,ADAC Abschleppdienst,-142.5
+2024-10-24,Apple iCloud,-2.99
+2024-10-24,Rewe Sagt Danke,-54.1
+2024-10-26,BVG Einzelticket,-89.54
+2024-10-28,Starbucks Coffee,-7.4
+2024-10-29,Kino CineStar,-56.11
+2024-10-30,REWE City 0815,-16.93
+2024-10-30,REWE City 0815,-10.48
+2024-10-30,TotalEnergies,-48.44
+2024-10-31,ARAL Station,-77.05
+2024-11-01,Miete Wohnung November,-938.4
+2024-11-01,Adobe Creative Cloud,-66.45
+2024-11-01,Doener Kebab Haus,-23.33
+2024-11-02,Stadtwerke Strom,-66.83
+2024-11-03,Rechnung RE-202411-23 Fischer IT,5444.03
+2024-11-03,O2 DSL,-52.5
+2024-11-03,Amazon EU Marketplace,-34.48
+2024-11-03,TotalEnergies,-52.17
+2024-11-04,DocMorris,-16.43
+2024-11-06,Rewe Sagt Danke,-18.63
+2024-11-07,Spotify AB,-10.99
+2024-11-07,Audible,-9.95
+2024-11-07,Lidl Dienstleistung,-37.03
+2024-11-08,Wolt Order,-11.83
+2024-11-09,Netto Marken-Discount,-6.35
+2024-11-10,ARAL Station,-64.36
+2024-11-11,FlixBus,-11.95
+2024-11-12,Lidl Dienstleistung,-30.47
+2024-11-14,Lieferando.de,-12.72
+2024-11-15,Vodafone Mobilfunk,-30.0
+2024-11-16,Zeit Online Abo,-19.99
+2024-11-16,Bäckerei Kamps,-46.63
+2024-11-17,Netto Marken-Discount,-13.5
+2024-11-17,Zalando Bestellung,-21.75
+2024-11-19,Edeka Mueller,-22.6
+2024-11-20,Rewe Sagt Danke,-16.16
+2024-11-20,Bäckerei Kamps,-33.44
+2024-11-20,Kino CineStar,-15.82
+2024-11-24,Apple iCloud,-2.99
+2024-11-24,Kino CineStar,-43.65
+2024-11-26,Kaufland Berlin,-3.72
+2024-11-26,ALDI Nord Filiale 77,-15.91
+2024-11-26,REWE Markt Berlin,-16.08
+2024-11-29,ALDI SUED,-7.99
+2024-11-29,Wolt Order,-7.15
+2024-11-29,AMZN Mktp DE,-46.07
+2024-11-30,EDEKA Center,-4.15
+2024-11-30,LIDL Filiale 1234,-6.72
+2024-11-30,Bowling Center,-24.08
+2024-12-01,Miete Wohnung Dezember,-938.4
+2024-12-01,Adobe Creative Cloud,-66.45
+2024-12-02,Stadtwerke Strom,-70.75
+2024-12-02,Doener Kebab Haus,-18.79
+2024-12-03,O2 DSL,-52.5
+2024-12-03,JET Tankstelle,-79.95
+2024-12-03,Amazon EU Marketplace Geschenke,-59.5
+2024-12-04,ALDI SUED,-51.14
+2024-12-05,Bäckerei Kamps,-19.9
+2024-12-07,Spotify AB,-10.99
+2024-12-07,Audible,-9.95
+2024-12-07,Lidl Dienstleistung,-6.12
+2024-12-08,Lidl Dienstleistung,-34.51
+2024-12-10,Finanzamt Einkommensteuer Vorauszahlung,-1620.0
+2024-12-10,Pizzeria Roma,-5.98
+2024-12-11,PENNY Markt,-15.18
+2024-12-11,ARAL Station,-63.75
+2024-12-12,Rechnung RE-202412-35 Weber Consulting,293.12
+2024-12-12,JET Tankstelle,-72.3
+2024-12-13,ALDI SUED,-17.55
+2024-12-15,Vodafone Mobilfunk,-30.0
+2024-12-15,REWE Markt Berlin,-18.4
+2024-12-15,Kino CineStar,-35.44
+2024-12-16,Zeit Online Abo,-19.99
+2024-12-16,Rewe Sagt Danke,-30.78
+2024-12-17,JET Tankstelle,-47.32
+2024-12-18,Cafe Einstein,-32.73
+2024-12-19,Rechnung RE-202412-94 Fischer IT,798.78
+2024-12-20,Rewe Sagt Danke,-15.93
+2024-12-22,Bäckerei Kamps,-2.0
+2024-12-22,Eventim Tickets,-81.2
+2024-12-23,PENNY Markt,-13.54
+2024-12-23,H&M Online,-90.96
+2024-12-24,Apple iCloud,-2.99
+2024-12-24,Decathlon Geschenke,-22.61
+2024-12-25,Decathlon Geschenke,-94.19
+2024-12-26,Rechnung RE-202412-33 Nordlicht Media,1151.59
+2024-12-27,Rewe Sagt Danke,-31.9
+2024-12-29,Lieferando.de,-10.37
+2024-12-31,Netto Marken-Discount,-24.37
+2024-12-31,Decathlon,-52.31
+2025-01-01,Miete Wohnung Januar,-957.17
+2025-01-01,Adobe Creative Cloud,-66.45
+2025-01-01,Lieferando.de,-40.5
+2025-01-02,Stadtwerke Strom,-70.36
+2025-01-03,O2 DSL,-52.5
+2025-01-03,Doener Kebab Haus,-24.93
+2025-01-05,REWE Markt Berlin,-19.81
+2025-01-05,PENNY Markt,-30.79
+2025-01-05,Lieferando.de,-26.0
+2025-01-07,Spotify AB,-10.99
+2025-01-07,Audible,-9.95
+2025-01-07,Burger King 2231,-26.49
+2025-01-07,BVG Einzelticket,-65.76
+2025-01-08,ALDI SUED,-62.62
+2025-01-10,Amazon EU Marketplace,-14.34
+2025-01-12,Rechnung RE-202501-21 Mueller GmbH,495.05
+2025-01-13,Starbucks Coffee,-13.84
+2025-01-14,Rechnung RE-202501-53 Schmidt & Partner,1174.35
+2025-01-15,Vodafone Mobilfunk,-30.0
+2025-01-15,UCI Kinowelt,-33.95
+2025-01-16,Zeit Online Abo,-19.99
+2025-01-17,ARAL Station,-77.64
+2025-01-18,EDEKA Center,-53.63
+2025-01-18,Thalia Buchhandlung,-22.0
+2025-01-19,ARAL Station,-74.61
+2025-01-19,DB Bahn Ticket,-62.07
+2025-01-20,Bowling Center,-6.28
+2025-01-21,H&M Online,-58.88
+2025-01-22,Fielmann Brille,-153.76
+2025-01-24,Apple iCloud,-2.99
+2025-01-24,Doener Kebab Haus,-21.57
+2025-01-25,Edeka Mueller,-51.58
+2025-01-25,Eventim Tickets,-32.33
+2025-01-27,Kino CineStar,-16.33
+2025-01-28,ESSO Station,-60.25
+2025-01-31,ALDI SUED,-15.88
+2025-02-01,Miete Wohnung Februar,-957.17
+2025-02-01,Adobe Creative Cloud,-66.45
+2025-02-01,Uber Trip,-20.43
+2025-02-02,Stadtwerke Strom,-67.36
+2025-02-02,Lidl Dienstleistung,-23.78
+2025-02-02,Rathaus Apotheke,-13.61
+2025-02-03,O2 DSL,-52.5
+2025-02-03,Doener Kebab Haus,-7.45
+2025-02-03,Stadt-Apotheke,-20.42
+2025-02-03,Allianz Haftpflicht Versicherung,-86.14
+2025-02-04,Zalando Bestellung,-8.96
+2025-02-04,Shell Tankstelle,-65.99
+2025-02-04,HUK-Coburg Kfz Versicherung,-698.82
+2025-02-05,ESSO Station,-68.51
+2025-02-06,Doener Kebab Haus,-37.35
+2025-02-06,Steam Purchase,-47.27
+2025-02-06,Uber Trip,-43.6
+2025-02-06,Rathaus Apotheke,-15.61
+2025-02-07,Rechnung RE-202502-89 Weber Consulting,70.19
+2025-02-07,Spotify AB,-10.99
+2025-02-07,Audible,-9.95
+2025-02-07,REWE Markt Berlin,-33.2
+2025-02-07,PENNY Markt,-9.55
+2025-02-07,ESSO Station,-68.66
+2025-02-08,AMZN Mktp DE,-2.88
+2025-02-08,Shop Apotheke Online,-35.22
+2025-02-09,REWE City 0815,-12.21
+2025-02-11,DB Fernverkehr,-9.25
+2025-02-12,dm-drogerie markt,-13.93
+2025-02-12,Shell Tankstelle,-76.31
+2025-02-13,Thalia Buchhandlung,-14.99
+2025-02-14,Rewe Sagt Danke,-25.86
+2025-02-15,Vodafone Mobilfunk,-30.0
+2025-02-16,Zeit Online Abo,-19.99
+2025-02-16,Edeka Mueller,-45.02
+2025-02-18,Rechnung RE-202502-64 Fischer IT,78.43
+2025-02-18,Netto Marken-Discount,-5.98
+2025-02-19,Vapiano,-42.7
+2025-02-20,DB Bahn Ticket,-32.98
+2025-02-20,Apotheke am Markt,-12.95
+2025-02-21,Rechnung RE-202502-72 Blau Design Studio,88.41
+2025-02-21,Starbucks Coffee,-41.54
+2025-02-24,Rechnung RE-202502-60 Kraft Agentur,56.93
+2025-02-24,Apple iCloud,-2.99
+2025-02-24,Steam Purchase,-71.52
+2025-02-25,LIDL Filiale 1234,-13.38
+2025-02-26,REWE City 0815,-33.12
+2025-02-26,Bäckerei Kamps,-19.76
+2025-03-01,Miete Wohnung Maerz,-957.17
+2025-03-01,Adobe Creative Cloud,-66.45
+2025-03-01,Doener Kebab Haus,-15.64
+2025-03-01,Apotheke am Markt,-8.88
+2025-03-02,Stadtwerke Strom,-66.59
+2025-03-02,PlayStation Store,-88.78
+2025-03-02,IKEA Deutschland,-36.73
+2025-03-02,ARAL Station,-61.95
+2025-03-03,O2 DSL,-52.5
+2025-03-03,REWE City 0815,-23.21
+2025-03-04,Rechnung RE-202503-75 Blau Design Studio,418.19
+2025-03-06,LIDL Filiale 1234,-34.45
+2025-03-06,Amazon EU Marketplace,-27.14
+2025-03-07,Spotify AB,-10.99
+2025-03-07,Audible,-9.95
+2025-03-07,Cafe Einstein,-17.91
+2025-03-08,Amazon EU Marketplace,-22.83
+2025-03-09,REWE City 0815,-48.18
+2025-03-09,MediaMarkt,-10.43
+2025-03-10,Finanzamt Einkommensteuer Vorauszahlung,-1620.0
+2025-03-13,Rechnung RE-202503-46 Kraft Agentur,202.57
+2025-03-14,Pizzeria Roma,-9.87
+2025-03-15,Vodafone Mobilfunk,-30.0
+2025-03-16,Zeit Online Abo,-19.99
+2025-03-17,Rewe Sagt Danke,-7.72
+2025-03-17,Starbucks Coffee,-11.4
+2025-03-18,Rewe Sagt Danke,-12.04
+2025-03-18,PlayStation Store,-34.53
+2025-03-18,Stadt-Apotheke,-34.41
+2025-03-19,Arztpraxis IGeL Leistung,-72.61
+2025-03-20,Netto Marken-Discount,-7.85
+2025-03-21,Bäckerei Kamps,-14.23
+2025-03-22,H&M Online,-18.11
+2025-03-23,ALDI Nord Filiale 77,-3.44
+2025-03-24,Apple iCloud,-2.99
+2025-03-24,REWE Markt Berlin,-53.27
+2025-03-25,Pizzeria Roma,-15.61
+2025-03-25,Rathaus Apotheke,-22.15
+2025-03-26,Shell Tankstelle,-82.06
+2025-03-26,Physiotherapie Praxis Zuzahlung,-21.46
+2025-03-27,Rechnung RE-202503-51 Tech Solutions AG,940.44
+2025-03-27,Wolt Order,-8.51
+2025-03-28,Restaurant Bella Italia,-19.01
+2025-03-29,REWE Markt Berlin,-1.58
+2025-03-29,LIDL Filiale 1234,-8.94
+2025-03-29,REWE Markt Berlin,-9.33
+2025-03-29,DB Fernverkehr,-18.84
+2025-04-01,Rechnung RE-202504-61 Kraft Agentur,3293.16
+2025-04-01,Miete Wohnung April,-957.17
+2025-04-01,Adobe Creative Cloud,-66.45
+2025-04-01,Restaurant Bella Italia,-8.98
+2025-04-02,Stadtwerke Strom,-73.24
+2025-04-02,Pizzeria Roma,-14.67
+2025-04-03,O2 DSL,-52.5
+2025-04-03,ESSO Station,-71.42
+2025-04-05,Lidl Dienstleistung,-42.23
+2025-04-06,Rathaus Apotheke,-15.29
+2025-04-07,Spotify AB,-10.99
+2025-04-07,Audible,-9.95
+2025-04-07,Lidl Dienstleistung,-11.1
+2025-04-07,Shell Tankstelle,-65.14
+2025-04-07,BVG Einzelticket,-47.77
+2025-04-08,ARAL Station,-76.71
+2025-04-09,Edeka Mueller,-21.09
+2025-04-10,ALDI SUED,-19.58
+2025-04-11,Rewe Sagt Danke,-12.87
+2025-04-11,IKEA Deutschland,-34.03
+2025-04-11,IKEA Deutschland,-133.33
+2025-04-15,Vodafone Mobilfunk,-30.0
+2025-04-15,Sushi Bar Kyoto,-4.05
+2025-04-16,Zeit Online Abo,-19.99
+2025-04-17,Burger King 2231,-23.61
+2025-04-17,Steam Purchase,-29.13
+2025-04-19,Lidl Dienstleistung,-13.54
+2025-04-21,EDEKA Center,-37.45
+2025-04-22,Netto Marken-Discount,-69.11
+2025-04-22,Bäckerei Kamps,-9.55
+2025-04-24,Apple iCloud,-2.99
+2025-04-26,ARAL Station,-74.0
+2025-04-29,REWE Markt Berlin,-6.17
+2025-04-29,PENNY Markt,-4.78
+2025-04-30,Kaufland Berlin,-8.46
+2025-04-30,Cafe Einstein,-4.88
+2025-05-01,Miete Wohnung Mai,-957.17
+2025-05-01,Adobe Creative Cloud,-66.45
+2025-05-02,Stadtwerke Strom,-67.97
+2025-05-02,Doener Kebab Haus,-13.7
+2025-05-03,O2 DSL,-52.5
+2025-05-03,ESSO Station,-59.23
+2025-05-06,Rewe Sagt Danke,-33.01
+2025-05-07,Spotify AB,-10.99
+2025-05-07,Audible,-9.95
+2025-05-07,Netto Marken-Discount,-20.0
+2025-05-09,Kaufland Berlin,-14.98
+2025-05-11,dm-drogerie markt,-33.32
+2025-05-12,Rewe Sagt Danke,-34.15
+2025-05-13,Wolt Order,-41.94
+2025-05-13,Wolt Order,-32.47
+2025-05-14,Steam Purchase,-155.2
+2025-05-15,Vodafone Mobilfunk,-30.0
+2025-05-16,Zeit Online Abo,-19.99
+2025-05-16,Shop Apotheke Online,-10.27
+2025-05-17,TotalEnergies,-66.72
+2025-05-18,Lidl Dienstleistung,-11.68
+2025-05-19,ALDI SUED,-24.46
+2025-05-20,IKEA Deutschland,-86.82
+2025-05-20,FlixBus,-15.17
+2025-05-21,Rewe Sagt Danke,-12.14
+2025-05-21,ESSO Station,-80.02
+2025-05-22,ALDI Nord Filiale 77,-17.76
+2025-05-24,Apple iCloud,-2.99
+2025-05-24,Restaurant Bella Italia,-15.77
+2025-05-25,Netto Marken-Discount,-28.97
+2025-05-26,McDonalds 1180,-19.57
+2025-05-28,Rewe Sagt Danke,-17.92
+2025-05-30,Rechnung RE-202505-58 Nordlicht Media,504.02
+2025-05-30,Rechnung RE-202505-84 Tech Solutions AG,636.3
+2025-05-30,Uber Trip,-14.69
+2025-05-31,EDEKA Center,-24.85
+2025-06-01,Miete Wohnung Juni,-957.17
+2025-06-01,Adobe Creative Cloud,-66.45
+2025-06-01,FlixBus,-40.29
+2025-06-02,Stadtwerke Strom,-68.08
+2025-06-03,Rechnung RE-202506-56 Tech Solutions AG,2366.73
+2025-06-03,O2 DSL,-52.5
+2025-06-05,BVG Einzelticket,-22.06
+2025-06-06,Pizzeria Roma,-7.61
+2025-06-07,Spotify AB,-10.99
+2025-06-07,Audible,-9.95
+2025-06-07,REWE Markt Berlin,-55.85
+2025-06-07,Zalando Bestellung,-151.58
+2025-06-09,Stadt-Apotheke,-17.13
+2025-06-10,Finanzamt Einkommensteuer Vorauszahlung,-1620.0
+2025-06-11,ALDI Nord Filiale 77,-22.83
+2025-06-11,Museum Ticket,-156.81
+2025-06-12,ALDI Nord Filiale 77,-43.56
+2025-06-14,Burger King 2231,-45.24
+2025-06-15,Vodafone Mobilfunk,-30.0
+2025-06-15,Pizzeria Roma,-25.3
+2025-06-16,Zeit Online Abo,-19.99
+2025-06-16,Wolt Order,-6.08
+2025-06-18,ALDI SUED,-13.44
+2025-06-18,FlixBus,-47.97
+2025-06-19,TotalEnergies,-73.79
+2025-06-20,REWE Markt Berlin,-11.28
+2025-06-21,ALDI Nord Filiale 77,-28.87
+2025-06-22,Rechnung RE-202506-13 Fischer IT,94.67
+2025-06-22,EDEKA Center,-55.51
+2025-06-24,Rechnung RE-202506-52 Kraft Agentur,690.78
+2025-06-24,Apple iCloud,-2.99
+2025-06-28,Wolt Order,-12.43
+2025-06-29,Rechnung RE-202506-80 Nordlicht Media,1671.55
+2025-06-29,REWE Markt Berlin,-5.11
+2025-06-29,PENNY Markt,-7.98
+2025-06-29,LIDL Filiale 1234,-4.25
+2025-06-30,ARAL Station,-64.28
+2025-07-01,Miete Wohnung Juli,-957.17
+2025-07-01,Adobe Creative Cloud,-66.45
+2025-07-02,Stadtwerke Strom,-73.72
+2025-07-03,Rechnung RE-202507-42 Weber Consulting,947.32
+2025-07-03,O2 DSL,-52.5
+2025-07-03,DB Bahn Ticket,-24.33
+2025-07-03,Lufthansa Flug,-295.33
+2025-07-06,Eventim Tickets,-101.54
+2025-07-07,Spotify AB,-10.99
+2025-07-07,Audible,-9.95
+2025-07-07,REWE Markt Berlin,-76.05
+2025-07-08,Pizzeria Roma,-5.69
+2025-07-08,DocMorris,-24.35
+2025-07-11,Netto Marken-Discount,-66.58
+2025-07-14,JET Tankstelle,-77.85
+2025-07-15,Rechnung RE-202507-60 Tech Solutions AG,408.76
+2025-07-15,Vodafone Mobilfunk,-30.0
+2025-07-16,Zeit Online Abo,-19.99
+2025-07-16,REWE Markt Berlin,-43.35
+2025-07-16,Decathlon,-50.41
+2025-07-16,Booking.com Hotel,-431.38
+2025-07-17,ESSO Station,-73.75
+2025-07-17,Uber Trip,-23.86
+2025-07-20,ALDI SUED,-16.18
+2025-07-20,REWE Markt Berlin,-9.87
+2025-07-20,Restaurant Bella Italia,-30.07
+2025-07-21,Vapiano,-2.0
+2025-07-21,Rossmann Drogerie,-18.91
+2025-07-21,ARAL Station,-79.45
+2025-07-23,Rewe Sagt Danke,-21.14
+2025-07-23,ARAL Station,-68.4
+2025-07-24,Apple iCloud,-2.99
+2025-07-25,LIDL Filiale 1234,-29.19
+2025-07-27,Rechnung RE-202507-13 Kraft Agentur,1848.5
+2025-07-27,Amazon EU Marketplace,-96.97
+2025-07-29,REWE City 0815,-23.15
+2025-08-01,Adobe Creative Cloud,-66.45
+2025-08-01,JET Tankstelle,-77.93
+2025-08-01,TotalEnergies,-70.48
+2025-08-01,ESSO Station,-66.78
+2025-08-02,Miete Wohnung August,-957.17
+2025-08-02,Stadtwerke Strom,-71.65
+2025-08-02,Rewe Sagt Danke,-49.62
+2025-08-03,O2 DSL,-52.5
+2025-08-06,Rechnung RE-202508-41 Weber Consulting,502.54
+2025-08-06,Lieferando.de,-217.68
+2025-08-06,Museum Ticket,-92.16
+2025-08-07,Spotify AB,-10.99
+2025-08-07,Audible,-9.95
+2025-08-09,Edeka Mueller,-11.7
+2025-08-10,TotalEnergies,-53.43
+2025-08-11,Lidl Dienstleistung,-21.51
+2025-08-14,Rechnung RE-202508-48 Mueller GmbH,1962.79
+2025-08-14,EDEKA Center,-25.24
+2025-08-15,Vodafone Mobilfunk,-30.0
+2025-08-15,ALDI SUED,-26.19
+2025-08-16,Zeit Online Abo,-19.99
+2025-08-16,ALDI SUED,-40.09
+2025-08-20,dm-drogerie markt,-59.2
+2025-08-22,Rechnung RE-202508-23 Nordlicht Media,130.33
+2025-08-22,Rechnung RE-202508-25 Nordlicht Media,257.33
+2025-08-24,Apple iCloud,-2.99
+2025-08-24,PENNY Markt,-62.26
+2025-08-29,Netto Marken-Discount,-15.9
+2025-08-31,Edeka Mueller,-10.27
+2025-09-01,Adobe Creative Cloud,-66.45
+2025-09-01,Cafe Einstein,-29.87
+2025-09-01,ARAL Station,-82.72
+2025-09-02,Stadtwerke Strom,-73.75
+2025-09-02,Sushi Bar Kyoto,-2.69
+2025-09-02,Sushi Bar Kyoto,-3.32
+2025-09-02,Eventim Tickets,-130.65
+2025-09-03,Rechnung RE-202509-14 Kraft Agentur,3601.24
+2025-09-03,Miete Wohnung September,-957.17
+2025-09-03,O2 DSL,-52.5
+2025-09-03,ALDI SUED,-22.74
+2025-09-04,Rewe Sagt Danke,-37.6
+2025-09-04,Netto Marken-Discount,-3.06
+2025-09-04,McDonalds 1180,-5.87
+2025-09-04,Amazon EU Marketplace,-28.66
+2025-09-07,Spotify AB,-10.99
+2025-09-07,Audible,-9.95
+2025-09-07,Shop Apotheke Online,-33.22
+2025-09-10,Finanzamt Einkommensteuer Vorauszahlung,-1620.0
+2025-09-10,Vapiano,-11.58
+2025-09-11,H&M Online,-34.11
+2025-09-12,Sushi Bar Kyoto,-18.5
+2025-09-13,ALDI Nord Filiale 77,-54.06
+2025-09-15,Vodafone Mobilfunk,-30.0
+2025-09-16,Zeit Online Abo,-19.99
+2025-09-17,Pizzeria Roma,-6.2
+2025-09-18,Linden Apotheke,-19.92
+2025-09-19,Rechnung RE-202509-63 Blau Design Studio,576.26
+2025-09-19,Burger King 2231,-7.66
+2025-09-19,ARAL Station,-63.73
+2025-09-20,MediaMarkt,-8.73
+2025-09-20,MediaMarkt,-74.22
+2025-09-21,ALDI Nord Filiale 77,-65.51
+2025-09-23,Vapiano,-10.07
+2025-09-24,Apple iCloud,-2.99
+2025-09-24,EDEKA Center,-8.6
+2025-09-24,ALDI Nord Filiale 77,-27.37
+2025-09-27,Wolt Order,-3.3
+2025-09-28,EDEKA Center,-29.79
+2025-09-29,Netto Marken-Discount,-6.89
+2025-09-30,Kaufland Berlin,-6.9
+2025-10-01,Miete Wohnung Oktober,-957.17
+2025-10-01,Adobe Creative Cloud,-66.45
+2025-10-01,Physiotherapie Praxis Zuzahlung,-44.78
+2025-10-02,Stadtwerke Strom,-71.67
+2025-10-03,O2 DSL,-52.5
+2025-10-04,JET Tankstelle,-79.33
+2025-10-05,ALDI SUED,-61.03
+2025-10-06,Wolt Order,-7.03
+2025-10-07,Spotify AB,-10.99
+2025-10-07,Audible,-9.95
+2025-10-08,Rechnung RE-202510-61 Tech Solutions AG,40.43
+2025-10-08,Shell Tankstelle,-50.91
+2025-10-10,Vapiano,-21.98
+2025-10-10,Pizzeria Roma,-31.31
+2025-10-12,ALDI SUED,-56.51
+2025-10-12,Doener Kebab Haus,-10.16
+2025-10-12,FlixBus,-42.64
+2025-10-12,Rathaus Apotheke,-34.05
+2025-10-13,McDonalds 1180,-2.5
+2025-10-15,Vodafone Mobilfunk,-30.0
+2025-10-16,Zeit Online Abo,-19.99
+2025-10-18,McDonalds 1180,-34.53
+2025-10-19,Lidl Dienstleistung,-14.14
+2025-10-19,LIDL Filiale 1234,-49.79
+2025-10-20,Bowling Center,-169.86
+2025-10-20,AMZN Mktp DE,-39.8
+2025-10-21,Starbucks Coffee,-5.94
+2025-10-22,ESSO Station,-62.97
+2025-10-24,Apple iCloud,-2.99
+2025-10-24,Bäckerei Kamps,-4.21
+2025-10-24,Otto Versand,-55.85
+2025-10-27,REWE City 0815,-40.17
+2025-10-28,Rechnung RE-202510-47 Nordlicht Media,16.11
+2025-10-28,ALDI Nord Filiale 77,-17.0
+2025-10-28,JET Tankstelle,-58.74
+2025-10-28,Uber Trip,-86.46
+2025-10-30,LIDL Filiale 1234,-25.03
+2025-10-31,Rechnung RE-202510-26 Nordlicht Media,36.22
+2025-11-01,Miete Wohnung November,-957.17
+2025-11-01,Adobe Creative Cloud,-66.45
+2025-11-01,Netto Marken-Discount,-27.09
+2025-11-02,Stadtwerke Strom,-72.07
+2025-11-03,O2 DSL,-52.5
+2025-11-05,Kaufland Berlin,-16.74
+2025-11-05,Physiotherapie Praxis Zuzahlung,-43.48
+2025-11-07,Spotify AB,-10.99
+2025-11-07,Audible,-9.95
+2025-11-07,Kaufland Berlin,-18.79
+2025-11-07,Uber Trip,-42.65
+2025-11-08,Kino CineStar,-22.94
+2025-11-10,Rechnung RE-202511-45 Schmidt & Partner,3907.47
+2025-11-11,Decathlon,-28.2
+2025-11-11,H&M Online,-3.51
+2025-11-12,REWE Markt Berlin,-60.7
+2025-11-14,Wolt Order,-29.36
+2025-11-15,Vodafone Mobilfunk,-30.0
+2025-11-15,ALDI Nord Filiale 77,-5.96
+2025-11-15,Rewe Sagt Danke,-45.09
+2025-11-16,Zeit Online Abo,-19.99
+2025-11-21,Bäckerei Kamps,-133.76
+2025-11-22,Decathlon,-23.73
+2025-11-23,ALDI SUED,-22.36
+2025-11-23,Steam Purchase,-45.35
+2025-11-23,ARAL Station,-53.01
+2025-11-24,Apple iCloud,-2.99
+2025-11-24,Shell Tankstelle,-79.79
+2025-11-25,Bäckerei Kamps,-2.0
+2025-11-25,IKEA Deutschland,-8.25
+2025-11-27,LIDL Filiale 1234,-13.02
+2025-11-27,PENNY Markt,-23.61
+2025-11-29,Starbucks Coffee,-11.02
+2025-11-30,Rechnung RE-202511-62 Nordlicht Media,783.33
+2025-11-30,LIDL Filiale 1234,-5.22
+2025-11-30,Lidl Dienstleistung,-9.06
+2025-12-01,Miete Wohnung Dezember,-957.17
+2025-12-01,Adobe Creative Cloud,-66.45
+2025-12-02,Stadtwerke Strom,-67.58
+2025-12-03,O2 DSL,-52.5
+2025-12-05,PENNY Markt,-67.71
+2025-12-06,Pizzeria Roma,-161.59
+2025-12-07,Spotify AB,-10.99
+2025-12-07,Audible,-9.95
+2025-12-10,Finanzamt Einkommensteuer Vorauszahlung,-1620.0
+2025-12-10,H&M Online,-28.51
+2025-12-11,Bowling Center,-111.6
+2025-12-12,Decathlon,-68.28
+2025-12-12,DB Fernverkehr,-15.85
+2025-12-13,Rechnung RE-202512-60 Nordlicht Media,935.27
+2025-12-13,REWE Markt Berlin,-28.98
+2025-12-13,PENNY Markt,-35.2
+2025-12-13,Decathlon,-57.38
+2025-12-13,FlixBus,-10.31
+2025-12-15,Vodafone Mobilfunk,-30.0
+2025-12-15,ESSO Station,-83.72
+2025-12-15,TotalEnergies,-61.03
+2025-12-16,Zeit Online Abo,-19.99
+2025-12-16,ALDI Nord Filiale 77,-32.3
+2025-12-18,ALDI SUED,-28.66
+2025-12-21,Rossmann Drogerie Geschenke,-281.6
+2025-12-21,Rossmann Drogerie Geschenke,-116.56
+2025-12-22,Rewe Sagt Danke,-22.88
+2025-12-22,REWE Markt Berlin,-9.55
+2025-12-24,Rechnung RE-202512-10 Kraft Agentur,2656.0
+2025-12-24,Apple iCloud,-2.99
+2025-12-26,LIDL Filiale 1234,-18.19
+2025-12-26,Shop Apotheke Online,-27.3
+2025-12-30,Rewe Sagt Danke,-11.85
+2025-12-30,Amazon EU Marketplace,-51.25
+2025-12-31,Netto Marken-Discount,-13.96
+2026-01-01,Rechnung RE-202601-69 Schmidt & Partner,713.31
+2026-01-01,Miete Wohnung Januar,-976.31
+2026-01-01,Adobe Creative Cloud,-66.45
+2026-01-02,Stadtwerke Strom,-74.31
+2026-01-03,O2 DSL,-52.5
+2026-01-04,H&M Online,-35.82
+2026-01-05,ALDI SUED,-57.43
+2026-01-07,Spotify AB,-10.99
+2026-01-07,Audible,-9.95
+2026-01-07,H&M Online,-77.36
+2026-01-10,REWE Markt Berlin,-62.14
+2026-01-10,Kino CineStar,-27.42
+2026-01-12,Burger King 2231,-34.29
+2026-01-14,DB Bahn Ticket,-65.29
+2026-01-15,Vodafone Mobilfunk,-30.0
+2026-01-16,Zeit Online Abo,-19.99
+2026-01-16,LIDL Filiale 1234,-37.71
+2026-01-18,Museum Ticket,-16.01
+2026-01-19,Rechnung RE-202601-79 Fischer IT,2319.5
+2026-01-19,JET Tankstelle,-50.83
+2026-01-21,REWE Markt Berlin,-17.57
+2026-01-21,ARAL Station,-68.03
+2026-01-21,Uber Trip,-40.79
+2026-01-24,Rechnung RE-202601-29 Blau Design Studio,1148.12
+2026-01-24,Apple iCloud,-2.99
+2026-01-24,H&M Online,-25.8
+2026-01-25,FlixBus,-12.63
+2026-01-27,McDonalds 1180,-25.62
+2026-01-28,REWE City 0815,-30.58
+2026-01-28,Edeka Mueller,-12.97
+2026-01-28,JET Tankstelle,-81.12
+2026-01-31,Kaufland Berlin,-7.31
+2026-01-31,PENNY Markt,-13.66
+2026-01-31,McDonalds 1180,-12.75
+2026-02-01,Miete Wohnung Februar,-976.31
+2026-02-01,Adobe Creative Cloud,-66.45
+2026-02-01,Burger King 2231,-11.03
+2026-02-01,Eventim Tickets,-95.12
+2026-02-02,Stadtwerke Strom,-74.93
+2026-02-02,Edeka Mueller,-9.66
+2026-02-02,Starbucks Coffee,-7.17
+2026-02-03,O2 DSL,-52.5
+2026-02-03,Allianz Haftpflicht Versicherung,-109.11
+2026-02-04,HUK-Coburg Kfz Versicherung,-472.45
+2026-02-05,Kaufland Berlin,-43.9
+2026-02-05,Museum Ticket,-76.56
+2026-02-07,Spotify AB,-10.99
+2026-02-07,Audible,-9.95
+2026-02-07,dm-drogerie markt,-47.67
+2026-02-07,TotalEnergies,-47.92
+2026-02-09,Rechnung RE-202602-85 Kraft Agentur,1002.05
+2026-02-09,Netto Marken-Discount,-14.6
+2026-02-10,Amazon EU Marketplace,-26.41
+2026-02-11,Burger King 2231,-14.09
+2026-02-11,Rossmann Drogerie,-56.06
+2026-02-12,Rewe Sagt Danke,-8.12
+2026-02-13,LIDL Filiale 1234,-29.38
+2026-02-13,Shell Tankstelle,-59.1
+2026-02-15,Vodafone Mobilfunk,-30.0
+2026-02-15,Sushi Bar Kyoto,-14.71
+2026-02-16,Zeit Online Abo,-19.99
+2026-02-17,Rechnung RE-202602-57 Blau Design Studio,102.71
+2026-02-18,Vapiano,-26.11
+2026-02-20,Bäckerei Kamps,-3.66
+2026-02-20,Pizzeria Roma,-23.9
+2026-02-20,Arztpraxis IGeL Leistung,-36.38
+2026-02-21,REWE Markt Berlin,-71.2
+2026-02-22,PENNY Markt,-26.4
+2026-02-24,Apple iCloud,-2.99
+2026-02-26,Sushi Bar Kyoto,-14.34
+2026-02-28,EDEKA Center,-31.57
+2026-02-28,Restaurant Bella Italia,-4.93
+2026-03-01,Miete Wohnung Maerz,-976.31
+2026-03-01,Adobe Creative Cloud,-66.45
+2026-03-02,Stadtwerke Strom,-74.81
+2026-03-02,REWE City 0815,-17.95
+2026-03-02,ALDI Nord Filiale 77,-6.31
+2026-03-03,O2 DSL,-52.5
+2026-03-04,UCI Kinowelt,-17.77
+2026-03-05,dm-drogerie markt,-75.38
+2026-03-06,Lidl Dienstleistung,-52.36
+2026-03-07,Spotify AB,-10.99
+2026-03-07,Audible,-9.95
+2026-03-07,Vapiano,-18.56
+2026-03-10,Finanzamt Einkommensteuer Vorauszahlung,-1620.0
+2026-03-11,Rechnung RE-202603-62 Fischer IT,764.87
+2026-03-12,Kaufland Berlin,-69.44
+2026-03-15,Vodafone Mobilfunk,-30.0
+2026-03-16,Zeit Online Abo,-19.99
+2026-03-18,Rossmann Drogerie,-36.06
+2026-03-20,EDEKA Center,-45.83
+2026-03-20,Lieferando.de,-14.51
+2026-03-21,Edeka Mueller,-28.93
+2026-03-21,ESSO Station,-67.52
+2026-03-22,REWE Markt Berlin,-55.96
+2026-03-23,Eventim Tickets,-37.54
+2026-03-24,Apple iCloud,-2.99
+2026-03-26,Kino CineStar,-37.32
+2026-03-27,Rechnung RE-202603-12 Blau Design Studio,126.45
+2026-03-29,ALDI SUED,-14.21
+2026-03-29,PENNY Markt,-4.0
+2026-03-29,Burger King 2231,-10.02
+2026-03-30,ESSO Station,-76.43
+2026-03-31,REWE City 0815,-7.18
+2026-03-31,Cafe Einstein,-61.79
+2026-04-01,Miete Wohnung April,-976.31
+2026-04-01,Adobe Creative Cloud,-66.45
+2026-04-02,Stadtwerke Strom,-69.53
+2026-04-02,Lidl Dienstleistung,-7.44
+2026-04-03,O2 DSL,-52.5
+2026-04-05,ESSO Station,-51.66
+2026-04-06,Edeka Mueller,-9.19
+2026-04-06,IKEA Deutschland,-23.03
+2026-04-07,Rechnung RE-202604-45 Blau Design Studio,3020.82
+2026-04-07,Spotify AB,-10.99
+2026-04-07,Audible,-9.95
+2026-04-07,ALDI Nord Filiale 77,-38.91
+2026-04-07,Zalando Bestellung,-56.34
+2026-04-08,Otto Versand,-41.93
+2026-04-09,Edeka Mueller,-55.03
+2026-04-09,Burger King 2231,-3.02
+2026-04-10,Rechnung RE-202604-21 Blau Design Studio,764.48
+2026-04-12,Pizzeria Roma,-8.69
+2026-04-14,ARAL Station,-66.7
+2026-04-15,Vodafone Mobilfunk,-30.0
+2026-04-15,Shell Tankstelle,-70.34
+2026-04-16,Zeit Online Abo,-19.99
+2026-04-16,REWE City 0815,-20.97
+2026-04-17,Netto Marken-Discount,-11.58
+2026-04-19,ALDI SUED,-34.34
+2026-04-21,Eventim Tickets,-93.32
+2026-04-23,Burger King 2231,-2.0
+2026-04-24,Apple iCloud,-2.99
+2026-04-25,EDEKA Center,-26.86
+2026-04-25,Restaurant Bella Italia,-5.01
+2026-04-25,Sushi Bar Kyoto,-17.83
+2026-04-27,ALDI Nord Filiale 77,-36.51
+2026-04-27,Netto Marken-Discount,-5.62
+2026-04-29,ALDI Nord Filiale 77,-5.83
+2026-04-29,LIDL Filiale 1234,-7.39
+2026-04-29,Edeka Mueller,-9.45
+2026-04-29,Physiotherapie Praxis Zuzahlung,-34.35
+2026-04-30,Starbucks Coffee,-19.62
+2026-05-01,Miete Wohnung Mai,-976.31
+2026-05-01,Adobe Creative Cloud,-66.45
+2026-05-02,Stadtwerke Strom,-70.91
+2026-05-02,Lieferando.de,-7.04
+2026-05-03,O2 DSL,-52.5
+2026-05-03,PENNY Markt,-35.66
+2026-05-07,Spotify AB,-10.99
+2026-05-07,Audible,-9.95
+2026-05-07,REWE Markt Berlin,-21.44
+2026-05-07,TotalEnergies,-63.06
+2026-05-08,Pizzeria Roma,-11.19
+2026-05-09,Edeka Mueller,-12.12
+2026-05-10,REWE Markt Berlin,-6.95
+2026-05-11,Kaufland Berlin,-19.39
+2026-05-13,Bowling Center,-19.43
+2026-05-13,ARAL Station,-67.85
+2026-05-15,Vodafone Mobilfunk,-30.0
+2026-05-16,Rechnung RE-202605-82 Tech Solutions AG,1865.99
+2026-05-16,Zeit Online Abo,-19.99
+2026-05-16,Shop Apotheke Online,-11.31
+2026-05-18,REWE City 0815,-23.55
+2026-05-19,Rechnung RE-202605-77 Kraft Agentur,2060.96
+2026-05-19,PENNY Markt,-2.99
+2026-05-19,JET Tankstelle,-60.66
+2026-05-20,REWE Markt Berlin,-20.2
+2026-05-20,Burger King 2231,-30.08
+2026-05-20,H&M Online,-36.71
+2026-05-20,DB Bahn Ticket,-19.11
+2026-05-23,ALDI Nord Filiale 77,-30.13
+2026-05-24,Apple iCloud,-2.99
+2026-05-24,Wolt Order,-28.08
+2026-05-25,FlixBus,-54.28
+2026-05-26,ALDI SUED,-12.53
+2026-05-27,ALDI SUED,-4.15
+2026-05-28,Zalando Bestellung,-24.95
+2026-05-29,Burger King 2231,-3.74
+2026-05-30,PENNY Markt,-5.7
+2026-05-30,LIDL Filiale 1234,-20.2
+2026-06-01,Miete Wohnung Juni,-976.31
+2026-06-01,Adobe Creative Cloud,-66.45
+2026-06-01,Rewe Sagt Danke,-26.05
+2026-06-02,Stadtwerke Strom,-75.36
+2026-06-02,Pizzeria Roma,-8.42
+2026-06-03,O2 DSL,-52.5
+2026-06-04,AMZN Mktp DE,-22.04
+2026-06-05,Rechnung RE-202606-72 Mueller GmbH,1241.35
+2026-06-05,Linden Apotheke,-23.66
+2026-06-07,Spotify AB,-10.99
+2026-06-07,Audible,-9.95
+2026-06-07,REWE City 0815,-29.65
+2026-06-10,Finanzamt Einkommensteuer Vorauszahlung,-1620.0
+2026-06-11,PENNY Markt,-30.76
+2026-06-11,ALDI SUED,-9.88
+2026-06-11,McDonalds 1180,-3.76
+2026-06-12,EDEKA Center,-15.34
+2026-06-14,Cafe Einstein,-7.87
+2026-06-15,Vodafone Mobilfunk,-30.0
+2026-06-15,Otto Versand,-32.25
+2026-06-16,Zeit Online Abo,-19.99
+2026-06-16,PlayStation Store,-39.66
+2026-06-17,Lidl Dienstleistung,-12.41
+2026-06-18,REWE City 0815,-9.96
+2026-06-18,ESSO Station,-73.84
+2026-06-18,JET Tankstelle,-53.99
+2026-06-19,LIDL Filiale 1234,-27.38
+2026-06-20,H&M Online,-21.91
+2026-06-21,Rechnung RE-202606-45 Kraft Agentur,770.16
+2026-06-21,Cafe Einstein,-3.21
+2026-06-23,Bäckerei Kamps,-7.02
+2026-06-24,Apple iCloud,-2.99
+2026-06-24,H&M Online,-31.21
+2026-06-25,Kaufland Berlin,-22.47
+2026-06-25,McDonalds 1180,-9.09
+2026-06-25,Bowling Center,-106.26
+2026-06-26,PENNY Markt,-15.2
+2026-06-26,FlixBus,-41.61
+2026-06-27,Edeka Mueller,-14.24
+2026-06-28,Wolt Order,-14.82
+2026-06-28,Lieferando.de,-2.91
+2026-06-30,Kaufland Berlin,-2.87
+2026-06-30,EDEKA Center,-3.22
+2026-06-30,Edeka Mueller,-4.65
+2026-06-30,Cafe Einstein,-3.46
+2026-06-30,McDonalds 1180,-2.0
+2026-06-30,Vapiano,-2.92
+2026-06-30,JET Tankstelle,-74.22
+2026-06-30,DocMorris,-8.96
+2026-07-01,Miete Wohnung Juli,-976.31
+2026-07-01,Adobe Creative Cloud,-66.45
+2026-07-01,LIDL Filiale 1234,-56.78
+2026-07-02,Stadtwerke Strom,-72.13
+2026-07-03,O2 DSL,-52.5
+2026-07-03,PlayStation Store,-45.2
+2026-07-03,JET Tankstelle,-48.82
+2026-07-04,Bäckerei Kamps,-9.25
+2026-07-06,Starbucks Coffee,-60.54
+2026-07-07,Spotify AB,-10.99
+2026-07-07,Audible,-9.95
+2026-07-09,Lufthansa Flug,-282.32
+2026-07-12,EDEKA Center,-54.89
+2026-07-12,ALDI Nord Filiale 77,-5.79
+2026-07-12,Uber Trip,-65.42
+2026-07-14,Shop Apotheke Online,-28.11
+2026-07-15,Vodafone Mobilfunk,-30.0
+2026-07-15,Booking.com Hotel,-279.25
+2026-07-16,Zeit Online Abo,-19.99
+2026-07-17,Netto Marken-Discount,-67.2
+2026-07-17,Zalando Bestellung,-47.59
+2026-07-20,Vapiano,-20.84
+2026-07-21,AMZN Mktp DE,-40.44
+2026-07-22,Rechnung RE-202607-84 Mueller GmbH,8452.8
+2026-07-22,REWE Markt Berlin,-22.78
+2026-07-22,UCI Kinowelt,-23.51
+2026-07-23,McDonalds 1180,-14.01
+2026-07-24,Apple iCloud,-2.99
+2026-07-24,ALDI Nord Filiale 77,-27.25
+2026-07-27,Shell Tankstelle,-83.87
+2026-07-27,DB Bahn Ticket,-10.11
+2026-07-28,TotalEnergies,-82.18
+2026-07-29,Bowling Center,-36.35
+2026-07-30,REWE City 0815,-27.42
+2026-07-30,Burger King 2231,-27.3
+2026-07-30,Kino CineStar,-32.37
+2026-08-01,Miete Wohnung August,-976.31
+2026-08-01,Adobe Creative Cloud,-66.45
+2026-08-01,DocMorris,-34.44
+2026-08-02,Stadtwerke Strom,-70.25
+2026-08-03,O2 DSL,-52.5
+2026-08-03,ARAL Station,-79.99
+2026-08-04,REWE Markt Berlin,-54.8
+2026-08-06,Rechnung RE-202608-78 Mueller GmbH,584.49
+2026-08-07,Spotify AB,-10.99
+2026-08-07,Audible,-9.95
+2026-08-09,ESSO Station,-63.2
+2026-08-13,Netto Marken-Discount,-34.91
+2026-08-13,Rewe Sagt Danke,-5.96
+2026-08-14,Rechnung RE-202608-16 Nordlicht Media,499.62
+2026-08-14,PENNY Markt,-14.0
+2026-08-15,Vodafone Mobilfunk,-30.0
+2026-08-15,Edeka Mueller,-34.55
+2026-08-16,Zeit Online Abo,-19.99
+2026-08-18,ESSO Station,-78.41
+2026-08-19,Otto Versand,-112.95
+2026-08-20,REWE City 0815,-16.68
+2026-08-22,LIDL Filiale 1234,-32.0
+2026-08-22,Burger King 2231,-109.54
+2026-08-22,Otto Versand,-23.06
+2026-08-22,Uber Trip,-62.17
+2026-08-24,Apple iCloud,-2.99
+2026-08-24,PlayStation Store,-147.57
+2026-08-25,Rechnung RE-202608-23 Nordlicht Media,2748.03
+2026-08-25,Netto Marken-Discount,-16.7
+2026-08-29,ARAL Station,-83.41
+2026-08-30,Lidl Dienstleistung,-21.58
+2026-08-30,LIDL Filiale 1234,-5.14
+2026-09-01,Miete Wohnung September,-976.31
+2026-09-01,Adobe Creative Cloud,-66.45
+2026-09-01,Zalando Bestellung,-25.36
+2026-09-01,ARAL Station,-48.59
+2026-09-02,Stadtwerke Strom,-71.38
+2026-09-03,O2 DSL,-52.5
+2026-09-04,EDEKA Center,-64.05
+2026-09-04,Museum Ticket,-92.54
+2026-09-05,TotalEnergies,-73.39
+2026-09-07,Rechnung RE-202609-91 Mueller GmbH,741.72
+2026-09-07,Spotify AB,-10.99
+2026-09-07,Audible,-9.95
+2026-09-07,PENNY Markt,-6.64
+2026-09-07,McDonalds 1180,-4.14
+2026-09-07,TotalEnergies,-66.99
+2026-09-08,Kaufland Berlin,-36.13
+2026-09-09,Lieferando.de,-15.13
+2026-09-10,Finanzamt Einkommensteuer Vorauszahlung,-1620.0
+2026-09-12,Edeka Mueller,-7.3
+2026-09-12,Lieferando.de,-13.64
+2026-09-13,PlayStation Store,-2.0
+2026-09-14,Lieferando.de,-10.42
+2026-09-14,McDonalds 1180,-4.56
+2026-09-15,Vodafone Mobilfunk,-30.0
+2026-09-15,Kaufland Berlin,-9.88
+2026-09-16,Zeit Online Abo,-19.99
+2026-09-16,Bäckerei Kamps,-16.05
+2026-09-17,EDEKA Center,-16.95
+2026-09-18,MediaMarkt,-103.91
+2026-09-19,Rechnung RE-202609-76 Blau Design Studio,139.26
+2026-09-19,Shell Tankstelle,-74.74
+2026-09-20,Rechnung RE-202609-33 Tech Solutions AG,457.69
+2026-09-20,Rechnung RE-202609-64 Kraft Agentur,122.29
+2026-09-20,Bäckerei Kamps,-2.07
+2026-09-21,PENNY Markt,-27.45
+2026-09-24,Apple iCloud,-2.99
+2026-09-24,EDEKA Center,-18.22
+2026-09-25,LIDL Filiale 1234,-28.01
+2026-09-29,ALDI SUED,-12.34
