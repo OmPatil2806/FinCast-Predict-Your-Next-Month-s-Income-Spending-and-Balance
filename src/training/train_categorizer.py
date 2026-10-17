@@ -197,7 +197,7 @@ def save_model(model: Pipeline, metrics: dict, threshold: float, path: Path | No
         },
     }
     meta_path = path.with_name(load_config()["categorizer"]["meta_file"])
-    meta_path.write_text(json.dumps(meta, indent=2))
+    meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
     return path, meta_path
 
 

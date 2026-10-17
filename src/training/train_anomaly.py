@@ -164,7 +164,7 @@ def export(detector: AnomalyDetector, results: dict, out_dir: Path | None = None
     out_dir = out_dir or resolve_path(config["paths"]["models"])
     out_dir.mkdir(parents=True, exist_ok=True)
     meta_path = out_dir / config["anomaly"]["meta_file"]
-    version = json.loads(meta_path.read_text()).get("version", 0) + 1 if meta_path.exists() else 1
+    version = json.loads(meta_path.read_text(encoding="utf-8")).get("version", 0) + 1 if meta_path.exists() else 1
     detector.version = version
     model_path = out_dir / config["anomaly"]["model_file"]
     joblib.dump(detector, model_path, compress=3)
@@ -181,7 +181,7 @@ def export(detector: AnomalyDetector, results: dict, out_dir: Path | None = None
         "libraries": {"scikit-learn": sklearn.__version__, "pandas": pd.__version__, "numpy": np.__version__},
         "file": model_path.name, "size_kb": round(model_path.stat().st_size / 1024, 1),
     }
-    meta_path.write_text(json.dumps(meta, indent=2))
+    meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
     return model_path, meta_path
 
 

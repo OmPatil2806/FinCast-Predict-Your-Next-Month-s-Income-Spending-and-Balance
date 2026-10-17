@@ -20,7 +20,7 @@ def test_logger_writes_plain_console_and_detailed_file(tmp_path, monkeypatch, ca
             handler.flush()
         out = capsys.readouterr().out
         assert "Saved models/example.json\n" in out and "Careful: something" in out
-        text = (tmp_path / "logs" / "fincast.log").read_text()
+        text = (tmp_path / "logs" / "fincast.log").read_text(encoding="utf-8")
         assert "INFO    fincast.training.train_example: Saved models/example.json" in text
         assert "WARNING fincast.training.train_example: Careful: something" in text
     finally:
@@ -34,4 +34,4 @@ def test_no_print_left_in_pipeline_code():
     root = get_project_root()
     for folder in ("src", "pipelines"):
         for path in (root / folder).rglob("*.py"):
-            assert "print(" not in path.read_text().replace("def _print(", "").replace("_print(", ""), path
+            assert "print(" not in path.read_text(encoding="utf-8").replace("def _print(", "").replace("_print(", ""), path

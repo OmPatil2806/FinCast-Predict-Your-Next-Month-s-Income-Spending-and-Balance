@@ -66,7 +66,7 @@ def load_cold_start(models_dir: str | Path | None = None) -> dict:
     config = load_config()
     models_dir = Path(models_dir) if models_dir else resolve_path(config["paths"]["models"])
     path = models_dir / config["forecast"]["cold_start_file"]
-    return json.loads(path.read_text()) if path.exists() else {}
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
 
 
 @dataclass

@@ -53,7 +53,7 @@ def saved_params() -> dict:
     path = resolve_path(config["paths"]["models"]) / config["forecast"]["params_file"]
     if not path.exists():
         return {}
-    return {family: entry["params"] for family, entry in json.loads(path.read_text())["families"].items()}
+    return {family: entry["params"] for family, entry in json.loads(path.read_text(encoding="utf-8"))["families"].items()}
 
 
 def family_rows(table: pd.DataFrame, family: str) -> pd.DataFrame:

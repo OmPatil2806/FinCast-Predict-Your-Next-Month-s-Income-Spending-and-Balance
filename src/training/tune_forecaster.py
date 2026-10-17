@@ -160,7 +160,7 @@ def save_params(results: dict, path: Path | None = None) -> Path:
             "holdout_mae": {"default": round(r["default_holdout_mae"], 2), "tuned": round(r["tuned_holdout_mae"], 2)},
         }
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2))
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return path
 
 

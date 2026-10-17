@@ -61,5 +61,5 @@ def test_select_family_end_to_end(data, tmp_path):
     assert set(champions["series"]) == set(table.loc[table["series"] != "income", "series"])
     assert set(champions["champion"]) <= {"lightgbm", "last_month", "same_month_last_year", "mean_3"}
     assert result["system"]["coverage"] > 0 and result["check"]["series"] == len(champions)
-    saved = json.loads(save_champions({"spend": result}, 0.10, tmp_path / "c.json").read_text())
+    saved = json.loads(save_champions({"spend": result}, 0.10, tmp_path / "c.json").read_text(encoding="utf-8"))
     assert set(saved["families"]["spend"]["series"]) == set(champions["series"])

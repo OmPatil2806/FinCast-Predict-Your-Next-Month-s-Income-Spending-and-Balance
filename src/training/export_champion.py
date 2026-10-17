@@ -54,12 +54,12 @@ def load_champions(path: Path | None = None) -> dict:
     path = path or resolve_path(config["paths"]["models"]) / config["forecast"]["champions_file"]
     if not path.exists():
         raise FileNotFoundError(f"{path} is missing - run step 7.8 first: python -m src.training.select_champion")
-    return json.loads(path.read_text())
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def next_version(meta_path: Path) -> int:
     if meta_path.exists():
-        return int(json.loads(meta_path.read_text()).get("version", 0)) + 1
+        return int(json.loads(meta_path.read_text(encoding="utf-8")).get("version", 0)) + 1
     return 1
 
 
@@ -149,7 +149,7 @@ def export(table: pd.DataFrame, feature_columns: list[str], champions: dict, par
             metrics = {k: v for k, v in entry["system"].items() if isinstance(v, (int, float))}
             family_meta["registry"] = register(path, family, metrics, version, tracking_uri, artifact_root)
         meta["families"][family] = family_meta
-    meta_path.write_text(json.dumps(meta, indent=2, default=str))
+    meta_path.write_text(json.dumps(meta, indent=2, default=str), encoding="utf-8")
     return meta
 
 

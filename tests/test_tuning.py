@@ -48,7 +48,7 @@ def test_first_trial_is_the_default_and_params_are_saved(data, tmp_path, monkeyp
     assert result["use_tuned"] == (result["tuned_holdout_mae"] < result["default_holdout_mae"])
 
     path = save_params({"income": result}, tmp_path / "params.json")
-    saved = json.loads(path.read_text())["families"]["income"]
+    saved = json.loads(path.read_text(encoding="utf-8"))["families"]["income"]
     assert set(saved["params"]) == set(search_space_keys())
     assert saved["source"] == ("tuned" if result["use_tuned"] else "default")
 
@@ -56,6 +56,6 @@ def test_first_trial_is_the_default_and_params_are_saved(data, tmp_path, monkeyp
 def test_defaults_are_kept_when_tuning_loses_on_holdout(tmp_path):
     result = {"mode": "raw", "use_tuned": False, "best_params": {"n_estimators": 999},
               "holdout_months": "2026-04 to 2026-09", "default_holdout_mae": 10.0, "tuned_holdout_mae": 11.0}
-    saved = json.loads(save_params({"spend": result}, tmp_path / "p.json").read_text())["families"]["spend"]
+    saved = json.loads(save_params({"spend": result}, tmp_path / "p.json").read_text(encoding="utf-8"))["families"]["spend"]
     assert saved["source"] == "default"
     assert saved["params"]["n_estimators"] == DEFAULT_PARAMS["n_estimators"]

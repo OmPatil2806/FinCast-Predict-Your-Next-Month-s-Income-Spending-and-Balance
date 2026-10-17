@@ -37,7 +37,7 @@ def test_export_without_registry(data, tmp_path):
     table, features, champions = data
     meta = export(table, features, champions, {"income": FAST, "spend": FAST}, out_dir=tmp_path, register_models=False)
     assert meta["version"] == 1 and meta["feature_columns"] == features
-    saved = json.loads((tmp_path / "model_meta.json").read_text())
+    saved = json.loads((tmp_path / "model_meta.json").read_text(encoding="utf-8"))
     assert set(saved["families"]) == {"income", "spend"}
 
     model = joblib.load(tmp_path / "forecaster_spend.joblib")

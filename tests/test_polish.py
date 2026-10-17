@@ -34,7 +34,7 @@ def test_page_list_matches_the_page_files():
 
 def test_every_page_ends_with_the_footer():
     for page in PAGE_FILES:
-        assert page.read_text().rstrip().endswith("show_footer()"), page.name
+        assert page.read_text(encoding="utf-8").rstrip().endswith("show_footer()"), page.name
 
 
 def test_not_enough_history_messages():

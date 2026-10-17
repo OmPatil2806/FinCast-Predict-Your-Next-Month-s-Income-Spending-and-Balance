@@ -35,6 +35,6 @@ def test_data_version_changes_with_the_data(tmp_path):
 def test_models_are_only_loaded_through_the_shared_cache():
     pages = (get_project_root() / "dashboard").rglob("*.py")
     for page in pages:
-        text = page.read_text()
+        text = page.read_text(encoding="utf-8")
         assert not re.search(r"load_(forecasters|detector|categorizer)\(", text), page.name
         assert "st.cache_data.clear()" not in text, page.name      # bump_cache() instead of clearing everyone

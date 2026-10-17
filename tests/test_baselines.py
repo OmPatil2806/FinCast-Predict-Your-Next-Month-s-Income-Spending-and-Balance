@@ -50,6 +50,6 @@ def test_best_by_series_picks_lowest_mae(results, tmp_path):
     for row in results["best_by_series"].itertuples():
         assert row.mae == pytest.approx(by_series[by_series["series"] == row.series]["mae"].min())
     path = save_scores(results, tmp_path / "scores.json")
-    saved = json.loads(path.read_text())
+    saved = json.loads(path.read_text(encoding="utf-8"))
     assert set(saved["best_by_series"]) == set(results["best_by_series"]["series"])
     assert saved["metric"] == "mae"

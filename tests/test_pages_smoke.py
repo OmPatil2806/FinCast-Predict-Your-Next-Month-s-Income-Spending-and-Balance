@@ -27,7 +27,7 @@ def app_db(tmp_path_factory):
     config = copy.deepcopy(load_config())
     config["database"]["path"] = str(tmp / "app.db")
     path = tmp / "config.yaml"
-    path.write_text(yaml.safe_dump(config))
+    path.write_text(yaml.safe_dump(config), encoding="utf-8")
     patch = pytest.MonkeyPatch()
     patch.setenv(CONFIG_ENV, str(path))
     load_config.cache_clear()

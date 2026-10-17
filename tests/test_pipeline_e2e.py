@@ -41,9 +41,9 @@ def tiny_config(tmp_path, monkeypatch):
     small = {"n_estimators": 30, "learning_rate": 0.1, "num_leaves": 8, "min_child_samples": 5,
              "subsample": 0.8, "colsample_bytree": 0.8, "reg_lambda": 1.0}
     (models / "forecast_params.json").write_text(json.dumps(
-        {"families": {f: {"params": small} for f in ("income", "spend")}}))
+        {"families": {f: {"params": small} for f in ("income", "spend")}}), encoding="utf-8")
     path = tmp_path / "config.yaml"
-    path.write_text(yaml.safe_dump(config))
+    path.write_text(yaml.safe_dump(config), encoding="utf-8")
     monkeypatch.setenv(CONFIG_ENV, str(path))
     load_config.cache_clear()
     load_categories.cache_clear()
@@ -67,7 +67,7 @@ def test_full_pipeline_on_tiny_data(tiny_config, monkeypatch):
                  "model_meta.json", "cold_start.json", "drift_reference.json", "anomaly.joblib", "anomaly_meta.json"):
         assert (models / name).exists(), name
     assert (tiny_config / "reports" / "figures" / "shap_summary_spend.png").exists()
-    meta = json.loads((models / "model_meta.json").read_text())
+    meta = json.loads((models / "model_meta.json").read_text(encoding="utf-8"))
     assert meta["training_data"]["users"] == 8 and meta["families"]["spend"]["registry"]["alias"] == "champion"
     assert joblib.load(models / "forecaster_spend.joblib").width_factor > 0
     assert _fingerprint() == before                                    # the real project files are untouched

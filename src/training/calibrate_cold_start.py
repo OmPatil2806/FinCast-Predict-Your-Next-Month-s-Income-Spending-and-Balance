@@ -122,7 +122,7 @@ def save(result: dict, cold_start_months: int, path: Path | None = None) -> Path
                        for row in table.to_dict("records")],
     }
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2))
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return path
 
 

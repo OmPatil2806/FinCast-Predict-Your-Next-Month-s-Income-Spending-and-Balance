@@ -92,7 +92,7 @@ def save_scores(results: dict, path: Path | None = None) -> Path:
         "overall_by_baseline": {row.baseline: round(row.mae, 2) for row in results["overall"].itertuples()},
     }
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2))
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return path
 
 

@@ -77,13 +77,13 @@ def build_reference(monthly: pd.DataFrame, seed: int = 42, quantile: float = QUA
 
 def save_reference(reference: dict, path: Path | None = None) -> Path:
     path = path or resolve_path(load_config()["paths"]["models"]) / REFERENCE_FILE
-    path.write_text(json.dumps(reference, indent=2))
+    path.write_text(json.dumps(reference, indent=2), encoding="utf-8")
     return path
 
 
 def load_reference(path: Path | None = None) -> dict | None:
     path = path or resolve_path(load_config()["paths"]["models"]) / REFERENCE_FILE
-    return json.loads(path.read_text()) if path.exists() else None
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
 
 
 def user_mix(transactions: pd.DataFrame, as_of=None) -> pd.Series | None:
